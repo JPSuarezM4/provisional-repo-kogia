@@ -2,9 +2,8 @@ import * as React from 'react';
 import {
   AppBar,
   Box,
-  Card,
-  CardContent,
-  Button,
+  // Card,
+  // CardContent,
   Drawer,
   Fade,
   List,
@@ -12,7 +11,7 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
-  Typography
+  Typography,
 
 } from '@mui/material';
 import {
@@ -22,35 +21,25 @@ import {
   Visibility as VisibilityIcon,
 
 
+
 } from '@mui/icons-material';
 
-import SelectMedidas from './components/SelecetMedidas';
-import SelectSensors from './components/SelectSensors';
+import AddSensorDialog from './components/PopupAddSensor';
+// import EditSensorDialog from './components/PopupEditSensor'; 
+import ComboBox from './components/AutoCompleteSearch';
+import SensorsTable from './components/ContentTable';
+
 
 const drawerWidth = 240;
 
 export default function KogiaDashboard() {
-  const [selectedMenu, setSelectedMenu] = React.useState(''); // Estado para el menú seleccionado
-  const [SelectedSection, setSelectedSection] = React.useState(''); // Estado para la sección seleccionada dentro de configuración
-  const [openSensors, setOpenSensors] = React.useState(false); // Estado para controlar la animación de 'Sensores'
-  const [openMedidas, setOpenMedidas] = React.useState(false); // Estado para controlar la animación de 'Medidas'
+  const [selectedMenu, setSelectedMenu] = React.useState('');
+
 
   const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
-    setSelectedSection(''); // Resetear la sección cuando se cambie de menú
-    setOpenMedidas(false); // Cerrar 'Medidas' cuando se cambia de menú
-    setOpenSensors(false); // Cerrar 'Sensores' cuando se cambia de menú
   };
 
-    const handleSectionClick = (section) => {
-      setSelectedSection(section);
-      if (section === 'Medidas') {
-        setOpenMedidas(!openMedidas); // Toggle para abrir o cerrar la sección de 'Medidas'
-      }
-      if (section === 'Sensores') {
-        setOpenSensors(!openSensors); // Toggle para abrir o cerrar la sección de 'Sensores'
-      }
-    };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -85,7 +74,7 @@ export default function KogiaDashboard() {
             </Typography>
           </Box>
         </Toolbar>
-        <Box sx={{ overflow: 'auto' }}>
+        <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
           <List>
             {['Visualización en línea', 'Análisis de datos', 'Ubicación de dispositivos', 'Configuración'].map((text, index) => (
               <ListItem 
@@ -104,37 +93,69 @@ export default function KogiaDashboard() {
             ))}
           </List>
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 5 }} > 
+          <Typography variant="h7" noWrap component="div">
+            Koral AT 
+          </Typography>
+        </Box>
       </Drawer>
       <Box
           component="main"
           sx={{
-            position: 'fixed',
-            top: 0,
-            left: drawerWidth, // Esto alinea el contenedor con el Drawer
-            width: `calc(100% - ${drawerWidth}px)`, 
-            height: '100vh', // Asegura que ocupe todo el alto de la pantalla
+            flexGrow: 1,
             p: 3,
-            boxSizing: 'border-box', // Asegura que padding no afecte el ancho total
-            overflowX: 'hidden',
+            width: `calc(100% - ${drawerWidth}px)`,
+            // mt: 8, // Add margin top to push content below the AppBar
           }}
         >
-        <Toolbar />
-        <Fade in={selectedMenu === 'Configuración'} timeout={500}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-            <Card sx={{ minWidth: 275, bgcolor: 'purple.50', flex: 1 }}>
-              <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: 14 }} color="text.secondary">
-                  Empresa
-                </Typography>
-                <Button variant="contained">Agregar Sensor</Button>
-              </CardContent>
-            </Card>
-          </Box>
-        </Fade>
+        <Toolbar/>
+        <Box 
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 2,
+        }}>
+          <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+            <Box>
+              <ComboBox /> 
+            </Box>
+          </Fade>
+        </Box>
+        <Box>
+          <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+            <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                right: 16,
+                justifyContent: 'center',
+              }}
+            >
+              <AddSensorDialog />
+            </Box>
+          </Fade>
+        </Box>
+        <Box>
+          <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 8,
+              }}
+            >
+              <SensorsTable />
+            </Box>
+          </Fade>
+        </Box>
+
       </Box>
     </Box>
   );
 }
+
+
+
 
 
 

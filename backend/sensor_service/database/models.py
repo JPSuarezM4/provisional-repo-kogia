@@ -1,35 +1,36 @@
+"""
+This module defines the database models for the sensor service.
+"""
+
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
-# Modelo Nodo
-class Node(db.Model):
-    __tablename__ = 'nodes'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(255), nullable=True)
-    sensors = db.relationship('Sensor', back_populates='node', cascade='all, delete-orphan')
+class NodoData(db.Model):
+    """
+    NodoData represents the data associated with a node in the system.
+    """
+    __tablename__ = 'nodo_data'
+    nodo_id = db.Column(db.Integer, primary_key=True)
+   # nodo_id = db.Column(db.Integer, nullable=False, unique=True)
+    suscriptor_id = db.Column(db.Integer, nullable=False)
+    nombre_nodo = db.Column(db.String(100), nullable=False)
+    dispositivos = db.Column(JSON, nullable=False)
+    
+   # sensores = db.Column(JSON, nullable=False)  # Aquí almacenamos los sensores y medidas como JSON
 
-# Modelo Sensor
-class Sensor(db.Model):
-    __tablename__ = 'sensors'
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(50), unique=True, nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-    manufacturer = db.Column(db.String(100), nullable=False)
-    parameters = db.Column(db.JSON, nullable=False)  # Lista de parámetros como diccionario
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    attributes = db.Column(db.JSON, nullable=False)  # Diccionario con "qué mide" y "para qué"
-    node_id = db.Column(db.Integer, db.ForeignKey('nodes.id'), nullable=False)
-    measurements = db.relationship('Measurement', lazy=True)
-    node = db.relationship('Node', back_populates='sensors')
+    def to_dict(self):
+        """
+        Convert the NodoData instance to a dictionary.
+        """
+        return {
+            'nodo_id': self.nodo_id,
+            'suscriptor_id': self.suscriptor_id,
+            'dispositivos': self.dispositivos,
+            'nombre_nodo': self.nombre_nodo,
+          #  'sensores': self.sensores
+        }
 
-# Modelo Medición
-class Measurement(db.Model):
-    __tablename__ = 'measurements'
-    id = db.Column(db.Integer, primary_key=True)
-    value = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
-    sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.id'), nullable=False)
-    sensor = db.relationship('Sensor', lazy=True)
+    def __repr__(self):
+        return f"<NodoData nodo_id={self.nodo_id}, dispositivos={self.dispositivos}>"

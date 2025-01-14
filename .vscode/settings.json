@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "${workspaceFolder}/backend/venv/Scripts/python.exe",
+    "oneDarkPro.editorTheme": "One Dark Pro",
+    "oneDarkPro.italic": true,
+    "oneDarkPro.markdownStyle": true,
+    "oneDarkPro.vivid": false,
+    "issueReporter.experimental.auxWindow": true
+}

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -17,29 +18,44 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 
-const columns = [
-  { id: 'ID', label: 'ID', minWidth: 100 },
-  { id: 'Tipo', label: 'Tipo', minWidth: 100, align: 'center' },
-  { id: 'Fecha', label: 'Fecha Creación', minWidth: 100, align: 'center' },
-  { id: 'Ubicación', label: 'Ubicación', minWidth: 100, align: 'right' },
-  { id: 'Acciones', label: 'Acciones', minWidth: 150, align: 'center' },
-];
-
-function createData(ID, Tipo, Fecha, Ubicación) {
-  return { ID, Tipo, Fecha, Ubicación };
-}
-
-const rows = [
-  createData(1, 'Calidad Agua', '01/12/2024', 'Medellín'),
-  createData(2, 'Agua', '01/12/2024', 'Medellín'),
-  createData(3, 'Agua', '01/12/2024', 'Medellín'),
-];
-
-export default function SensorsTable() {
+export default function DevicesTable() {
+  const [devices, setDevices] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [openDialog, setOpenDialog] = React.useState(false);
-  const [selectedSensor, setSelectedSensor] = React.useState(null);
+  const [selectedDevice, setSelectedDevice] = React.useState(null);
+
+  // Fetch devices data on mount
+  React.useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const fetchDevices = () => {
+    axios
+      .get("http://127.0.0.1:5000/api/nodos")
+      .then((response) => {
+        const dispositivos = response.data.map((nodo) => {
+          return {
+            nodo_id: nodo.nodo_id, // Asegúrate de que esto exista en la respuesta
+            nombre_nodo: nodo.nombre_nodo, // Asegúrate de que esto exista en la respuesta
+            dispositivos: nodo.dispositivos.map((dispositivo) => {
+              return dispositivo.sensores.map((sensor) => ({
+                nombre: sensor.nombre,
+                tipo: sensor.tipo,
+                medidas: sensor.medidas,
+              }));
+            }).flat(), // Asegúrate de aplanar correctamente los sensores
+          };
+        });
+  
+        console.log("Dispositivos procesados:", dispositivos); // Verifica la estructura procesada
+        setDevices(dispositivos); // Guarda los datos en el estado
+      })
+      .catch((error) => {
+        console.error("Error al obtener los dispositivos:", error);
+      });
+  };
+  
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -50,23 +66,49 @@ export default function SensorsTable() {
     setPage(0);
   };
 
-  const handleOpenDialog = (sensor) => {
-    setSelectedSensor(sensor);
+  const handleOpenDialog = (device) => {
+    setSelectedDevice(device);
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedSensor(null);
+    setSelectedDevice(null);
   };
 
-  const handleEdit = (sensor) => {
-    console.log('Editar sensor:', sensor);
+
+
+  const handleDelete = (device) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar el dispositivo ${device.nombre_nodo}?`)) {
+      axios.delete(`http://127.0.0.1:5000/api/nodos/${device.nodo_id}`)
+        .then(() => {
+          fetchDevices(); // Vuelve a cargar los dispositivos después de eliminar
+        })
+        .catch((error) => {
+          console.error("Error al eliminar el dispositivo:", error);
+        });
+    }
+  };
+  
+  const handleEdit = (device) => {
+    // Supongamos que editas el dispositivo aquí
+    // Después de la operación, vuelve a cargar los dispositivos
+    axios.put(`http://127.0.0.1:5000/api/nodos/${device.nodo_id}`)
+      .then(() => {
+        fetchDevices(); // Refresca los datos
+      })
+      .catch((error) => {
+        console.error("Error al editar el dispositivo:", error);
+      });
   };
 
-  const handleDelete = (sensor) => {
-    console.log('Eliminar sensor:', sensor);
-  };
+
+  const columns = devices.length > 0 ? Object.keys(devices[0]).map((key) => ({
+    id: key,
+    label: key.charAt(0).toUpperCase() + key.slice(1), // Capitaliza la primera letra del título
+    minWidth: 100,
+    align: 'center',
+  })) : [];
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -83,36 +125,28 @@ export default function SensorsTable() {
                   {column.label}
                 </TableCell>
               ))}
+              <TableCell key="acciones" align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows
+            {devices
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row.ID}>
-                  {columns.map((column) => {
-                    if (column.id === 'Acciones') {
-                      return (
-                        <TableCell key={column.id} align={column.align}>
-                          <IconButton onClick={() => handleEdit(row)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton onClick={() => handleOpenDialog(row)}>
-                            <VisibilityIcon />
-                          </IconButton>
-                          <IconButton onClick={() => handleDelete(row)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      );
-                    }
-                    const value = row[column.id];
-                    return (
-                      <TableCell key={column.id} align={column.align}>
-                        {value}
-                      </TableCell>
-                    );
-                  })}
+              .map((device) => (
+                <TableRow hover role="checkbox" tabIndex={-1} key={device.nodo_id}> {/* Usando nodo_id */}
+                  <TableCell align="center">{device.nodo_id}</TableCell> {/* Usando nodo_id */}
+                  <TableCell align="center">{device.nombre_nodo}</TableCell>
+                  <TableCell align="center">{device.dispositivos.length}</TableCell> {/* Mostrar número de sensores */}
+                  <TableCell align="center">
+                    <IconButton onClick={() => handleOpenDialog(device)}>
+                      <VisibilityIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleEdit(device)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(device)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
           </TableBody>
@@ -121,24 +155,37 @@ export default function SensorsTable() {
       <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
-        count={rows.length}
+        count={devices.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
 
-      {/* Dialog for sensor details */}
+      {/* Dialog for device details */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Detalles del Sensor</DialogTitle>
+        <DialogTitle>Detalles del Dispositivo</DialogTitle>
         <DialogContent>
-          {selectedSensor ? (
+          {selectedDevice ? (
             <div>
-              <p><strong>ID:</strong> {selectedSensor.ID}</p>
-              <p><strong>Tipo:</strong> {selectedSensor.Tipo}</p>
-              <p><strong>Fecha:</strong> {selectedSensor.Fecha}</p>
-              <p><strong>Ubicación:</strong> {selectedSensor.Ubicación}</p>
-              {/* Aquí puedes agregar más detalles o incluso otra tabla */}
+              <p><strong>ID:</strong> {selectedDevice.nodo_id}</p> {/* Usando nodo_id */}
+              <p><strong>Nombre del Dispositivo:</strong> {selectedDevice.nombre_nodo}</p>
+              <p><strong>Lista de Sensores:</strong></p>
+              <ul>
+                {selectedDevice.dispositivos.map((sensor, index) => (
+                  <li key={index}>
+                    <strong>Nombre:</strong> {sensor.nombre} <br />
+                    <strong>Tipo:</strong> {sensor.tipo} <br />
+                    <strong>Medidas:</strong> {sensor.medidas.map((medida, index) => (
+                      <ul key={index}>
+                        <p><strong>Valor:</strong> {medida.valor} {medida.unidad}</p>
+                        <p><strong>Unidad:</strong> {medida.unidad}</p>
+                        <p><strong>Medida ID:</strong> {medida.medida_id}</p>
+                      </ul>
+                    ))}
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : (
             <p>Cargando...</p>

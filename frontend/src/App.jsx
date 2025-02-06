@@ -19,16 +19,21 @@ import {
 } from '@mui/icons-material';
 
 // import AddSensorDialog from './components/ButtonAddSensor';
-import ComboBox from './components/AutoCompleteSearch';
+//import ComboBox from './components/AutoCompleteSearch';
 import AddNodoDialog from './components/PopupAddNodo';
 import AddDeviceDialog from './components/ButtonAddDevice';
 import DevicesTable from './components/ContentTableSensors';
+//import SensorChart from './components/DashBoard';
+//import SensorFilter from './components/SensorFilter';
+//import AddChartButton from './components/AddChartButton';
+import AddChartDialog from './components/AddChartDialog';
 import React from 'react';
 
 const drawerWidth = 240;
 
 function App() {
   const [selectedMenu, setSelectedMenu] = React.useState('');
+  //const [filters, setFilters] = React.useState(null);
 
   const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -43,7 +48,7 @@ function App() {
               {selectedMenu === 'Visualización en línea' && <VisibilityIcon sx={{ mr: 2 }} />}
               {selectedMenu === 'Análisis de datos' && <BarChartIcon sx={{ mr: 2 }} />}
               {selectedMenu === 'Ubicación de dispositivos' && <MapIcon sx={{ mr: 2 }} />}
-              {selectedMenu === 'Configuración' && <SettingsIcon sx={{ mr: 2 }} />}
+              {selectedMenu === 'Gestión de sensores' && <SettingsIcon sx={{ mr: 2 }} />}
               <Typography variant="h6" noWrap component="div">
                 {selectedMenu ? `${selectedMenu}` : 'Configuración del sistema KOGIA'}
               </Typography>
@@ -70,7 +75,7 @@ function App() {
           </Toolbar>
           <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
             <List>
-              {['Visualización en línea', 'Análisis de datos', 'Ubicación de dispositivos', 'Configuración'].map((text, index) => (
+              {['Visualización en línea', 'Análisis de datos', 'Ubicación de dispositivos', 'Gestión de sensores'].map((text, index) => (
                 <ListItem 
                   component="div"
                   key={text} 
@@ -117,14 +122,24 @@ function App() {
             justifyContent: 'space-between',
             gap: 2,
           }}>
-            <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+          {/*    <Fade in={selectedMenu === 'Gestión de sensores'} timeout={500}>
               <Box>
                 <ComboBox /> 
               </Box>
-            </Fade>
+            </Fade> */}
           </Box>
+          {selectedMenu === 'Análisis de datos' && (
+            <Box>
+              <Fade in={selectedMenu === 'Análisis de datos'} timeout={500}>
+                <Box>
+                <AddChartDialog />
+   
+                </Box>
+              </Fade>
+            </Box>
+          )}
           <Box>
-            <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+            <Fade in={selectedMenu === 'Gestión de sensores'} timeout={500}>
               <Box
                 sx={{
                   position: 'absolute',
@@ -142,12 +157,11 @@ function App() {
             </Fade>
           </Box>
           <Box>
-            <Fade in={selectedMenu === 'Configuración'} timeout={500}>
+            <Fade in={selectedMenu === 'Gestión de sensores'} timeout={500}>
               <Box
                 sx={{
                   display: 'flex',
-                  justifyContent: 'center',
-                  marginTop: 8,
+                  justifyContent: 'center'
                 }}
               >
                 <DevicesTable />

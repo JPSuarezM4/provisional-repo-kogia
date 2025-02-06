@@ -9,6 +9,8 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { Assessment as MeasuremenetIcon } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -19,8 +21,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField'; // Importar TextField para la barra de búsqueda
 import AddSensorDialog from './ButtonAddSensor';
 import { NodosContext } from '../context/NodosContext';
+import ContentMeasurement from './ContentMeasurment.jsx';
 
 export default function DevicesTable() {
   const { nodos, fetchNodos } = useContext(NodosContext);
@@ -30,6 +34,8 @@ export default function DevicesTable() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedSensor, setSelectedSensor] = useState(null);
   const [loading, setLoading] = useState(true); // Estado de carga
+  const [openMeasurementDialog, setOpenMeasurementDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
 
   useEffect(() => {
     // Llama a fetchNodos al iniciar la página para asegurar que los datos estén disponibles
@@ -50,18 +56,27 @@ export default function DevicesTable() {
 
   const fetchDevices = () => {
     if (!nodos || nodos.length === 0) return;
-    const sensores = nodos.flatMap((nodo) =>
-      (nodo.dispositivos || []).flatMap((dispositivo) =>
-        (dispositivo.sensor || []).map((sensor) => ({
-          ...sensor,
-          dispositivoNombre: dispositivo.nombre,
-          nodoNombre: nodo.nombre_nodo,
-        }))
-      )
-    );
+    
+    const sensores = nodos.flatMap((nodo) => {
+      console.log('Nodo:', nodo); // Para ver la estructura del nodo
+      return (nodo.dispositivos || []).flatMap((dispositivo) => {
+        console.log('Dispositivo:', dispositivo); // Para ver la estructura del dispositivo
+        return (dispositivo.sensor || []).map((sensor) => {
+          console.log('Sensor:', sensor); // Para ver la estructura del sensor
+          return {
+            ...sensor,
+            dispositivoNombre: dispositivo.nombre,
+            nodoNombre: nodo.nombre_nodo,
+            nodo_id: nodo.nodo_id || nodo.id, // Ajusta esto según tu estructura de datos
+            dispositivo_id: dispositivo.dispositivo_id || dispositivo.id // Ajusta esto según tu estructura de datos
+          };
+        });
+      });
+    });
+    
+    console.log('Sensores procesados:', sensores); // Para ver el resultado final
     setSensors(sensores);
-};
-
+  };
 
   const updateSensors = () => {
     fetchNodos(); // Actualiza el contexto de nodos
@@ -91,6 +106,14 @@ export default function DevicesTable() {
     console.log('Editar sensor:', sensor);
   };
 
+  const handleOpenMeasurementDialog = (sensor) => {
+    console.log('Sensor seleccionado:', sensor); // Para verificar qué datos tenemos
+    setSelectedSensor(sensor);
+    setOpenMeasurementDialog(true);
+  };
+
+  const handleCloseMeasurementDialog = () => setOpenMeasurementDialog(false);
+
   const handleDelete = (sensor) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar el sensor ${sensor.nombre}?`)) {
       axios
@@ -110,7 +133,8 @@ export default function DevicesTable() {
   const columns =
     sensors.length > 0
       ? Object.keys(sensors[0])
-          .filter((key) => key !== 'tipo')
+          .filter((key) => key !== 'tipo' && key !== 'medidas') // Filtrar la columna "medidas"
+          .filter((key) => key !== 'tipo' && key !== 'ultimo_id')
           .map((key) => ({
             id: key,
             label: key.charAt(0).toUpperCase() + key.slice(1),
@@ -118,6 +142,11 @@ export default function DevicesTable() {
             align: 'center',
           }))
       : [];
+
+  // Filtrar los sensores basados en el término de búsqueda
+  const filteredSensors = sensors.filter(sensor =>
+    sensor.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -127,7 +156,16 @@ export default function DevicesTable() {
         <Typography variant="h6" component="div">
           Sensores
         </Typography>
-        <AddSensorDialog onAdd={() => updateSensors()} />
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            label="Buscar Sensor"
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ marginRight: 2 }}
+          />
+          <AddSensorDialog onAdd={() => updateSensors()} />
+        </Box>
       </Box>
       {loading ? (
         <Typography sx={{ textAlign: 'center', padding: 2 }}>Cargando datos...</Typography>
@@ -146,31 +184,42 @@ export default function DevicesTable() {
                       {column.label}
                     </TableCell>
                   ))}
-                  <TableCell key="acciones" align="right">
+                  <TableCell key="acciones" align="center" style={{ minWidth: 100 }}>
                     Acciones
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sensors
+                {filteredSensors
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((sensor) => (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={sensor.sensor_id}>
+                    <TableRow hover role="checkbox" tabIndex={-1} key={`${sensor.nodo_id}-${sensor.sensor_id}`}>
                       {columns.map((column) => (
                         <TableCell key={column.id} align={column.align}>
-                          {sensor[column.id]}
+                          {typeof sensor[column.id] === 'object' ? JSON.stringify(sensor[column.id]) : sensor[column.id]}
                         </TableCell>
                       ))}
                       <TableCell align="right">
-                        <IconButton onClick={() => handleOpenDialog(sensor)}>
-                          <VisibilityIcon />
-                        </IconButton>
-                        <IconButton onClick={() => handleEdit(sensor)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => handleDelete(sensor)}>
-                          <DeleteIcon />
-                        </IconButton>
+                        <Tooltip title="Ver Detalles">
+                          <IconButton onClick={() => handleOpenDialog(sensor)}>
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Editar">
+                          <IconButton onClick={() => handleEdit(sensor)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                          <IconButton onClick={() => handleDelete(sensor)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Ver Medidas del Sensor">
+                          <IconButton onClick={() => handleOpenMeasurementDialog(sensor)}>
+                            <MeasuremenetIcon />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -180,7 +229,7 @@ export default function DevicesTable() {
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"
-            count={sensors.length}
+            count={filteredSensors.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -218,6 +267,21 @@ export default function DevicesTable() {
           <Button onClick={handleCloseDialog}>Cerrar</Button>
         </DialogActions>
       </Dialog>
+        <Dialog open={openMeasurementDialog} onClose={handleCloseMeasurementDialog}>
+          <DialogContent>
+            <ContentMeasurement 
+              sensorId={selectedSensor?.sensor_id}
+              dispositivoId={selectedSensor?.dispositivo_id}
+              nodoId={selectedSensor?.nodo_id}
+              open={openMeasurementDialog}
+              onClose={handleCloseMeasurementDialog}
+              sensor={selectedSensor} 
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseMeasurementDialog}>Cerrar</Button>
+          </DialogActions>
+        </Dialog>
     </Paper>
   );
 }

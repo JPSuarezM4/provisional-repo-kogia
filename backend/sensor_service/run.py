@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Configurar CORS correctamente
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"], "allow_headers": ["Content-Type", "Authorization"], "expose_headers": ["Content-Range", "X-Content-Range"]}}, supports_credentials=True)
 
 db.init_app(app)
 

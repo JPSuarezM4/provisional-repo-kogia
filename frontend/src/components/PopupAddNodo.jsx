@@ -9,8 +9,10 @@ import {
   Box,
   Fab,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { DeviceHub as DeviceHubIcon } from '@mui/icons-material';
 import { NodosContext } from '../context/NodosContext';
 
 export default function AddNodoDialog() {
@@ -20,6 +22,7 @@ export default function AddNodoDialog() {
     nombre_nodo: '',
     dispositivos: [],
   });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: '' });
 
   const { fetchNodos } = useContext(NodosContext);
 
@@ -46,16 +49,22 @@ export default function AddNodoDialog() {
       console.log('Nodo creado con éxito:', data);
       fetchNodos();
       handleClose();
+      setSnackbar({ open: true, message: 'Nodo creado con éxito', severity: 'success' });
     } catch (error) {
       console.error('Error:', error);
+      setSnackbar({ open: true, message: 'Error al guardar el nodo', severity: 'error' });
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ open: false, message: '', severity: '' });
   };
 
   return (
     <Box>
-      <Tooltip title="Agregar nuevo nodo">
+      <Tooltip title="Agregar Nuevo Nodo">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <AddIcon />
+          <DeviceHubIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
@@ -85,6 +94,16 @@ export default function AddNodoDialog() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

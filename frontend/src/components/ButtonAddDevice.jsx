@@ -11,8 +11,10 @@ import {
   Fab,
   MenuItem,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Devices as DevicesIcon } from '@mui/icons-material';
 
 export default function AddDeviceDialog() {
   const [open, setOpen] = useState(false);
@@ -23,9 +25,11 @@ export default function AddDeviceDialog() {
     dispositivos: [],
   });
   const [newDevice, setNewDevice] = useState({
-    dispositivo_id:"",
+    dispositivo_id: "",
     nombre: '',
+    tipo: '',
   });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const { nodos, fetchNodos } = useContext(NodosContext);
 
@@ -36,8 +40,8 @@ export default function AddDeviceDialog() {
     setNewDevice((prev) => ({
       ...prev,
       [field]: field === 'dispositivo_id'
-      ? (value === '' ? '' : Number.isInteger(Number(value)) ? parseInt(value, 10) : prev.dispositivo_id)
-      : value,
+        ? (value === '' ? '' : Number.isInteger(Number(value)) ? parseInt(value, 10) : prev.dispositivo_id)
+        : value,
     }));
   };
 
@@ -66,16 +70,22 @@ export default function AddDeviceDialog() {
       console.log('Nodo actualizado con éxito:', data);
       fetchNodos(); // Actualizar la lista de nodos en el contexto
       handleClose();
+      setSnackbar({ open: true, message: 'Dispositivo agregado con éxito', severity: 'success' });
     } catch (error) {
       console.error('Error:', error);
+      setSnackbar({ open: true, message: 'Error al agregar el dispositivo', severity: 'error' });
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
     <Box>
-      <Tooltip title="Agregar nuevo nodo">
+      <Tooltip title="Agregar Nuevo Dispositivo">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <AddIcon />
+          <DevicesIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
@@ -130,6 +140,16 @@ export default function AddDeviceDialog() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

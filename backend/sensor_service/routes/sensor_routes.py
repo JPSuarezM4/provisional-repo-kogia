@@ -5,8 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import or_
 from sqlalchemy.dialects.postgresql import JSONB
-import datetime
-    
+from datetime import datetime
+from uuid import uuid4
 
 nodo_bp = Blueprint('nodos', __name__)
 nodo_schema = NodoDataSchema()
@@ -18,7 +18,7 @@ def convert_datetime_to_isoformat(data):
             convert_datetime_to_isoformat(item)
     elif isinstance(data, dict):
         for key, value in data.items():
-            if isinstance(value, datetime.datetime):
+            if isinstance(value, datetime):
                 data[key] = value.isoformat()
             elif isinstance(value, (list, dict)):
                 convert_datetime_to_isoformat(value)
@@ -139,14 +139,15 @@ def update_dispositivos(nodo_id):
 # Obtener los sensores de un nodo
 @nodo_bp.route('/nodos/<int:nodo_id>/sensores', methods=['GET'])
 def get_sensores_by_nodo(nodo_id):
+    """
+    Obtener los sensores de un nodo específico por ID.
+    """
     nodo = NodoData.query.filter_by(nodo_id=nodo_id).first()
     if not nodo:
         return jsonify({"error": "Nodo no encontrado"}), 404
 
-    return jsonify({"sensor": nodo.sensor}), 200
+    return jsonify({"sensores": nodo.dispositivos}), 200
 
-
-#Agregar medidas a un sensor
 
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas', methods=['PUT'])
 def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
@@ -161,8 +162,8 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
 
         # Validar las medidas recibidas
         medidas = data.get('medidas')
-        if not medidas:
-            return jsonify({"error": "Se deben proporcionar medidas"}), 400
+        if not medidas or not isinstance(medidas, list):
+            return jsonify({"error": "Se deben proporcionar medidas en formato de lista"}), 400
 
         # Buscar el nodo por su ID
         nodo = NodoData.query.get(nodo_id)
@@ -174,16 +175,27 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
         if not dispositivo:
             return jsonify({"error": "Dispositivo no encontrado"}), 404
 
-        print(dispositivo)
-
         # Buscar el sensor dentro del dispositivo
         sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
         if not sensor:
             return jsonify({"error": "Sensor no encontrado"}), 404
 
+        # Inicializar el contador de IDs si no existe
+        if 'ultimo_id' not in sensor:
+            sensor['ultimo_id'] = 0  # Iniciar el contador desde 0
+
         # Agregar las medidas al sensor
         if 'medidas' not in sensor:
             sensor['medidas'] = []  # Si no tiene medidas, inicializarlo como una lista vacía
+
+        # Generar un ID entero incremental para cada medida y agregar fecha de creación
+        for medida in medidas:
+            if not isinstance(medida, dict) or 'unidad' not in medida:
+                return jsonify({"error": "Cada medida debe tener una 'unidad' "}), 400
+
+            sensor['ultimo_id'] += 1  # Incrementar el contador
+            medida['medida_id'] = sensor['ultimo_id']  # Asignar el ID incremental
+            medida['fecha_creacion'] = datetime.utcnow().isoformat()  # Agregar fecha de creación
 
         # Agregar las nuevas medidas al sensor
         sensor['medidas'].extend(medidas)
@@ -198,14 +210,10 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
-
-
+        return jsonify({"error": f"Error inesperado: {str(e)}"}), 400
 
     
 # Obtener las medidas de un sensor específico

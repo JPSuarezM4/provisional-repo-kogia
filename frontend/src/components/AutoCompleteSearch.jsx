@@ -1,36 +1,31 @@
+import { useState } from 'react';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
-
 import { Box, Card } from '@mui/material';
 
-export default function ComboBox() {
-return (
-    <Box
-        sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 2,
-        }}>
-        <Box 
-        component={Card}>    
-                <Autocomplete
-                disablePortal   
-                options={[]}
-                sx={{ width: 300 }}
-                renderInput={(params) => <TextField {...params} label="Nodos" />}
-                />
-        </Box>
-        <Box 
-        component={Card}>    
-                <Autocomplete
-                disablePortal
-                options={[]}
-                sx={{ width: 300 }}
-                renderInput={(params) => <TextField {...params} label="Dispositivos" />}
-                />
-        </Box>
-    </Box>
+export default function SearchBar() {
+    const [searchQuery, setSearchQuery] = useState('');
 
-    
-);
+    const handleSearchQueryChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
+
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Box component={Card} sx={{ flexGrow: 1 }}>
+                <TextField
+                    label="Buscar"
+                    variant="outlined"
+                    fullWidth
+                    value={searchQuery}
+                    onChange={handleSearchQueryChange}
+                />
+            </Box>
+        </Box>
+    );
 }

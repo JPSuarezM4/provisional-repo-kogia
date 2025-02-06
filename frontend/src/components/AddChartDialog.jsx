@@ -14,90 +14,89 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { Sensors as SensorsIcon } from '@mui/icons-material';
+import AddChartIcon from '@mui/icons-material/AddChart';
+import SensorChart from './AddChart'; // Asegúrate de importar el componente SensorChart
 
-export default function AddSensorDialog() {
+export default function AddChartDialog() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    suscriptor_id: '',
-    nombre_nodo: '',
     nodo_id: '',
+    nombre_nodo: '',
     dispositivos: [],
-  });
-  const [newSensor, setNewSensor] = useState({
-    sensor_id: "",
-    nombre: "",
-    tipo: "",
+    dispositivo_id: '',
+    sensores: [],
+    sensor_id: '',
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const { nodos, fetchNodos } = useContext(NodosContext);
+  const { nodos } = useContext(NodosContext);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleNewSensorChange = (field, value) => {
-    setNewSensor((prev) => ({
-      ...prev,
-      [field]: field === 'sensor_id'
-        ? (value === '' ? '' : Number.isInteger(Number(value)) ? parseInt(value, 10) : prev.sensor_id)
-        : value,
-    }));
-  };
-
   const handleNodoChange = (nodo_id) => {
     const selectedNodo = nodos.find((nodo) => nodo.nodo_id === nodo_id);
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
       nodo_id: parseInt(nodo_id, 10),
       nombre_nodo: selectedNodo ? selectedNodo.nombre_nodo : '',
-      dispositivos: selectedNodo ? selectedNodo.dispositivos : [],
-    }));
+      dispositivos: selectedNodo?.dispositivos || [],
+      dispositivo_id: '',
+      sensores: [],
+      sensor_id: '',
+    });
   };
 
   const handleDispositivoChange = (dispositivo_id) => {
     const selectedNodo = nodos.find((nodo) => nodo.nodo_id === formData.nodo_id);
-    const selectedDispositivo = selectedNodo.dispositivos.find((dispositivo) => dispositivo.dispositivo_id === dispositivo_id);
+    if (!selectedNodo) {
+      console.warn("⚠️ Nodo no encontrado");
+      return;
+    }
+
+    const selectedDispositivo = selectedNodo.dispositivos?.find(
+      (dispositivo) => dispositivo.dispositivo_id === parseInt(dispositivo_id, 10)
+    );
+
+    if (!selectedDispositivo) {
+      console.warn("⚠️ Dispositivo no encontrado");
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      dispositivos: selectedNodo ? selectedNodo.dispositivos : [],
+      dispositivos: selectedNodo.dispositivos || [],
       dispositivo_id: parseInt(dispositivo_id, 10),
-      nombre_dispositivo: selectedDispositivo ? selectedDispositivo.nombre : '',
+      sensores: selectedDispositivo.sensor ? [...selectedDispositivo.sensor] : [],
+      sensor_id: '',
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/api/nodos/${formData.nodo_id}/dispositivos/${formData.dispositivo_id}/sensor`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sensor: newSensor }),
-      });
-
-      if (!response.ok) throw new Error('Error al guardar el sensor');
-      const data = await response.json();
-      console.log('Sensor agregado con éxito:', data);
-      fetchNodos(); // Actualizar la lista de nodos en el contexto
-      handleClose();
-      setSnackbar({ open: true, message: 'Sensor agregado con éxito', severity: 'success' });
-    } catch (error) {
-      console.error('Error:', error);
-      setSnackbar({ open: true, message: 'Error al agregar el sensor', severity: 'error' });
-    }
+  const handleSensorChange = (sensor_id) => {
+    setFormData((prev) => ({
+      ...prev,
+      sensor_id: parseInt(sensor_id, 10),
+    }));
   };
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const [showChart, setShowChart] = useState(false);
+
+  const handleCreateChart = () => {
+    setShowChart(true);
+    setSnackbar({ open: true, message: 'Gráfico creado exitosamente', severity: 'success' });
+  };
+
   return (
     <Box>
-      <Tooltip title="Agregar Nuevo Sensor">
+      <Tooltip title="Agregar Nuevo Grafico">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <SensorsIcon />
+          <AddChartIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Agregar Nuevo Sensor</DialogTitle>
+        <DialogTitle>Crear Nuevo Gráfico</DialogTitle>
         <DialogContent>
           <TextField
             select
@@ -110,13 +109,14 @@ export default function AddSensorDialog() {
             {nodos.length > 0 ? (
               nodos.map((nodo) => (
                 <MenuItem key={nodo.nodo_id} value={nodo.nodo_id}>
-                  {nodo.nodo_id}, {nodo.nombre_nodo}
+                  {nodo.nombre_nodo}
                 </MenuItem>
               ))
             ) : (
               <MenuItem disabled>Cargando nodos...</MenuItem>
             )}
           </TextField>
+
           <TextField
             select
             label="Seleccionar Dispositivo"
@@ -129,44 +129,50 @@ export default function AddSensorDialog() {
             {formData.nodo_id && formData.dispositivos.length > 0 ? (
               formData.dispositivos.map((dispositivo) => (
                 <MenuItem key={dispositivo.dispositivo_id} value={dispositivo.dispositivo_id}>
-                  {dispositivo.dispositivo_id}, {dispositivo.nombre}
+                  {dispositivo.nombre}
                 </MenuItem>
               ))
             ) : (
               <MenuItem disabled>Selecciona un nodo primero</MenuItem>
             )}
           </TextField>
+
           <TextField
-            label="ID del Sensor"
-            value={newSensor.sensor_id || ""} // Valor por defecto si es undefined
-            onChange={(e) => handleNewSensorChange('sensor_id', e.target.value)}
+            select
+            label="Seleccionar Sensor"
+            value={formData.sensor_id || ""}
+            onChange={(e) => handleSensorChange(e.target.value)}
             fullWidth
             margin="normal"
-          />
-          <TextField
-            label="Nombre del Sensor"
-            value={newSensor.nombre}
-            onChange={(e) => handleNewSensorChange('nombre', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Tipo del Sensor"
-            value={newSensor.tipo}
-            onChange={(e) => handleNewSensorChange('tipo', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
+            disabled={!formData.dispositivo_id}
+          >
+            {formData.dispositivo_id && formData.sensores.length > 0 ? (
+              formData.sensores.map((sensor) => (
+                <MenuItem key={sensor.sensor_id} value={sensor.sensor_id}>
+                  {sensor.nombre}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>Selecciona un dispositivo primero</MenuItem>
+            )}
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
-            Guardar
+          <Button variant="contained" color="primary" onClick={handleCreateChart}>
+            Crear Gráfico
           </Button>
         </DialogActions>
       </Dialog>
+      {showChart && formData.nodo_id && formData.dispositivo_id && formData.sensor_id && (
+        <SensorChart 
+          nodo_id={String(formData.nodo_id)} 
+          dispositivo_id={String(formData.dispositivo_id)} 
+          sensor_id={String(formData.sensor_id)} 
+        />
+      )}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

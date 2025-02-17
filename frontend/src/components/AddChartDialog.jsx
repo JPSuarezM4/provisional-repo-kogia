@@ -2,7 +2,6 @@ import { useState, useContext } from 'react';
 import { NodosContext } from '../context/NodosContext';
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -13,11 +12,24 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  Drawer
 } from '@mui/material';
 import AddChartIcon from '@mui/icons-material/AddChart';
-import SensorChart from './AddChart'; // Asegúrate de importar el componente SensorChart
+import SensorChart from './AddChart';
+
+
+
+
+  
+
+
 
 export default function AddChartDialog() {
+
+  const toggleDrawer = (newOpen) => () => {
+    setOpen(newOpen);
+  };
+
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nodo_id: '',
@@ -26,6 +38,8 @@ export default function AddChartDialog() {
     dispositivo_id: '',
     sensores: [],
     sensor_id: '',
+    medidas: [],
+    medida_id: '',
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const { nodos } = useContext(NodosContext);
@@ -42,6 +56,8 @@ export default function AddChartDialog() {
       dispositivo_id: '',
       sensores: [],
       sensor_id: '',
+      medidas: [],
+      medida_id: '',
     });
   };
 
@@ -60,6 +76,7 @@ export default function AddChartDialog() {
       console.warn("⚠️ Dispositivo no encontrado");
       return;
     }
+    
 
     setFormData((prev) => ({
       ...prev,
@@ -71,9 +88,37 @@ export default function AddChartDialog() {
   };
 
   const handleSensorChange = (sensor_id) => {
+    const selectedDispositivo = formData.dispositivos.find(
+      (dispositivo) => dispositivo.dispositivo_id === formData.dispositivo_id
+    );
+  
+    if (!selectedDispositivo) {
+      console.warn("⚠️ Dispositivo no encontrado");
+      return;
+    }
+  
+    const selectedSensor = selectedDispositivo.sensor.find(
+      (sensor) => sensor.sensor_id === parseInt(sensor_id, 10)
+    );
+  
+    if (!selectedSensor) {
+      console.warn("⚠️ Sensor no encontrado");
+      return;
+    }
+  
     setFormData((prev) => ({
       ...prev,
       sensor_id: parseInt(sensor_id, 10),
+      medidas: selectedSensor.medidas || [],
+      medida_id: '',
+    }));
+  };
+  
+
+  const handleMedidaChange = (medida_id) => {
+    setFormData((prev) => ({
+      ...prev,
+      medida_id: parseInt(medida_id, 10),
     }));
   };
 
@@ -90,13 +135,13 @@ export default function AddChartDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar Nuevo Grafico">
+      <Tooltip title="Agregar nuevo grafico">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
           <AddChartIcon />
         </Fab>
       </Tooltip>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Crear Nuevo Gráfico</DialogTitle>
+      <Drawer open={open} anchor='bottom' onClose={toggleDrawer(false)}>
+        <DialogTitle>Crear nuevo gráfico</DialogTitle>
         <DialogContent>
           <TextField
             select
@@ -156,16 +201,35 @@ export default function AddChartDialog() {
               <MenuItem disabled>Selecciona un dispositivo primero</MenuItem>
             )}
           </TextField>
+          <TextField
+            select
+            label="Seleccionar medida"
+            value={formData.medida_id || ""}
+            onChange={(e) => handleMedidaChange(e.target.value)}
+            fullWidth
+            margin="normal"
+            disabled={!formData.sensor_id}
+          >
+            {formData.sensor_id && formData.medidas.length > 0 ? (
+              formData.medidas.map((medida) => (
+                <MenuItem key={medida.medida_id} value={medida.medida_id}>
+                  {medida.unidad}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>Selecciona un sensor primero</MenuItem>
+            )}
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">
             Cancelar
           </Button>
-          <Button variant="contained" color="primary" onClick={handleCreateChart}>
+          <Button variant="contained" color="primary" onClick={() => { handleCreateChart(); toggleDrawer(false)(); }}>
             Crear Gráfico
           </Button>
         </DialogActions>
-      </Dialog>
+      </Drawer>
       {showChart && formData.nodo_id && formData.dispositivo_id && formData.sensor_id && (
         <SensorChart 
           nodo_id={String(formData.nodo_id)} 

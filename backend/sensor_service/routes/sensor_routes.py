@@ -39,6 +39,9 @@ def create_nodo():
             suscriptor_id=validated_nodo['suscriptor_id'],
             dispositivos=validated_nodo['dispositivos'],  # Guardamos sensores como JSON
             nombre_nodo=validated_nodo['nombre_nodo'],
+            descripcion_nodo=validated_nodo['descripcion_nodo'],
+            longitud=validated_nodo['longitud'],
+            latitud=validated_nodo['latitud']
         )
         db.session.add(new_nodo)
         db.session.commit()

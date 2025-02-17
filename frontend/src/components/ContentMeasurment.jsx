@@ -64,10 +64,16 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   
   const handleAddMeasurement = async () => {
     if (!newUnit) return;
+
+    // Verificar si la medida ya existe
+    if (measurements.some(measurement => measurement.unidad === newUnit)) {
+      setError(`La medida ${newUnit} ya existe.`);
+      return;
+    }
   
     try {
       // Obtener la lista actual antes de agregar la nueva medida
-      const updatedMeasurements = [...measurements, { unidad: newUnit }];
+      const updatedMeasurements = [...measurements, { unidad: newUnit, valor: null }];
   
       // Enviar la lista actualizada al backend
       await axios.put(
@@ -78,6 +84,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
       // **Actualizar el estado sin volver a hacer una petición extra**
       setMeasurements(updatedMeasurements);
       setNewUnit('');
+      setError(null);
     } catch (error) {
       console.error('Error al agregar la medida:', error);
       setError(error.response?.data || error.message);

@@ -16,6 +16,9 @@ class NodoData(db.Model):
    # nodo_id = db.Column(db.Integer, nullable=False, unique=True)
     suscriptor_id = db.Column(db.Integer, nullable=False)
     nombre_nodo = db.Column(db.String(100), nullable=False)
+    descripcion_nodo = db.Column(db.String(100), nullable=False)
+    longitud = db.Column(db.String(100), nullable=False)
+    latitud = db.Column(db.String(100), nullable=False)
     dispositivos = db.Column(JSON, nullable=False)
     
    # sensores = db.Column(JSON, nullable=False)  # Aquí almacenamos los sensores y medidas como JSON
@@ -29,6 +32,9 @@ class NodoData(db.Model):
             'suscriptor_id': self.suscriptor_id,
             'dispositivos': self.dispositivos,
             'nombre_nodo': self.nombre_nodo,
+            'descripcion_nodo': self.descripcion_nodo,
+            'longitud': self.longitud,
+            'latitud': self.latitud,
           #  'sensores': self.sensores
         }
 

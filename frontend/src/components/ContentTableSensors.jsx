@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,8 +11,8 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { Assessment as MeasuremenetIcon } from '@mui/icons-material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+//import EditIcon from '@mui/icons-material/Edit';
+//import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -21,7 +21,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField'; // Importar TextField para la barra de búsqueda
+import TextField from '@mui/material/TextField';
 import AddSensorDialog from './ButtonAddSensor';
 import { NodosContext } from '../context/NodosContext';
 import ContentMeasurement from './ContentMeasurment.jsx';
@@ -65,8 +65,8 @@ export default function DevicesTable() {
           console.log('Sensor:', sensor); // Para ver la estructura del sensor
           return {
             ...sensor,
-            dispositivoNombre: dispositivo.nombre,
-            nodoNombre: nodo.nombre_nodo,
+            dispositivo: dispositivo.nombre,
+            nodo: nodo.nombre_nodo,
             nodo_id: nodo.nodo_id || nodo.id, // Ajusta esto según tu estructura de datos
             dispositivo_id: dispositivo.dispositivo_id || dispositivo.id // Ajusta esto según tu estructura de datos
           };
@@ -102,9 +102,9 @@ export default function DevicesTable() {
     setSelectedSensor(null);
   };
 
-  const handleEdit = (sensor) => {
+  {/* const handleEdit = (sensor) => {
     console.log('Editar sensor:', sensor);
-  };
+  }; */}
 
   const handleOpenMeasurementDialog = (sensor) => {
     console.log('Sensor seleccionado:', sensor); // Para verificar qué datos tenemos
@@ -114,7 +114,7 @@ export default function DevicesTable() {
 
   const handleCloseMeasurementDialog = () => setOpenMeasurementDialog(false);
 
-  const handleDelete = (sensor) => {
+ {/*  const handleDelete = (sensor) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar el sensor ${sensor.nombre}?`)) {
       axios
         .delete(`http://127.0.0.1:5000/api/sensores/${sensor.sensor_id}`)
@@ -128,37 +128,50 @@ export default function DevicesTable() {
           console.error('Error al eliminar el sensor:', error);
         });
     }
-  };
+  }; */}
 
-  const columns =
+  {/*const columns =
     sensors.length > 0
       ? Object.keys(sensors[0])
           .filter((key) => key !== 'tipo' && key !== 'medidas') // Filtrar la columna "medidas"
           .filter((key) => key !== 'tipo' && key !== 'ultimo_id')
+          .filter((key) => key !== 'dispositivo_id')
+          .filter((key) => key !== 'nodo_id')
+          .filter((key) => key !== 'sensor_id')
+          .filter((key) => key !== 'tipo' && key !== 'fabricante')
           .map((key) => ({
             id: key,
-            label: key.charAt(0).toUpperCase() + key.slice(1),
+            label: key === 'nombre' ? 'Sensor' : key.charAt(0).toUpperCase() + key.slice(1),
             minWidth: 100,
             align: 'center',
           }))
-      : [];
+      : []; */}
+
+    const columns = [
+      { id: 'nodo', label: 'Nodo', minWidth: 100, align: 'center' },
+      { id: 'dispositivo', label: 'Dispositivo', minWidth: 100, align: 'center' },
+      { id: 'nombre', label: 'Sensor', minWidth: 100, align: 'center' },
+    ];
 
   // Filtrar los sensores basados en el término de búsqueda
   const filteredSensors = sensors.filter(sensor =>
-    sensor.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    sensor.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sensor.nodo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sensor.dispositivo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2 }}
+        sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: 2 }}
       >
         <Typography variant="h6" component="div">
-          Sensores
+         {/*Sensores*/}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexGrow: 1 }}>
           <TextField
-            label="Buscar Sensor"
+            label="Buscar"
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -172,7 +185,7 @@ export default function DevicesTable() {
       ) : (
         <>
           <TableContainer sx={{ maxHeight: 440 }}>
-            <Table stickyHeader aria-label="sticky table">
+            <Table stickyHeader aria-label="sticky table" sx={{ minWidth: 1000 }}>
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
@@ -199,27 +212,29 @@ export default function DevicesTable() {
                           {typeof sensor[column.id] === 'object' ? JSON.stringify(sensor[column.id]) : sensor[column.id]}
                         </TableCell>
                       ))}
-                      <TableCell align="right">
-                        <Tooltip title="Ver Detalles">
-                          <IconButton onClick={() => handleOpenDialog(sensor)}>
-                            <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Editar">
-                          <IconButton onClick={() => handleEdit(sensor)}>
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                          <IconButton onClick={() => handleDelete(sensor)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Ver Medidas del Sensor">
-                          <IconButton onClick={() => handleOpenMeasurementDialog(sensor)}>
-                            <MeasuremenetIcon />
-                          </IconButton>
-                        </Tooltip>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <Tooltip title="Ver detalles">
+                            <IconButton onClick={() => handleOpenDialog(sensor)}>
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                          {/*<Tooltip title="Editar">
+                            <IconButton onClick={() => handleEdit(sensor)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Eliminar">
+                            <IconButton onClick={() => handleDelete(sensor)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>*/}
+                          <Tooltip title="Ver medidas del Sensor">
+                            <IconButton onClick={() => handleOpenMeasurementDialog(sensor)}>
+                              <MeasuremenetIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -244,19 +259,16 @@ export default function DevicesTable() {
           {selectedSensor ? (
             <div>
               <p>
-                <strong>ID:</strong> {selectedSensor.sensor_id}
-              </p>
-              <p>
-                <strong>Nombre:</strong> {selectedSensor.nombre}
+                <strong>Sensor:</strong> {selectedSensor.nombre}
               </p>
               <p>
                 <strong>Tipo:</strong> {selectedSensor.tipo}
               </p>
               <p>
-                <strong>Dispositivo:</strong> {selectedSensor.dispositivoNombre}
+                <strong>Dispositivo:</strong> {selectedSensor.dispositivo}
               </p>
               <p>
-                <strong>Nodo:</strong> {selectedSensor.nodoNombre}
+                <strong>Nodo:</strong> {selectedSensor.nodo}
               </p>
             </div>
           ) : (

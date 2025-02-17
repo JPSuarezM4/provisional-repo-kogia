@@ -91,17 +91,17 @@ export default function AddSensorDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar Nuevo Sensor">
+      <Tooltip title="Agregar nuevo sensor">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
           <SensorsIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Agregar Nuevo Sensor</DialogTitle>
+        <DialogTitle>Agregar nuevo sensor</DialogTitle>
         <DialogContent>
           <TextField
             select
-            label="Seleccionar Nodo"
+            label="Seleccionar nodo"
             value={formData.nodo_id}
             onChange={(e) => handleNodoChange(e.target.value)}
             fullWidth
@@ -119,7 +119,7 @@ export default function AddSensorDialog() {
           </TextField>
           <TextField
             select
-            label="Seleccionar Dispositivo"
+            label="Seleccionar dispositivo"
             value={formData.dispositivo_id || ""}
             onChange={(e) => handleDispositivoChange(e.target.value)}
             fullWidth
@@ -137,21 +137,28 @@ export default function AddSensorDialog() {
             )}
           </TextField>
           <TextField
-            label="ID del Sensor"
+            label="ID del sensor"
             value={newSensor.sensor_id || ""} // Valor por defecto si es undefined
             onChange={(e) => handleNewSensorChange('sensor_id', e.target.value)}
             fullWidth
             margin="normal"
           />
           <TextField
-            label="Nombre del Sensor"
+            label="Nombre del sensor"
             value={newSensor.nombre}
             onChange={(e) => handleNewSensorChange('nombre', e.target.value)}
             fullWidth
             margin="normal"
           />
           <TextField
-            label="Tipo del Sensor"
+            label="Nombre del fabricante"
+            value={newSensor.fabricante}
+            onChange={(e) => handleNewSensorChange('fabricante', e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Tipo del sensor"
             value={newSensor.tipo}
             onChange={(e) => handleNewSensorChange('tipo', e.target.value)}
             fullWidth

@@ -13,6 +13,13 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from '@mui/material';
 import { Sensors as SensorsIcon } from '@mui/icons-material';
 
@@ -28,12 +35,23 @@ export default function AddSensorDialog() {
     sensor_id: "",
     nombre: "",
     tipo: "",
+    fabricante: "",
   });
+  const [sensorsList, setSensorsList] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const { nodos, fetchNodos } = useContext(NodosContext);
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setSensorsList([]);
+    setNewSensor({
+      sensor_id: "",
+      nombre: "",
+      tipo: "",
+      fabricante: "",
+    });
+  };
 
   const handleNewSensorChange = (field, value) => {
     setNewSensor((prev) => ({
@@ -52,6 +70,7 @@ export default function AddSensorDialog() {
       nombre_nodo: selectedNodo ? selectedNodo.nombre_nodo : '',
       dispositivos: selectedNodo ? selectedNodo.dispositivos : [],
     }));
+    setSensorsList([]); // Limpiar la lista de sensores al cambiar de nodo
   };
 
   const handleDispositivoChange = (dispositivo_id) => {
@@ -65,23 +84,33 @@ export default function AddSensorDialog() {
     }));
   };
 
+  const handleAddSensor = () => {
+    setSensorsList((prev) => [...prev, newSensor]);
+    setNewSensor({
+      sensor_id: "",
+      nombre: "",
+      tipo: "",
+      fabricante: "",
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       const response = await fetch(`http://127.0.0.1:5000/api/nodos/${formData.nodo_id}/dispositivos/${formData.dispositivo_id}/sensor`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sensor: newSensor }),
+        body: JSON.stringify({ sensors: sensorsList }),
       });
 
-      if (!response.ok) throw new Error('Error al guardar el sensor');
+      if (!response.ok) throw new Error('Error al guardar los sensores');
       const data = await response.json();
-      console.log('Sensor agregado con éxito:', data);
+      console.log('Sensores agregados con éxito:', data);
       fetchNodos(); // Actualizar la lista de nodos en el contexto
       handleClose();
-      setSnackbar({ open: true, message: 'Sensor agregado con éxito', severity: 'success' });
+      setSnackbar({ open: true, message: 'Sensores agregados con éxito', severity: 'success' });
     } catch (error) {
       console.error('Error:', error);
-      setSnackbar({ open: true, message: 'Error al agregar el sensor', severity: 'error' });
+      setSnackbar({ open: true, message: 'Error al agregar los sensores', severity: 'error' });
     }
   };
 
@@ -164,6 +193,31 @@ export default function AddSensorDialog() {
             fullWidth
             margin="normal"
           />
+          <Button onClick={handleAddSensor} variant="contained" color="primary" sx={{ mt: 2 }}>
+            Agregar Sensor
+          </Button>
+          <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Fabricante</TableCell>
+                  <TableCell>Tipo</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sensorsList.map((sensor, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{sensor.sensor_id}</TableCell>
+                    <TableCell>{sensor.nombre}</TableCell>
+                    <TableCell>{sensor.fabricante}</TableCell>
+                    <TableCell>{sensor.tipo}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">

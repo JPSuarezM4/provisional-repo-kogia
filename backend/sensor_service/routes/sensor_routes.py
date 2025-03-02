@@ -217,8 +217,42 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
 
     except Exception as e:
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 400
+# Obtener una medida específica de un sensor
+@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas/<int:medida_id>', methods=['GET'])
+def get_medida_by_id(nodo_id, dispositivo_id, sensor_id, medida_id):
+    """
+    Obtener una medida específica de un sensor dentro de un dispositivo en un nodo.
+    """
+    try:
+        # Buscar el nodo por su ID
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
 
+        # Buscar el dispositivo dentro del nodo
+        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        if not dispositivo:
+            return jsonify({"error": "Dispositivo no encontrado"}), 404
+
+        # Buscar el sensor dentro del dispositivo
+        sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+
+        # Buscar la medida dentro del sensor
+        medida = next((m for m in sensor.get('medidas', []) if m['medida_id'] == medida_id), None)
+        if not medida:
+            return jsonify({"error": "Medida no encontrada"}), 404
+
+        return jsonify({"medida": medida}), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
     
+
 # Obtener las medidas de un sensor específico
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas', methods=['GET'])
 def get_medidas_by_sensor(nodo_id, dispositivo_id, sensor_id):
@@ -277,21 +311,20 @@ def delete_nodo(nodo_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-    
-# Agregar un sensor a un dispositivo específico en un nodo
+ 
+# Agregar múltiples sensores a un dispositivo específico en un nodo
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor', methods=['PUT'])
-def add_sensor_to_dispositivo(nodo_id, dispositivo_id):
+def add_sensors_to_dispositivo(nodo_id, dispositivo_id):
     data = request.get_json()
     
     try:
         # Convertir datetime a ISO 8601 en el JSON recibido
         convert_datetime_to_isoformat(data)
 
-        # Validar el sensor recibido
-        sensor_data = data.get('sensor')
-        if not sensor_data:
-            return jsonify({"error": "Se debe proporcionar un sensor"}), 400
+        # Validar los sensores recibidos
+        sensors_data = data.get('sensors')
+        if not sensors_data or not isinstance(sensors_data, list):
+            return jsonify({"error": "Se debe proporcionar una lista de sensores"}), 400
         
         # Buscar el nodo por su ID
         nodo = NodoData.query.get(nodo_id)
@@ -303,17 +336,18 @@ def add_sensor_to_dispositivo(nodo_id, dispositivo_id):
         if not dispositivo:
             return jsonify({"error": "Dispositivo no encontrado"}), 404
         
-        # Agregar el sensor al campo 'sensores' del dispositivo (si ya existe)
+        # Agregar los sensores al campo 'sensores' del dispositivo (si ya existe)
         if 'sensor' not in dispositivo:
             dispositivo['sensor'] = []
 
-        # Verificar que el sensor no exista ya en la lista (opcional)
+        # Verificar que los sensores no existan ya en la lista (opcional)
         existing_sensor_ids = [sensor['sensor_id'] for sensor in dispositivo['sensor']]
-        if sensor_data['sensor_id'] in existing_sensor_ids:
-            return jsonify({"error": "El sensor ya está agregado a este dispositivo"}), 400
+        for sensor_data in sensors_data:
+            if sensor_data['sensor_id'] in existing_sensor_ids:
+                return jsonify({"error": f"El sensor con ID {sensor_data['sensor_id']} ya está agregado a este dispositivo"}), 400
 
-        # Añadir el nuevo sensor
-        dispositivo['sensor'].append(sensor_data)
+        # Añadir los nuevos sensores
+        dispositivo['sensor'].extend(sensors_data)
 
         # Marcar la columna dispositivos como modificada
         flag_modified(nodo, "dispositivos")
@@ -321,7 +355,7 @@ def add_sensor_to_dispositivo(nodo_id, dispositivo_id):
         # Guardar los cambios en la base de datos
         db.session.commit()
 
-        return jsonify({"message": "Sensor agregado correctamente", "nodo": nodo.to_dict()}), 200
+        return jsonify({"message": "Sensores agregados correctamente", "nodo": nodo.to_dict()}), 200
 
     except SQLAlchemyError as e:
         db.session.rollback()

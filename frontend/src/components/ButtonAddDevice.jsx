@@ -125,13 +125,13 @@ export default function AddDeviceDialog() {
               <MenuItem disabled>Cargando nodos...</MenuItem>
             )}
           </TextField>
-          <TextField
+        {/*   <TextField
             label="ID del dispositivo"
             value={newDevice.dispositivo_id}
             onChange={(e) => handleNewDeviceChange('dispositivo_id', e.target.value)}
             fullWidth
             margin="normal"
-          />
+          /> */}
           <TextField
             label="Nombre del dispositivo"
             value={newDevice.nombre}

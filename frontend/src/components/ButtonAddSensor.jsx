@@ -166,13 +166,6 @@ export default function AddSensorDialog() {
             )}
           </TextField>
           <TextField
-            label="ID del sensor"
-            value={newSensor.sensor_id || ""} // Valor por defecto si es undefined
-            onChange={(e) => handleNewSensorChange('sensor_id', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
             label="Nombre del sensor"
             value={newSensor.nombre}
             onChange={(e) => handleNewSensorChange('nombre', e.target.value)}

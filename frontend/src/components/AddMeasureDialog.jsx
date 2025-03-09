@@ -107,7 +107,6 @@ export default function AddMeasureDialog({ open, onClose, onAddMeasure }) {
 
   const handleAdd = () => {
     onAddMeasure(formData);
-    setSnackbar({ open: true, message: 'Medida agregada con exito', severity: 'success' });
     onClose();
   };
 

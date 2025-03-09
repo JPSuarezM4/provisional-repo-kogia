@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Line } from "react-chartjs-2";
-import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
+import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Typography, Snackbar, Alert } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -24,7 +24,11 @@ SensorChart.propTypes = {
 export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida_id }) {
     const [data, setData] = useState([]);
     const [unidad, setUnidad] = useState("");
-    const [medidas, setMedidas] = useState([{ medida_id, sensor_id }]); // Estado para manejar múltiples medidas
+    const [medidas, setMedidas] = useState([{ nodo_id, dispositivo_id, sensor_id, medida_id }]); // Estado para manejar múltiples medidas
+    const [initialUnidad, setInitialUnidad] = useState(null); // Estado para guardar la unidad de la primera medida
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado para manejar la visibilidad del Snackbar
+    const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para manejar el mensaje del Snackbar
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Estado para manejar la severidad del Snackbar
     const chartRef = useRef(null);
     const [anchorEl, setAnchorEl] = useState(null); // Estado para el menú
     const open = Boolean(anchorEl);
@@ -35,19 +39,26 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
         if (nodo_id && dispositivo_id && sensor_id && medidas.length > 0) {
             const fetchData = async () => {
                 const allData = await Promise.all(
-                    medidas.map(async ({ medida_id, sensor_id }) => {
+                    medidas.map(async ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         // Obtener datos de InfluxDB
                         const responseInflux = await axios.get(`http://localhost:5050/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`);
                         const dataInflux = responseInflux.data.map((item) => ({
                             x: new Date(item.time),
                             y: item.valor,
-                            medida_id,
+                            nodo_id,
+                            dispositivo_id,
                             sensor_id,
+                            medida_id,
                         }));
 
                         // Obtener unidad de medida correspondiente desde el nuevo endpoint
                         const responseMedida = await axios.get(`http://127.0.0.1:5000/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`);
                         const unidadMedida = responseMedida.data.medida.unidad;
+
+                        // Guardar la unidad de la primera medida
+                        if (initialUnidad === null) {
+                            setInitialUnidad(unidadMedida);
+                        }
 
                         // Combinar datos de InfluxDB con unidad de medida
                         return dataInflux.map((item) => ({
@@ -63,7 +74,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
             };
             fetchData().catch((error) => console.error("Error fetching data:", error));
         }
-    }, [nodo_id, dispositivo_id, sensor_id, medidas, timeRange]);
+    }, [nodo_id, dispositivo_id, sensor_id, medidas, timeRange, initialUnidad]);
 
     const resetZoom = () => {
         if (chartRef.current) {
@@ -103,11 +114,30 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
         setIsDialogOpen(false);
     };
 
-    const handleAddMeasure = (newMedida) => {
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
+    const handleAddMeasure = async (newMedida) => {
         if (typeof newMedida === "object" && newMedida !== null) {
-            newMedida = { medida_id: newMedida.medida_id, sensor_id: newMedida.sensor_id }; // Crear un identificador único
+            newMedida = { nodo_id: newMedida.nodo_id, dispositivo_id: newMedida.dispositivo_id, sensor_id: newMedida.sensor_id, medida_id: newMedida.medida_id }; // Crear un identificador único
+
+            // Obtener unidad de medida correspondiente desde el nuevo endpoint
+            const responseMedida = await axios.get(`http://127.0.0.1:5000/api/nodos/${newMedida.nodo_id}/dispositivos/${newMedida.dispositivo_id}/sensor/${newMedida.sensor_id}/medidas/${newMedida.medida_id}`);
+            const unidadMedida = responseMedida.data.medida.unidad;
+
+            // Verificar que la nueva medida tenga la misma unidad que la inicial
+            if (initialUnidad !== null && unidadMedida !== initialUnidad) {
+                setSnackbarMessage(`La medida seleccionada tiene una unidad diferente (${unidadMedida}) a la unidad inicial (${initialUnidad}).`);
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                return;
+            }
         }
         setMedidas((prevMedidas) => [...prevMedidas, newMedida]);
+        setSnackbarMessage("Medida agregada con éxito.");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setIsDialogOpen(false);
     };
 
@@ -127,8 +157,8 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
 
     // Configuración de Chart.js
     const chartData = {
-        datasets: medidas.map(({ medida_id, sensor_id }, index) => {
-            const medidaData = data.filter((item) => item.medida_id === medida_id && item.sensor_id === sensor_id);
+        datasets: medidas.map(({ nodo_id, dispositivo_id, sensor_id, medida_id }, index) => {
+            const medidaData = data.filter((item) => item.nodo_id === nodo_id && item.dispositivo_id === dispositivo_id && item.sensor_id === sensor_id && item.medida_id === medida_id);
             const unidad = medidaData.length > 0 ? medidaData[0].unidad : '';
             return {
                 label: `Medida ${medida_id} (${unidad})`,
@@ -171,7 +201,15 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
         },
         plugins: {
             legend: { display: true },
-            tooltip: { enabled: true },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    label: function (context) {
+                        const { nodo_id, dispositivo_id, sensor_id, medida_id, y } = context.raw;
+                        return `Nodo: ${nodo_id}, Dispositivo: ${dispositivo_id}, Sensor: ${sensor_id}, Medida: ${medida_id}, Valor: ${y}`;
+                    },
+                },
+            },
             zoom: {
                 pan: {
                     enabled: true,
@@ -188,6 +226,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
 
     return (
         <div className="relative flex flex-col items-center w-full p-4" style={{ backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+
             {/* Menú de opciones */}
             <IconButton
                 aria-label="more"
@@ -244,6 +283,12 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
             </Tooltip>
 
             <AddMeasureDialog open={isDialogOpen} onClose={handleDialogClose} onAddMeasure={handleAddMeasure} />
+
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

@@ -16,9 +16,9 @@ sensor_service_url = "http://localhost:5000/api/nodos"
 
 # Configuración de InfluxDB
 INFLUX_URL = "https://us-east-1-1.aws.cloud2.influxdata.com" 
-INFLUX_TOKEN = "XYLpgorf1yuxC9piOTqvc_zFm9BpEICOv6un799P9dij5Xgc6IrIF66aM8kHpyoXrakry94G6Zty3n-v6es4jg=="
+INFLUX_TOKEN = "pUIq7NPMznh5n7mCo_ibwG6Ad3lFLGXvRC1NXN_kJZaBH3gQRFL89MjWKN-TtTAEhBTce1iGO6-i2D6VEVLP3A=="
 INFLUX_ORG = "3dcfd1ba132d8ffe" 
-INFLUX_BUCKET = "KOGIA_TEST2"
+INFLUX_BUCKET = "KOGIA_TEST4"
 client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
 
 @app.route("/migrar", methods=["GET"])

@@ -19,7 +19,7 @@ export default function SearchBar() {
         >
             <Box component={Card} sx={{ flexGrow: 1 }}>
                 <TextField
-                    label="Buscar"
+                    label="Buscar todo"
                     variant="outlined"
                     fullWidth
                     value={searchQuery}

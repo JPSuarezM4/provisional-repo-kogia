@@ -2,30 +2,32 @@ import { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { NodosContext } from '../context/NodosContext';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Button,
   TextField,
   MenuItem,
   Snackbar,
   Alert,
 } from '@mui/material';
 
-export default function AddChartDialog({ open, onClose, onAddChart }) {
+
+export default function AddMeasureDialog({ open, onClose, onAddMeasure }) {
   const [formData, setFormData] = useState({
     nodo_id: '',
     nombre_nodo: '',
     dispositivos: [],
     dispositivo_id: '',
     sensores: [],
-    sensor_id: '',
+    sensor_id: '', 
     medidas: [],
     medida_id: '',
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const { nodos } = useContext(NodosContext);
+
 
   const handleNodoChange = (nodo_id) => {
     const selectedNodo = nodos.find((nodo) => nodo.nodo_id === nodo_id);
@@ -46,7 +48,7 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
     if (!selectedNodo) {
       console.warn("⚠️ Nodo no encontrado");
     }
-    
+
     const selectedDispositivo = selectedNodo.dispositivos?.find(
       (dispositivo) => dispositivo.dispositivo_id === parseInt(dispositivo_id, 10)
     );
@@ -103,15 +105,15 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleCreateChart = () => {
-    onAddChart(formData);
-    setSnackbar({ open: true, message: 'Gráfico creado exitosamente', severity: 'success' });
+  const handleAdd = () => {
+    onAddMeasure(formData);
     onClose();
   };
 
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Crear nuevo gráfico</DialogTitle>
+      <DialogTitle>Agregar nueva medida</DialogTitle>
       <DialogContent>
         <TextField
           select
@@ -131,11 +133,10 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
             <MenuItem disabled>Cargando nodos...</MenuItem>
           )}
         </TextField>
-
         <TextField
           select
           label="Seleccionar Dispositivo"
-          value={formData.dispositivo_id || ""}
+          value={formData.dispositivo_id}
           onChange={(e) => handleDispositivoChange(e.target.value)}
           fullWidth
           margin="normal"
@@ -151,11 +152,10 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
             <MenuItem disabled>Selecciona un nodo primero</MenuItem>
           )}
         </TextField>
-
         <TextField
           select
           label="Seleccionar Sensor"
-          value={formData.sensor_id || ""}
+          value={formData.sensor_id}
           onChange={(e) => handleSensorChange(e.target.value)}
           fullWidth
           margin="normal"
@@ -173,8 +173,8 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
         </TextField>
         <TextField
           select
-          label="Seleccionar medida"
-          value={formData.medida_id || ""}
+          label="Seleccionar Medida"
+          value={formData.medida_id}
           onChange={(e) => handleMedidaChange(e.target.value)}
           fullWidth
           margin="normal"
@@ -195,8 +195,8 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
         <Button onClick={onClose} color="secondary">
           Cancelar
         </Button>
-        <Button variant="contained" color="primary" onClick={handleCreateChart}>
-          Crear Gráfico
+        <Button onClick={handleAdd} color="primary">
+          Agregar
         </Button>
       </DialogActions>
       <Snackbar
@@ -211,10 +211,10 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
       </Snackbar>
     </Dialog>
   );
-}
+};
 
-AddChartDialog.propTypes = {
+AddMeasureDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onAddChart: PropTypes.func.isRequired,
+  onAddMeasure: PropTypes.func.isRequired,
 };

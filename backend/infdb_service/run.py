@@ -16,9 +16,9 @@ sensor_service_url = "http://localhost:5000/api/nodos"
 
 # Configuración de InfluxDB
 INFLUX_URL = "https://us-east-1-1.aws.cloud2.influxdata.com" 
-INFLUX_TOKEN = "mmCDp_td18-04SKCy0hUT87gccu-hl52YL0SU0Dl-f_G-tSHrVv1S2KzEzQwIlnozYmpqhvrpDi16Uxxu4vCTQ=="
-INFLUX_ORG = "3dcfd1ba132d8ffe"
-INFLUX_BUCKET = "KOGIA_TEST_1"
+INFLUX_TOKEN = "pUIq7NPMznh5n7mCo_ibwG6Ad3lFLGXvRC1NXN_kJZaBH3gQRFL89MjWKN-TtTAEhBTce1iGO6-i2D6VEVLP3A=="
+INFLUX_ORG = "3dcfd1ba132d8ffe" 
+INFLUX_BUCKET = "KOGIA_TEST4"
 client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
 
 @app.route("/migrar", methods=["GET"])
@@ -43,11 +43,6 @@ def migrar_datos():
                     sensor_id = sensor["sensor_id"]
                     for medida in sensor["medidas"]:
                         medida_id = medida["medida_id"]
-                        fecha_creacion = medida["fecha_creacion"]
-                        
-                        timestamp = int(datetime.fromisoformat(fecha_creacion).replace(tzinfo=timezone.utc).timestamp() * 1e9)
-    
-                        print(f"Fecha original: {fecha_creacion}, Timestamp: {timestamp}")  # Depuración
 
                         punto = (
                             Point("mediciones_test_1")
@@ -55,10 +50,7 @@ def migrar_datos():
                             .tag("dispositivo_id", dispositivo_id)
                             .tag("sensor_id", sensor_id)
                             .tag("medida_id", medida_id)
-                            .tag("unidad", medida["unidad"])  # ✅ Ahora "unidad" es un tag
                             .field("valor", float(medida["valor"]))  # ✅ Solo los valores numéricos quedan en `_value`
-                            .field("fecha_creacion", fecha_creacion)
-                            .time(timestamp, write_precision="ns")  # ✅ Guardar el tiempo correctamente
                         )
 
                         write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=punto)
@@ -81,7 +73,7 @@ def get_data():
         sensor_id = request.args.get("sensor_id")
         medida_id = request.args.get("medida_id")
         rango = request.args.get("rango", "-1w")  # Rango de tiempo por defecto: última semana
-        measurement = request.args.get("measurement", "mediciones_test_1")  # Nuevo parámetro para el measurement con valor por defecto
+        measurement = request.args.get("measurement", "mediciones")  # Nuevo parámetro para el measurement con valor por defecto
 
         if not all([nodo_id, dispositivo_id, sensor_id, medida_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400
@@ -92,13 +84,13 @@ def get_data():
           |> range(start: {rango})
           |> filter(fn: (r) => 
               r["_measurement"] == "{measurement}" and
-              r["nodo_id"] == "{nodo_id}" and 
-              r["dispositivo_id"] == "{dispositivo_id}" and 
-              r["sensor_id"] == "{sensor_id}" and 
+              r["nodo_id"] == "{nodo_id}" and
+              r["dispositivo_id"] == "{dispositivo_id}" and
+              r["sensor_id"] == "{sensor_id}" and
               r["medida_id"] == "{medida_id}"
           )
           |> filter(fn: (r) => r["_field"] == "valor")  // ✅ Filtra solo valores numéricos
-          |> keep(columns: ["_time", "_value", "unidad", "fecha_creacion"])  // ✅ Mantiene unidad y fecha_creacion
+          |> keep(columns: ["_time", "_value"])  // ✅ Mantiene unidad y fecha_creacion
         '''
 
         # Ejecutar la consulta
@@ -114,15 +106,9 @@ def get_data():
                 except ValueError:
                     continue  # Omitir valores que no sean numéricos
 
-                # Obtener unidad y fecha_creacion de los tags
-                unidad = record.values.get("unidad")  # Si no existe, devolver "N/A"
-                fecha_creacion = record.values.get("fecha_creacion", record.get_time().isoformat())  # Usar _time si no existe
-
                 data.append({
                     "time": record.get_time().isoformat(),  # ✅ Fecha registrada por InfluxDB
-                    "fecha_creacion": fecha_creacion,  # ✅ Nueva fecha obtenida
                     "valor": value,
-                    "unidad": unidad  # ✅ Nueva unidad agregada
                 })
 
         return jsonify(data), 200
@@ -144,7 +130,7 @@ def get_all_data():
         dispositivo_id = request.args.get("dispositivo_id")
         sensor_id = request.args.get("sensor_id")
         rango = request.args.get("rango", "-1w")  # Rango de tiempo por defecto: última semana
-        measurement = request.args.get("measurement", "mediciones_test_1")  # Nuevo parámetro para el measurement con valor por defecto
+        measurement = request.args.get("measurement", "mediciones")  # Nuevo parámetro para el measurement con valor por defecto
 
         if not all([nodo_id, dispositivo_id, sensor_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400
@@ -155,12 +141,12 @@ def get_all_data():
             |> range(start: {rango})
             |> filter(fn: (r) => 
                 r["_measurement"] == "{measurement}" and
-                r["nodo_id"] == "{nodo_id}" and 
-                r["dispositivo_id"] == "{dispositivo_id}" and 
+                r["nodo_id"] == "{nodo_id}" and
+                r["dispositivo_id"] == "{dispositivo_id}" and
                 r["sensor_id"] == "{sensor_id}"
             )
             |> filter(fn: (r) => r["_field"] == "valor")  // ✅ Filtra solo valores numéricos
-            |> keep(columns: ["_time", "_value", "unidad", "fecha_creacion", "medida_id"])  // ✅ Mantiene unidad, fecha_creacion y medida_id
+            |> keep(columns: ["_time", "_value", "medida_id"])  // ✅ Mantiene unidad, fecha_creacion y medida_id
         '''
 
         # Ejecutar la consulta
@@ -177,15 +163,11 @@ def get_all_data():
                     continue  # Omitir valores que no sean numéricos
 
                 # Obtener unidad, fecha_creacion y medida_id de los tags
-                unidad = record.values.get("unidad")  # Si no existe, devolver "N/A"
-                fecha_creacion = record.values.get("fecha_creacion", record.get_time().isoformat())  # Usar _time si no existe
                 medida_id = record.values.get("medida_id")
 
                 data.append({
                     "time": record.get_time().isoformat(),  # ✅ Fecha registrada por InfluxDB
-                    "fecha_creacion": fecha_creacion,  # ✅ Nueva fecha obtenida
                     "valor": value,
-                    "unidad": unidad,  # ✅ Nueva unidad agregada
                     "medida_id": medida_id  # ✅ Nueva medida_id agregada
                 })
 
@@ -233,6 +215,45 @@ def get_filters():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/insert_data", methods=["POST"])
+def insert_data():
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No se proporcionaron datos"}), 400
+
+        write_api = client.write_api()
+        for item in data:
+            nodo_id = item.get("nodo_id")
+            dispositivo_id = item.get("dispositivo_id")
+            sensor_id = item.get("sensor_id")
+            medida_id = item.get("medida_id")
+            valor = item.get("valor")
+
+            if not all([nodo_id, dispositivo_id, sensor_id, medida_id, valor]):
+                continue
+
+            punto = (
+                Point("mediciones_test_1")
+                .tag("nodo_id", nodo_id)
+                .tag("dispositivo_id", dispositivo_id)
+                .tag("sensor_id", sensor_id)
+                .tag("medida_id", medida_id)
+                .field("valor", float(valor))
+                
+            )
+
+            write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=punto)
+
+        return jsonify({"message": "Datos insertados correctamente"}), 201
+
+    except InfluxDBError as e:
+        return jsonify({"error": f"Error en la escritura a InfluxDB: {str(e)}"}), 500
+
+    except Exception as e:
+        return jsonify({"error": f"Error interno del servidor: {str(e)}"}), 500
 
 
 if __name__ == "__main__":

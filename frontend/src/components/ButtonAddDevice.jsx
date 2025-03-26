@@ -13,6 +13,16 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  //List,
+  //ListItem,
+ // ListItemText,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
 } from '@mui/material';
 import { Devices as DevicesIcon } from '@mui/icons-material';
 
@@ -55,14 +65,20 @@ export default function AddDeviceDialog() {
     }));
   };
 
+  const handleAddDevice = () => {
+    setFormData((prev) => ({
+      ...prev,
+      dispositivos: [...prev.dispositivos, newDevice],
+    }));
+    setNewDevice({ dispositivo_id: "", nombre: '', tipo: '' });
+  };
+
   const handleSubmit = async () => {
     try {
-      const updatedDispositivos = [...formData.dispositivos, newDevice];
-
       const response = await fetch(`http://127.0.0.1:5000/api/nodos/${formData.nodo_id}/dispositivos`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dispositivos: updatedDispositivos }),
+        body: JSON.stringify({ dispositivos: formData.dispositivos }),
       });
 
       if (!response.ok) throw new Error('Error al guardar el nodo');
@@ -70,10 +86,10 @@ export default function AddDeviceDialog() {
       console.log('Nodo actualizado con éxito:', data);
       fetchNodos(); // Actualizar la lista de nodos en el contexto
       handleClose();
-      setSnackbar({ open: true, message: 'Dispositivo agregado con éxito', severity: 'success' });
+      setSnackbar({ open: true, message: 'Dispositivos agregados con éxito', severity: 'success' });
     } catch (error) {
       console.error('Error:', error);
-      setSnackbar({ open: true, message: 'Error al agregar el dispositivo', severity: 'error' });
+      setSnackbar({ open: true, message: 'Error al agregar los dispositivos', severity: 'error' });
     }
   };
 
@@ -83,35 +99,14 @@ export default function AddDeviceDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar Nuevo Dispositivo">
+      <Tooltip title="Agregar nuevo dispositivo">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
           <DevicesIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Agregar Nuevo Dispositivo</DialogTitle>
+        <DialogTitle>Agregar nuevo dispositivo</DialogTitle>
         <DialogContent>
-          <TextField
-            label="ID del dispositivo"
-            value={newDevice.dispositivo_id}
-            onChange={(e) => handleNewDeviceChange('dispositivo_id', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Nombre del Dispositivo"
-            value={newDevice.nombre}
-            onChange={(e) => handleNewDeviceChange('nombre', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Tipo del Dispositivo"
-            value={newDevice.tipo}
-            onChange={(e) => handleNewDeviceChange('tipo', e.target.value)}
-            fullWidth
-            margin="normal"
-          />
           <TextField
             select
             label="Seleccionar Nodo"
@@ -130,13 +125,57 @@ export default function AddDeviceDialog() {
               <MenuItem disabled>Cargando nodos...</MenuItem>
             )}
           </TextField>
+        {/*   <TextField
+            label="ID del dispositivo"
+            value={newDevice.dispositivo_id}
+            onChange={(e) => handleNewDeviceChange('dispositivo_id', e.target.value)}
+            fullWidth
+            margin="normal"
+          /> */}
+          <TextField
+            label="Nombre del dispositivo"
+            value={newDevice.nombre}
+            onChange={(e) => handleNewDeviceChange('nombre', e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Tipo del dispositivo"
+            value={newDevice.tipo}
+            onChange={(e) => handleNewDeviceChange('tipo', e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID del dispositivo</TableCell>
+                  <TableCell>Nombre del dispositivo</TableCell>
+                  <TableCell>Tipo del dispositivo</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {formData.dispositivos.map((device, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{device.dispositivo_id}</TableCell>
+                    <TableCell>{device.nombre}</TableCell>
+                    <TableCell>{device.tipo}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">
             Cancelar
           </Button>
+          <Button onClick={handleAddDevice} variant="contained" color="primary">
+            Guardar y Crear Nuevo
+          </Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
-            Guardar
+            Finalizar
           </Button>
         </DialogActions>
       </Dialog>

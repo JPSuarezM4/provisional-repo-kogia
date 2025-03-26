@@ -7,4 +7,7 @@ class NodoDataSchema(Schema):
     suscriptor_id = fields.Int(required=True)
     dispositivos = fields.List(fields.Dict(), required=True)
     nombre_nodo = fields.Str(required=True, validate=Length(min=1))
+    descripcion_nodo = fields.Str(required=True, validate=Length(min=1))
+    longitud = fields.Str(required=True, validate=Length(min=1))
+    latitud = fields.Str(required=True, validate=Length(min=1))
     # sensores = fields.List(fields.Dict(), required=True)  # Validamos sensores como una lista de dicts

@@ -20,6 +20,9 @@ export default function AddNodoDialog() {
   const [formData, setFormData] = useState({
     suscriptor_id: '',
     nombre_nodo: '',
+    descripcion_nodo: '',
+    latitud: '',
+    longitud: '',
     dispositivos: [],
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: '' });
@@ -62,27 +65,50 @@ export default function AddNodoDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar Nuevo Nodo">
+      <Tooltip title="Agregar nuevo nodo">
         <Fab color="primary" aria-label="add" onClick={handleOpen}>
           <DeviceHubIcon />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Agregar Nuevo Nodo</DialogTitle>
+        <DialogTitle>Agregar nuevo nodo</DialogTitle>
         <DialogContent>
           <TextField
-            label="ID del Suscriptor"
+            label="ID del suscriptor"
             value={formData.suscriptor_id}
             onChange={(e) => handleInputChange('suscriptor_id', e.target.value)}
             fullWidth
             margin="normal"
           />
           <TextField
-            label="Nombre del Nodo"
+            label="Nombre del nodo"
             value={formData.nombre_nodo}
             onChange={(e) => handleInputChange('nombre_nodo', e.target.value)}
             fullWidth
             margin="normal"
+          />
+          <TextField
+            label="Descripción del nodo"
+            value={formData.descripcion_nodo}
+            onChange={(e) => handleInputChange('descripcion_nodo', e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Latitud"
+            value={formData.latitud}
+            onChange={(e) => handleInputChange('latitud', e.target.value)}
+            fullWidth
+            margin="normal"
+            inputProps={{ pattern: '[A-Za-z0-9]*' }}
+          />
+          <TextField
+            label="Longitud"
+            value={formData.longitud}
+            onChange={(e) => handleInputChange('longitud', e.target.value)}
+            fullWidth
+            margin="normal"
+            inputProps={{ pattern: '[A-Za-z0-9]*' }}
           />
         </DialogContent>
         <DialogActions>

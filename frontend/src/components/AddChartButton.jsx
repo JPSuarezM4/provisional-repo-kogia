@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+import PropTypes from 'prop-types';
+import { Fab, Tooltip } from '@mui/material';
 import AddChartIcon from '@mui/icons-material/AddChart';
 import AddChartDialog from './AddChartDialog';
 
-const AddChartButton = () => {
+const AddChartButton = ({ onAddChart }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleOpen = () => setIsOpen(true);
@@ -11,29 +12,21 @@ const AddChartButton = () => {
 
     return (
         <>
-            <Button
-                variant="contained" 
-                color="primary" 
-                onClick={handleOpen} 
-                sx={{ 
-                    marginBottom: 2,
-                    position: 'fixed',
-                    top: 10, // Ajusta este valor según sea necesario
-                    right: 10, // Ajusta este valor según sea necesario
-                    justifyContent: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                }}
-                startIcon={<AddChartIcon />}
-            />
+            <Tooltip title="Agregar nuevo gráfico">
+                <Fab color="primary" aria-label="add" onClick={handleOpen}>
+                    <AddChartIcon />
+                </Fab>
+            </Tooltip>
             <AddChartDialog 
                 open={isOpen} 
                 onClose={handleClose} 
-                onAddChart={(chartName) => console.log('Gráfico agregado:', chartName)} 
+                onAddChart={onAddChart} 
             />
         </>
     );
+};
+AddChartButton.propTypes = {
+    onAddChart: PropTypes.func.isRequired,
 };
 
 export default AddChartButton;

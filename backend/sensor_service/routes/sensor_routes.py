@@ -39,6 +39,9 @@ def create_nodo():
             suscriptor_id=validated_nodo['suscriptor_id'],
             dispositivos=validated_nodo['dispositivos'],  # Guardamos sensores como JSON
             nombre_nodo=validated_nodo['nombre_nodo'],
+            descripcion_nodo=validated_nodo['descripcion_nodo'],
+            longitud=validated_nodo['longitud'],
+            latitud=validated_nodo['latitud']
         )
         db.session.add(new_nodo)
         db.session.commit()
@@ -109,31 +112,53 @@ def get_nodo_by_id(nodo_id):
         return jsonify({"error": "Nodo no encontrado"}), 404
     return jsonify(nodo_schema.dump(nodo)), 200
 
-
+#Crear un nuevo dispositivo
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos', methods=['PUT'])
 def update_dispositivos(nodo_id):
     data = request.get_json()
-    
+
     try:
         # Buscar el nodo por su ID
         nodo = NodoData.query.get(nodo_id)
         if not nodo:
             return jsonify({"error": "Nodo no encontrado"}), 404
-        
-        # Actualizar la información de los dispositivos
-        nodo.dispositivos = data.get('dispositivos', nodo.dispositivos)
-        
+
+        # Obtener los dispositivos actuales (asegurando que sea una lista)
+        dispositivos = nodo.dispositivos or []
+
+        # Obtener el máximo ID actual de los dispositivos existentes
+        max_dispositivo_id = max(
+            [int(d['dispositivo_id']) for d in dispositivos if str(d.get('dispositivo_id')).isdigit()],
+            default=0
+        )
+
+        # Agregar los nuevos dispositivos asegurando incrementos de 1 en 1
+        nuevos_dispositivos = []
+        for dispositivo in data.get('dispositivos', []):
+            if not str(dispositivo.get('dispositivo_id')).isdigit():  # Verifica si el ID es válido
+                max_dispositivo_id += 1  # Incrementar en 1
+                dispositivo['dispositivo_id'] = max_dispositivo_id
+            
+            nuevos_dispositivos.append(dispositivo)
+
+        # Actualizar la lista de dispositivos
+        nodo.dispositivos.extend(nuevos_dispositivos)
+
+        # Marcar la columna dispositivos como modificada
+        flag_modified(nodo, "dispositivos")
+
         # Guardar los cambios en la base de datos
         db.session.commit()
-        
+
         return jsonify({"message": "Dispositivos actualizados correctamente", "nodo": nodo.to_dict()}), 200
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error en la base de datos: " + str(e)}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": "Error inesperado: " + str(e)}), 400
+
 
 
 # Obtener los sensores de un nodo
@@ -149,7 +174,11 @@ def get_sensores_by_nodo(nodo_id):
     return jsonify({"sensores": nodo.dispositivos}), 200
 
 
-@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas', methods=['PUT'])
+#Crear medidas para un sensor
+@nodo_bp.route(
+    '/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas', 
+    methods=['PUT']
+)
 def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
     """
     Agregar medidas a un sensor específico dentro de un dispositivo en un nodo.
@@ -161,7 +190,7 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
         convert_datetime_to_isoformat(data)
 
         # Validar las medidas recibidas
-        medidas = data.get('medidas')
+        medidas = data.get('medidas', [])
         if not medidas or not isinstance(medidas, list):
             return jsonify({"error": "Se deben proporcionar medidas en formato de lista"}), 400
 
@@ -171,31 +200,38 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
             return jsonify({"error": "Nodo no encontrado"}), 404
 
         # Buscar el dispositivo dentro del nodo
-        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        dispositivo = next(
+            (d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), 
+            None
+        )
         if not dispositivo:
             return jsonify({"error": "Dispositivo no encontrado"}), 404
 
         # Buscar el sensor dentro del dispositivo
-        sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
+        sensor = next(
+            (s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), 
+            None
+        )
         if not sensor:
             return jsonify({"error": "Sensor no encontrado"}), 404
 
-        # Inicializar el contador de IDs si no existe
-        if 'ultimo_id' not in sensor:
-            sensor['ultimo_id'] = 0  # Iniciar el contador desde 0
-
-        # Agregar las medidas al sensor
+        # Asegurar que la lista de medidas exista
         if 'medidas' not in sensor:
-            sensor['medidas'] = []  # Si no tiene medidas, inicializarlo como una lista vacía
+            sensor['medidas'] = []
 
-        # Generar un ID entero incremental para cada medida y agregar fecha de creación
+        # Obtener el `medida_id` máximo actual
+        max_medida_id = max(
+            [int(m.get('medida_id', 0)) for m in sensor['medidas'] if str(m.get('medida_id')).isdigit()],
+            default=0
+        )
+
+        # Agregar nuevas medidas con IDs autoincrementales
         for medida in medidas:
             if not isinstance(medida, dict) or 'unidad' not in medida:
-                return jsonify({"error": "Cada medida debe tener una 'unidad' "}), 400
+                return jsonify({"error": "Cada medida debe tener una 'unidad'"}), 400
 
-            sensor['ultimo_id'] += 1  # Incrementar el contador
-            medida['medida_id'] = sensor['ultimo_id']  # Asignar el ID incremental
-            medida['fecha_creacion'] = datetime.utcnow().isoformat()  # Agregar fecha de creación
+            max_medida_id += 1  # Incrementar el contador
+            medida['medida_id'] = max_medida_id  # Asignar el ID autoincremental
 
         # Agregar las nuevas medidas al sensor
         sensor['medidas'].extend(medidas)
@@ -212,10 +248,50 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
         db.session.rollback()
         return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
 
+    except ValueError as e:
+        return jsonify({"error": f"Error de valor: {str(e)}"}), 400
+
     except Exception as e:
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 400
 
+
+
+# Obtener una medida específica de un sensor
+@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas/<int:medida_id>', methods=['GET'])
+def get_medida_by_id(nodo_id, dispositivo_id, sensor_id, medida_id):
+    """
+    Obtener una medida específica de un sensor dentro de un dispositivo en un nodo.
+    """
+    try:
+        # Buscar el nodo por su ID
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
+
+        # Buscar el dispositivo dentro del nodo
+        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        if not dispositivo:
+            return jsonify({"error": "Dispositivo no encontrado"}), 404
+
+        # Buscar el sensor dentro del dispositivo
+        sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+
+        # Buscar la medida dentro del sensor
+        medida = next((m for m in sensor.get('medidas', []) if m['medida_id'] == medida_id), None)
+        if not medida:
+            return jsonify({"error": "Medida no encontrada"}), 404
+
+        return jsonify({"medida": medida}), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
     
+
 # Obtener las medidas de un sensor específico
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>/medidas', methods=['GET'])
 def get_medidas_by_sensor(nodo_id, dispositivo_id, sensor_id):
@@ -252,9 +328,6 @@ def get_medidas_by_sensor(nodo_id, dispositivo_id, sensor_id):
         return jsonify({"error": str(e)}), 400
 
 
-
-
-
 # Eliminar un nodo por ID
 @nodo_bp.route('/nodos/<int:nodo_id>', methods=['DELETE'])
 def delete_nodo(nodo_id):
@@ -274,43 +347,49 @@ def delete_nodo(nodo_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-    
-# Agregar un sensor a un dispositivo específico en un nodo
+
+
+# Agregar múltiples sensores a un dispositivo específico en un nodo
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor', methods=['PUT'])
-def add_sensor_to_dispositivo(nodo_id, dispositivo_id):
+def add_sensors_to_dispositivo(nodo_id, dispositivo_id):
     data = request.get_json()
-    
+
     try:
         # Convertir datetime a ISO 8601 en el JSON recibido
         convert_datetime_to_isoformat(data)
 
-        # Validar el sensor recibido
-        sensor_data = data.get('sensor')
-        if not sensor_data:
-            return jsonify({"error": "Se debe proporcionar un sensor"}), 400
-        
+        # Validar los sensores recibidos
+        sensors_data = data.get('sensors', [])
+        if not sensors_data or not isinstance(sensors_data, list):
+            return jsonify({"error": "Se debe proporcionar una lista de sensores"}), 400
+
         # Buscar el nodo por su ID
         nodo = NodoData.query.get(nodo_id)
         if not nodo:
             return jsonify({"error": "Nodo no encontrado"}), 404
-        
+
         # Buscar el dispositivo dentro del JSON
         dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
         if not dispositivo:
             return jsonify({"error": "Dispositivo no encontrado"}), 404
-        
-        # Agregar el sensor al campo 'sensores' del dispositivo (si ya existe)
+
+        # Asegurar que el dispositivo tenga una lista de sensores
         if 'sensor' not in dispositivo:
             dispositivo['sensor'] = []
 
-        # Verificar que el sensor no exista ya en la lista (opcional)
-        existing_sensor_ids = [sensor['sensor_id'] for sensor in dispositivo['sensor']]
-        if sensor_data['sensor_id'] in existing_sensor_ids:
-            return jsonify({"error": "El sensor ya está agregado a este dispositivo"}), 400
+        # Obtener el máximo sensor_id actual
+        max_sensor_id = max(
+            [int(s['sensor_id']) for s in dispositivo['sensor'] if str(s.get('sensor_id')).isdigit()],
+            default=0
+        )
 
-        # Añadir el nuevo sensor
-        dispositivo['sensor'].append(sensor_data)
+        # Agregar los sensores nuevos con autoincremento
+        for sensor_data in sensors_data:
+            if not str(sensor_data.get('sensor_id')).isdigit():  # Si el ID no es válido, generarlo
+                max_sensor_id += 1
+                sensor_data['sensor_id'] = max_sensor_id
+
+            dispositivo['sensor'].append(sensor_data)  # Agregar el sensor al dispositivo
 
         # Marcar la columna dispositivos como modificada
         flag_modified(nodo, "dispositivos")
@@ -318,18 +397,17 @@ def add_sensor_to_dispositivo(nodo_id, dispositivo_id):
         # Guardar los cambios en la base de datos
         db.session.commit()
 
-        return jsonify({"message": "Sensor agregado correctamente", "nodo": nodo.to_dict()}), 200
+        return jsonify({"message": "Sensores agregados correctamente", "nodo": nodo.to_dict()}), 200
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error en la base de datos: " + str(e)}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": "Error inesperado: " + str(e)}), 400
+
 
 
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos', methods=['OPTIONS'])
 def options_nodos(nodo_id):
     return '', 200
-
-

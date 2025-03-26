@@ -22,12 +22,11 @@ import {
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
-const availableUnits = ['°C', '%RH', 'pH', 'mS/cm'];
-
 export default function ContentMeasurement({ open, onClose, nodoId, dispositivoId, sensorId }) {
   const [measurements, setMeasurements] = useState([]);
   const [newUnit, setNewUnit] = useState('');
   const [error, setError] = useState(null);
+  const [availableUnits, setAvailableUnits] = useState([]);
 
   const fetchMeasurements = async () => {
     if (!nodoId || !dispositivoId || !sensorId) {
@@ -61,7 +60,18 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
       setMeasurements([]);
     }
   };
-  
+
+  const fetchAvailableUnits = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:5001/api/measures/');
+      const units = response.data.map(measure => measure.unidad_medida);
+      setAvailableUnits(units);
+    } catch (error) {
+      console.error('Error al obtener las unidades de medida:', error);
+      setError('Error al obtener las unidades de medida');
+    }
+  };
+
   const handleAddMeasurement = async () => {
     if (!newUnit) return;
 
@@ -90,8 +100,6 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
       setError(error.response?.data || error.message);
     }
   };
-  
-  
 
   const handleSave = async () => {
     // Add your save logic here
@@ -100,6 +108,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   useEffect(() => {
     if (open) {
       fetchMeasurements();
+      fetchAvailableUnits();
     }
   }, [open]);
 
@@ -111,7 +120,6 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
           <Typography>
             {typeof error === 'object' ? JSON.stringify(error) : error}
           </Typography>
-
         )}
         <TableContainer component={Paper}>
           <Table>

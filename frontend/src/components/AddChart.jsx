@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Line } from "react-chartjs-2";
-import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Typography, Snackbar, Alert } from "@mui/material";
+import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Snackbar, Alert } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -258,7 +258,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                 </Select>
             </FormControl>
 
-            <div className="w-full h-[300px] mt-4">
+            <div className="w-full h-[500px] mt-4">
                 <Line ref={chartRef} data={chartData} options={chartOptions} />
             </div>
             <IconButton

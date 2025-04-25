@@ -7,3 +7,5 @@ class MedidaSchema(Schema):
     unidad_medida = fields.Str(required=True, validate=Length(min=1))
     descripcion = fields.Str(required=True, validate=Length(min=1))
     estado = fields.Str(required=True, validate=Length(min=1))
+    max = fields.Float(required=True)
+    min = fields.Float(required=True)

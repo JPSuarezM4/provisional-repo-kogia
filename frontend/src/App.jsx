@@ -29,6 +29,7 @@ import DevicesTable from './components/ContentTableSensors';
 import AddChartButton from './components/AddChartButton';
 import ChartContainer from './components/ChartContainer';
 import MeasurementList from './components/MeasurmentList';
+import RealTimeChart from './components/RealTimeChart';
 
 const drawerWidth = 240;
 
@@ -57,6 +58,7 @@ function App() {
   const handleGestionClose = () => {
     setGestionAnchorEl(null);
   };
+  
 
   return (
     <NodosProvider>
@@ -93,32 +95,71 @@ function App() {
             </Box>
           </Toolbar>
           <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
-            <List>
-              {['Análisis de datos', 'Ubicación de dispositivos', 'Gestión de sensores', 'Análisis de datos en tiempo real'].map((text, index) => (
-                <ListItem 
-                  component="div"
-                  key={text} 
-                  selected={selectedMenu === text}
-                  onClick={() => handleMenuItemClick(text)}
-                  sx={{
-                    cursor: 'pointer',
-                    '&.Mui-selected': {
-                      backgroundColor: '#e0e0e0',
-                    },
-                    '&:hover': {
-                      backgroundColor: '#f5f5f5',
-                    },
-                  }}
-                >
-                  <ListItemIcon>
-                    {index === 0 ? <BarChartIcon /> : 
-                    index === 1 ? <MapIcon /> : 
-                    index === 2 ? <BuildIcon /> : 
-                    index === 3 ? <TimelineIcon /> : <SettingsIcon />}
-                  </ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItem>
-              ))}
+          <List>
+              {/* Análisis de datos en tiempo real */}
+              <ListItem 
+                component="div"
+                selected={selectedMenu === 'Análisis de datos en tiempo real'}
+                onClick={() => handleMenuItemClick('Análisis de datos en tiempo real')}
+                sx={{
+                  cursor: 'pointer',
+                  '&.Mui-selected': {
+                    backgroundColor: '#e0e0e0',
+                  },
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <TimelineIcon />
+                </ListItemIcon>
+                <ListItemText primary="Análisis de datos en tiempo real" />
+              </ListItem>
+
+              {/* Análisis de datos históricos */}
+              <ListItem 
+                component="div"
+                selected={selectedMenu === 'Análisis de datos'}
+                onClick={() => handleMenuItemClick('Análisis de datos')}
+                sx={{
+                  cursor: 'pointer',
+                  '&.Mui-selected': {
+                    backgroundColor: '#e0e0e0',
+                  },
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <BarChartIcon />
+                </ListItemIcon>
+                <ListItemText primary="Análisis de datos históricos" />
+              </ListItem>
+
+              {/* Gestión de sensores */}
+              <ListItem 
+                component="div"
+                selected={selectedMenu === 'Gestión de sensores'}
+                onClick={() => handleMenuItemClick('Gestión de sensores')}
+                sx={{
+                  cursor: 'pointer',
+                  '&.Mui-selected': {
+                    backgroundColor: '#e0e0e0',
+                  },
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Gestión de sensores" />
+              </ListItem>
+
+              {/* Gestión */}
               <ListItem
                 component="div"
                 onClick={handleGestionClick}
@@ -144,6 +185,30 @@ function App() {
                 <MenuItem onClick={() => { handleMenuItemClick('Gestión de usuarios'); handleGestionClose(); }}>Gestión de usuarios</MenuItem>
                 <MenuItem onClick={() => { handleMenuItemClick('Gestión de dispositivos'); handleGestionClose(); }}>Gestión de dispositivos</MenuItem>
               </Menu>
+
+              {/* Comentados */}
+              {/* Ubicación de dispositivos */}
+              {/*
+              <ListItem 
+                component="div"
+                selected={selectedMenu === 'Ubicación de dispositivos'}
+                onClick={() => handleMenuItemClick('Ubicación de dispositivos')}
+                sx={{
+                  cursor: 'pointer',
+                  '&.Mui-selected': {
+                    backgroundColor: '#e0e0e0',
+                  },
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <MapIcon />
+                </ListItemIcon>
+                <ListItemText primary="Ubicación de dispositivos" />
+              </ListItem>
+              */}
             </List>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 5 }} > 
@@ -208,9 +273,10 @@ function App() {
               </Box>
             </Fade>
           )}
-          {selectedMenu === 'Análisis de datos en tiempo real' && (
-            <Box
-              sx={{
+{selectedMenu === 'Análisis de datos en tiempo real' && (
+    <React.Fragment>
+        <Box
+            sx={{
                 position: 'absolute',
                 top: 80,
                 right: 15,
@@ -218,32 +284,39 @@ function App() {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-              }}
-            >
-              <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
+            }}
+        >
+            <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
                 <Box>
-                  <AddChartButton onAddChart={handleAddRealTimeChart} />
+                    <AddChartButton onAddChart={handleAddRealTimeChart} />
                 </Box>
-              </Fade>
+            </Fade>
+        </Box>
+        <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    gap: 4,
+                    width: '100%',
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                }}
+            >
+                {realTimeCharts.map((chartConfig, index) => (
+                    <RealTimeChart
+                        key={index}
+                        nodo_id={chartConfig.nodo_id}
+                        dispositivo_id={chartConfig.dispositivo_id}
+                        sensor_id={chartConfig.sensor_id}
+                        medida_id={chartConfig.medida_id}
+                    />
+                ))}
             </Box>
-          )}
-          {selectedMenu === 'Análisis de datos en tiempo real' && (
-            <React.Fragment>
-              <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  justifyContent: 'center', 
-                  gap: 4, 
-                  width: '100%', 
-                  maxWidth: '1200px',
-                  margin: '0 auto'
-                }}>
-                  <ChartContainer charts={realTimeCharts} />
-                </Box>
-              </Fade>
-            </React.Fragment>
-          )}
+        </Fade>
+    </React.Fragment>
+)}
           <Box>
             <Fade in={selectedMenu === 'Gestión de sensores' && <BuildIcon sx={{ mr: 2 }} />}>
               <Box

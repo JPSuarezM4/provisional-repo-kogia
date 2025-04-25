@@ -32,15 +32,21 @@ const MeasurementList = () => {
         nombre_medida: '',
         unidad_medida: '',
         descripcion: '',
+        min: '',
+        max: '',
         estado: 'activo',
+       
     });
 
     useEffect(() => {
         // Fetch measurements from API or database
         fetch('http://127.0.0.1:5001/api/measures/')
             .then(response => response.json())
-            .then(data => setMeasurements(data));
+            .then(data => {
+                setMeasurements(data);
+            });
     }, []);
+    
 
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
@@ -56,7 +62,10 @@ const MeasurementList = () => {
             nombre_medida: '',
             unidad_medida: '',
             descripcion: '',
+            min: '',
+            max: '',
             estado: 'activo',
+           
         });
         setOpen(true);
     };
@@ -74,6 +83,8 @@ const MeasurementList = () => {
     };
 
     const handleAddMeasurement = () => {
+        console.log('Nueva medida:', newMeasurement); 
+
         fetch('http://127.0.0.1:5001/api/measures/', {
             method: 'POST',
             headers: {
@@ -83,6 +94,7 @@ const MeasurementList = () => {
         })
             .then(response => response.json())
             .then(data => {
+                console.log('Medida agregada:', data);  // Verifica la respuesta
                 setMeasurements(prevState => [...prevState, data]);
                 handleClose();
             });
@@ -126,6 +138,8 @@ const MeasurementList = () => {
             nombre_medida: measurement.nombre_medida,
             unidad_medida: measurement.unidad_medida,
             descripcion: measurement.descripcion,
+            min: measurement.min,
+            max: measurement.max,
             estado: measurement.estado,
         });
         setOpen(true);
@@ -205,6 +219,8 @@ const MeasurementList = () => {
                         <TableCell sx={{ color: 'white', borderColor: 'white' }}>Unidad</TableCell>
                         <TableCell sx={{ color: 'white', borderColor: 'white' }}>Descripcion</TableCell>
                         <TableCell sx={{ color: 'white', borderColor: 'white' }}>Estado</TableCell>
+                        <TableCell sx={{ color: 'white', borderColor: 'white' }}>Mínimo</TableCell>
+                        <TableCell sx={{ color: 'white', borderColor: 'white' }}>Máximo</TableCell>
                         <TableCell sx={{ color: 'white', borderColor: 'white' }}>Acciones</TableCell>
                     </TableRow>
                 </TableHead>
@@ -215,6 +231,8 @@ const MeasurementList = () => {
                             <TableCell sx={{ color: 'white', borderColor: 'white' }}>{measurement.unidad_medida}</TableCell>
                             <TableCell sx={{ color: 'white', borderColor: 'white' }}>{measurement.descripcion}</TableCell>
                             <TableCell sx={{ color: 'white', borderColor: 'white' }}>{measurement.estado}</TableCell>
+                            <TableCell sx={{ color: 'white', borderColor: 'white' }}>{measurement.min}</TableCell>
+                            <TableCell sx={{ color: 'white', borderColor: 'white' }}>{measurement.max}</TableCell>
                             <TableCell sx={{ color: 'white', borderColor: 'white' }}>
                                 <IconButton onClick={() => handleEditClick(measurement)} color="primary">
                                     <EditIcon />
@@ -259,6 +277,26 @@ const MeasurementList = () => {
                         fullWidth
                         variant="outlined"
                         value={newMeasurement.descripcion}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="min"
+                        label="Mínimo"
+                        type="number"
+                        fullWidth
+                        variant="outlined"
+                        value={newMeasurement.min}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="max"
+                        label="Máximo"
+                        type="number"
+                        fullWidth
+                        variant="outlined"
+                        value={newMeasurement.max}
                         onChange={handleChange}
                     />
                     <FormControl fullWidth variant="outlined" margin="dense">

@@ -23,6 +23,8 @@ def add_measure():
         nombre_medida=data['nombre_medida'],
         unidad_medida=data['unidad_medida'],
         descripcion=data['descripcion'],
+        max=data['max'],
+        min=data['min'],
         estado=data['estado']
     )
     db.session.add(new_measure)
@@ -43,6 +45,8 @@ def edit_measure(measure_id):
         measure.nombre_medida = data['nombre_medida']
         measure.unidad_medida = data['unidad_medida']
         measure.descripcion = data['descripcion']
+        measure.max = data['max']
+        measure.min = data['min']
         measure.estado = data['estado']
         db.session.commit()
         return jsonify(medida_schema.dump(measure))

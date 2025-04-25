@@ -1,0 +1,37 @@
+services:
+  infdb_service:
+    build: 
+      context: .
+      dockerfile: infdb_service/Dockerfile
+    ports:
+      - "5050:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - backend_network
+
+  measures_service:
+    build: 
+      context: .
+      dockerfile: measures_service/Dockerfile
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - backend_network
+
+  sensor_service:
+    build: 
+      context: .
+      dockerfile: sensor_service/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge

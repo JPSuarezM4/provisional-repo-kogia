@@ -17,6 +17,8 @@ class MedidaData(db.Model):
     unidad_medida = db.Column(db.String(50), nullable=False)
     descripcion = db.Column(db.String(200), nullable=False)
     estado = db.Column(db.String(10), nullable=False)  # activo/inactivo
+    max = db.Column(db.Float, nullable=False)
+    min = db.Column(db.Float, nullable=False)
 
     def to_dict(self):
         """
@@ -27,7 +29,9 @@ class MedidaData(db.Model):
             'nombre_medida': self.nombre_medida,
             'unidad_medida': self.unidad_medida,
             'descripcion': self.descripcion,
-            'estado': self.estado
+            'estado': self.estado,
+            'max': self.max,
+            'min': self.min
         }
 
     def __repr__(self):

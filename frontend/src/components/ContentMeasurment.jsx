@@ -88,7 +88,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
       // Enviar la lista actualizada al backend
       await axios.put(
         `http://127.0.0.1:5000/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
-        { medidas: updatedMeasurements }
+        { medidas: [{ unidad: newUnit, valor: null }] }
       );
   
       // **Actualizar el estado sin volver a hacer una petición extra**

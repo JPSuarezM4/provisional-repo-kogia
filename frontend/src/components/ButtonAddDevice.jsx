@@ -100,8 +100,15 @@ export default function AddDeviceDialog() {
   return (
     <Box>
       <Tooltip title="Agregar nuevo dispositivo">
-        <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <DevicesIcon />
+        <Fab 
+          color="primary" 
+          aria-label="add" onClick={handleOpen} 
+          sx={{ backgroundColor: '#e9e9e9', // Color del botón
+          color: '#373939', // Color del texto
+          '&:hover': {
+              backgroundColor: '#d6d6d6', // Color del botón al pasar el mouse
+          } }}>
+          <DevicesIcon sx={{color: '#373939'}}/>
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">

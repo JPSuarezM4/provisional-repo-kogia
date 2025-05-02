@@ -9,5 +9,5 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     
     
-print(os.getenv("DATABASE_URL"))  # Debería imprimir la cadena de conexión
-print(os.getenv("SECRET_KEY"))  # Debería imprimir "secretkeytest"
+#print(os.getenv("DATABASE_URL"))  # Debería imprimir la cadena de conexión
+#print(os.getenv("SECRET_KEY"))  # Debería imprimir "secretkeytest"

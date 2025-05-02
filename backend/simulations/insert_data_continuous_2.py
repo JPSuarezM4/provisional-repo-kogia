@@ -36,7 +36,7 @@ with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
                 .tag("nodo_id", "2") \
                 .tag("dispositivo_id", str(dispositivo_id)) \
                 .tag("sensor_id", str(sensor_id)) \
-                .tag("medida_id", "5") \
+                .tag("medida_id", "6") \
                 .field("valor", ph_value)
 
             # Nodo Y: Temperatura en Celsius (medida_id = 6)
@@ -44,7 +44,7 @@ with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
                 .tag("nodo_id", "3") \
                 .tag("dispositivo_id", str(dispositivo_id)) \
                 .tag("sensor_id", str(sensor_id)) \
-                .tag("medida_id", "6") \
+                .tag("medida_id", "5") \
                 .field("valor", temp_value)
 
             # Nodo Z: NTU/Turbidez (medida_id = 8)

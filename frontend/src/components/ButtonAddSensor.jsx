@@ -121,8 +121,16 @@ export default function AddSensorDialog() {
   return (
     <Box>
       <Tooltip title="Agregar nuevo sensor">
-        <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <SensorsIcon />
+        <Fab 
+          color="primary" 
+          aria-label="add" onClick={handleOpen}
+          sx={{
+            backgroundColor: '#373939', 
+            '&:hover': {
+              backgroundColor: '#4f5252',
+            },
+          }}>
+          <SensorsIcon sx={{color :'#e9e9e9'}} />
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">

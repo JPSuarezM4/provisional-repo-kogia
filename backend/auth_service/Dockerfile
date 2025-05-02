@@ -14,7 +14,7 @@ COPY ../pyproject.toml ../poetry.lock /app/
 RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
 
 # Copia el código del microservicio al contenedor
-COPY auth_service /app
+COPY . /app
 
 # Expone el puerto del microservicio
 EXPOSE 5000

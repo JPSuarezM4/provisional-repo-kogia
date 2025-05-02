@@ -10,10 +10,9 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import zoomPlugin from "chartjs-plugin-zoom";
 import "chartjs-adapter-date-fns";
 import AddMeasureDialog from "./AddMeasureDialog";
-import annotationPlugin from "chartjs-plugin-annotation";
 
 // Registrar componentes en Chart.js
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend, TimeScale, zoomPlugin, annotationPlugin);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend, TimeScale, zoomPlugin);
 
 SensorChart.propTypes = {
     nodo_id: PropTypes.string.isRequired,
@@ -35,43 +34,14 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
     const open = Boolean(anchorEl);
     const [timeRange, setTimeRange] = useState("-4d"); // Estado para el rango de tiempo de fabrica
     const [isDialogOpen, setIsDialogOpen] = useState(false); // Estado para el diálogo
-    const [measures, setMeasures] = useState([]);
-    const [limits, setLimits] = useState({}); // Estado para almacenar los límites (max y min)
 
-
-    useEffect(() => {
-        const fetchMeasures = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:5001/api/measures/");
-                const measures = response.data; // Lista de medidas con max y min
-                setMeasures(measures);
-            } catch (error) {
-                console.error("Error fetching measures:", error);
-            }
-        };
-    
-        fetchMeasures();
-    }, []);
-    
-    const fetchSpecificMeasure = async (nodo_id, dispositivo_id, sensor_id, medida_id) => {
-        try {
-            const response = await axios.get(`http://127.0.0.1:5000/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`);
-            return response.data.medida; // Información específica de la medida
-        } catch (error) {
-            console.error("Error fetching specific measure:", error);
-            return null;
-        }
-    };
-    
     useEffect(() => {
         if (nodo_id && dispositivo_id && sensor_id && medidas.length > 0) {
             const fetchData = async () => {
                 const allData = await Promise.all(
                     medidas.map(async ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         // Obtener datos de InfluxDB
-                        const responseInflux = await axios.get(
-                            `http://localhost:5050/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
-                        );
+                        const responseInflux = await axios.get(`http://localhost:5050/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`);
                         const dataInflux = responseInflux.data.map((item) => ({
                             x: new Date(item.time),
                             y: item.valor,
@@ -80,69 +50,31 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                             sensor_id,
                             medida_id,
                         }));
-    
-                        // Obtener información específica de la medida
-                        const specificMeasure = await fetchSpecificMeasure(
-                            nodo_id,
-                            dispositivo_id,
-                            sensor_id,
-                            medida_id
-                        );
-    
+
+                        // Obtener unidad de medida correspondiente desde el nuevo endpoint
+                        const responseMedida = await axios.get(`http://127.0.0.1:5000/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`);
+                        const unidadMedida = responseMedida.data.medida.unidad;
+
                         // Guardar la unidad de la primera medida
-                        if (initialUnidad === null && specificMeasure?.unidad) {
-                            setInitialUnidad(specificMeasure.unidad);
+                        if (initialUnidad === null) {
+                            setInitialUnidad(unidadMedida);
                         }
-    
-                        // Buscar los límites max y min en la lista de medidas
-                        console.log("Lista de medidas (measures):", measures);
-                        console.log("Buscando límites para medida_id:", medida_id);
-    
-                        const measureLimits = measures.find(
-                            (measure) => String(measure.measure_id) === String(medida_id)
-                        );
-    
-                        if (!measureLimits) {
-                            console.warn(`No se encontraron límites para medida_id: ${medida_id}`);
-                            return {
-                                data: dataInflux,
-                                unidad: specificMeasure?.unidad || "",
-                                max: null,
-                                min: null,
-                            };
-                        }
-    
-                        console.log(`Límites para medida ${medida_id}:`, measureLimits);
-    
-                        return {
-                            data: dataInflux,
-                            unidad: specificMeasure?.unidad || "",
-                            max: measureLimits.max || null,
-                            min: measureLimits.min || null,
-                        };
+
+                        // Combinar datos de InfluxDB con unidad de medida
+                        return dataInflux.map((item) => ({
+                            ...item,
+                            unidad: unidadMedida,
+                        }));
                     })
                 );
-    
-                // Actualizar el estado con los datos y límites
-                const flatData = allData.flatMap((item) => item.data);
-                setData(flatData);
-                if (flatData.length > 0) {
-                    setUnidad(flatData[0].unidad);
+                setData(allData.flat());
+                if (allData.flat().length > 0) {
+                    setUnidad(allData[0][0].unidad);
                 }
-    
-                const limits = allData.reduce((acc, item) => {
-                    acc[item.data[0]?.medida_id] = { max: item.max, min: item.min };
-                    return acc;
-                }, {});
-                setLimits(limits);
-    
-                console.log("Datos finales:", flatData);
-                console.log("Límites finales:", limits);
             };
-    
             fetchData().catch((error) => console.error("Error fetching data:", error));
         }
-    }, [nodo_id, dispositivo_id, sensor_id, medidas, timeRange, measures, initialUnidad]);
+    }, [nodo_id, dispositivo_id, sensor_id, medidas, timeRange, initialUnidad]);
 
     const resetZoom = () => {
         if (chartRef.current) {
@@ -186,8 +118,6 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
         setSnackbarOpen(false);
     };
 
-
-
     const handleAddMeasure = async (newMedida) => {
         if (typeof newMedida === "object" && newMedida !== null) {
             newMedida = { nodo_id: newMedida.nodo_id, dispositivo_id: newMedida.dispositivo_id, sensor_id: newMedida.sensor_id, medida_id: newMedida.medida_id }; // Crear un identificador único
@@ -228,14 +158,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
     // Configuración de Chart.js
     const chartData = {
         datasets: medidas.map(({ nodo_id, dispositivo_id, sensor_id, medida_id }, index) => {
-            const medidaData = data.filter(
-                (item) =>
-                    item.nodo_id === nodo_id &&
-                    item.dispositivo_id === dispositivo_id &&
-                    item.sensor_id === sensor_id &&
-                    item.medida_id === medida_id
-            );
-    
+            const medidaData = data.filter((item) => item.nodo_id === nodo_id && item.dispositivo_id === dispositivo_id && item.sensor_id === sensor_id && item.medida_id === medida_id);
             const unidad = medidaData.length > 0 ? medidaData[0].unidad : '';
             return {
                 label: `Medida ${medida_id} (${unidad})`,
@@ -277,40 +200,6 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
             },
         },
         plugins: {
-            annotation: {
-                annotations: medidas.reduce((acc, { medida_id }) => {
-                    const limit = limits[medida_id];
-                    if (!limit) return acc;
-    
-                    // Agregar las líneas de límite para esta medida
-                    acc[`max-${medida_id}`] = {
-                        type: "line",
-                        yMin: limit.max,
-                        yMax: limit.max,
-                        borderColor: "red",
-                        borderWidth: 2,
-                        label: {
-                            content: `Máximo (${limit.max})`,
-                            enabled: true,
-                            position: "end",
-                        },
-                    };
-                    acc[`min-${medida_id}`] = {
-                        type: "line",
-                        yMin: limit.min,
-                        yMax: limit.min,
-                        borderColor: "blue",
-                        borderWidth: 2,
-                        label: {
-                            content: `Mínimo (${limit.min})`,
-                            enabled: true,
-                            position: "end",
-                        },
-                    };
-    
-                    return acc;
-                }, {}),
-            },
             legend: { display: true },
             tooltip: {
                 enabled: true,
@@ -336,7 +225,17 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
     };
 
     return (
-        <div className="relative flex flex-col items-center w-full p-4" style={{ backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+        <div
+                className="relative flex flex-col items-center p-4"
+                style={{
+                    backgroundColor: '#1f2937',
+                    border: '1.5px solid white',
+                    borderRadius: '8px',
+                    padding: '20px',
+                    width: '500px', // Ancho fijo
+                    height: '350px', // Altura fija
+                }}
+        >
 
             {/* Menú de opciones */}
             <IconButton
@@ -369,7 +268,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                 </Select>
             </FormControl>
 
-            <div className="w-full h-[500px] mt-4">
+            <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
                 <Line ref={chartRef} data={chartData} options={chartOptions} />
             </div>
             <IconButton

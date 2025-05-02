@@ -65,11 +65,18 @@ export default function AddNodoDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar nuevo nodo">
-        <Fab color="primary" aria-label="add" onClick={handleOpen}>
-          <DeviceHubIcon />
-        </Fab>
-      </Tooltip>
+      <Tooltip title="Agregar nuevo dispositivo">
+          <Fab 
+            color="primary" 
+            aria-label="add" onClick={handleOpen} 
+            sx={{ backgroundColor: '#e9e9e9', // Color del botón
+            color: '#373939', // Color del texto
+            '&:hover': {
+                backgroundColor: '#d6d6d6', // Color del botón al pasar el mouse
+            } }}>
+            <DeviceHubIcon sx={{color: '#373939'}}/>
+          </Fab>
+        </Tooltip>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
         <DialogTitle>Agregar nuevo nodo</DialogTitle>
         <DialogContent>

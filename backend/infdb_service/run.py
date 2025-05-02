@@ -90,7 +90,7 @@ def send_real_time_data_to():
                 for table in result for record in table.records
             ]
             
-            print("Datos enviados:", data)  # Verifica los datos enviados
+           # print("Datos enviados:", data)  # Verifica los datos enviados
             socketio.emit('real_time_data', json.dumps(data))
         except Exception as e:
             print(f"Error obteniendo datos en tiempo real: {e}")
@@ -98,7 +98,7 @@ def send_real_time_data_to():
         
 @socketio.on("message")
 def handle_message(message):
-    print(f"Mensaje recibido: {message}")
+    # print(f"Mensaje recibido: {message}")
     socketio.send({"msg": f"Echo: {message}"}) 
 
 @app.route("/", methods=["GET"])

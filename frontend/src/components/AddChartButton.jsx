@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from '@mui/material';
-import AddChartIcon from '@mui/icons-material/AddChart';
+import AddIcon from '@mui/icons-material/Add';
 import AddChartDialog from './AddChartDialog';
 
 const AddChartButton = ({ onAddChart }) => {
@@ -16,7 +16,7 @@ const AddChartButton = ({ onAddChart }) => {
                 variant="contained"
                 onClick={handleOpen}
                 startIcon={
-                    <AddChartIcon 
+                    <AddIcon 
                         style={{ fontSize: '30px', color: '#373939' }} // Color del ícono
                     />
                 }

@@ -36,7 +36,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5000/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
+        `https://sensor-service-production.up.railway.app/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
       );
   
       console.log('Respuesta de medidas:', response.data);

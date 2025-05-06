@@ -40,7 +40,7 @@ const MeasurementList = () => {
 
     useEffect(() => {
         // Fetch measurements from API or database
-        fetch('http://127.0.0.1:5001/api/measures/')
+        fetch('https://measures-service-production.up.railway.app/api/measures/')
             .then(response => response.json())
             .then(data => {
                 setMeasurements(data);
@@ -85,7 +85,7 @@ const MeasurementList = () => {
     const handleAddMeasurement = () => {
         console.log('Nueva medida:', newMeasurement); 
 
-        fetch('http://127.0.0.1:5001/api/measures/', {
+        fetch('https://measures-service-production.up.railway.app/api/measures/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ const MeasurementList = () => {
     };
 
     const handleEditMeasurement = () => {
-        fetch(`http://127.0.0.1:5001/api/measures/${currentMeasurement.measure_id}`, {
+        fetch(`https://measures-service-production.up.railway.app/${currentMeasurement.measure_id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ const MeasurementList = () => {
     };
 
     const handleDeleteMeasurement = (measure_id) => {
-        fetch(`http://127.0.0.1:5001/api/measures/${measure_id}`, {
+        fetch(`https://measures-service-production.up.railway.app/api/measures/${measure_id}`, {
             method: 'DELETE',
         })
             .then(response => response.json())

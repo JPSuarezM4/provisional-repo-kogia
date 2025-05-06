@@ -75,7 +75,7 @@ export default function AddDeviceDialog() {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/nodos/${formData.nodo_id}/dispositivos`, {
+      const response = await fetch(`https://sensor-service-production.up.railway.app/api/nodos/${formData.nodo_id}/dispositivos`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dispositivos: formData.dispositivos }),

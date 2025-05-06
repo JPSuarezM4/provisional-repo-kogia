@@ -20,7 +20,7 @@ app.config['JWT_SECRET_KEY'] = 'supersecretkey'  # Cambia esto por una clave sec
 jwt = JWTManager(app)
 
 # Habilitar CORS
-CORS(app, resources={r"/api/*": {"origins": ["https://kogia-orcin.vercel.app", "https://measures-service-production.up.railway.app"]}})
+CORS(app, resources={r"/api/*": {"origins": ["https://kogia-orcin.vercel.app/", "https://kogia-qa.up.railway.app/"], "allow_headers": ["Content-Type", "Authorization"], "expose_headers": ["Content-Range", "X-Content-Range"]}}, supports_credentials=True)
 
 db.init_app(app)
 

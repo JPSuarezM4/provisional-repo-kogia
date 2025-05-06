@@ -10,7 +10,7 @@ export const NodosProvider = ({ children }) => {
   const fetchNodos = async () => {
     setLoading(true); // Iniciar la carga
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/nodos');
+      const response = await fetch('https://sensor-service-production.up.railway.app/api/nodos');
       if (!response.ok) throw new Error('Error al obtener los nodos');
       const data = await response.json();
       setNodos(data);

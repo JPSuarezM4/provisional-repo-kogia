@@ -96,7 +96,7 @@ export default function AddSensorDialog() {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/nodos/${formData.nodo_id}/dispositivos/${formData.dispositivo_id}/sensor`, {
+      const response = await fetch(`https://sensor-service-production.up.railway.app/api/nodos/${formData.nodo_id}/dispositivos/${formData.dispositivo_id}/sensor`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sensors: sensorsList }),

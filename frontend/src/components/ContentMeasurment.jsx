@@ -63,7 +63,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
 
   const fetchAvailableUnits = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:5001/api/measures/');
+      const response = await axios.get('https://measures-service-production.up.railway.app//api/measures/');
       const units = response.data.map(measure => measure.unidad_medida);
       setAvailableUnits(units);
     } catch (error) {
@@ -87,7 +87,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   
       // Enviar la lista actualizada al backend
       await axios.put(
-        `http://127.0.0.1:5000/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
+        `https://sensor-service-production.up.railway.app/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
         { medidas: [{ unidad: newUnit, valor: null }] }
       );
   

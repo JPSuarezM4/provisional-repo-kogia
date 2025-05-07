@@ -17,7 +17,7 @@ RUN poetry config virtualenvs.create false && poetry install --no-root --no-inte
 COPY . /app
 
 # Expone el puerto del microservicio
-EXPOSE 5003
+EXPOSE 5000
 
 # Ejecuta el microservicio con Poetry
 CMD ["poetry", "run", "python", "run.py"]

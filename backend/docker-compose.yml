@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: infdb_service/Dockerfile
     ports:
-      - "5050:5000"
+      - "5003:5000"
     environment:
       - FLASK_ENV=production
     networks:

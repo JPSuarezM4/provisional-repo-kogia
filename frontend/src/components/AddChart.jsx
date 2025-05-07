@@ -41,7 +41,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                 const allData = await Promise.all(
                     medidas.map(async ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         // Obtener datos de InfluxDB
-                        const responseInflux = await axios.get(`http://localhost:5050/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`);
+                        const responseInflux = await axios.get(`https://infdb-service-production.up.railway.app//get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`);
                         const dataInflux = responseInflux.data.map((item) => ({
                             x: new Date(item.time),
                             y: item.valor,
@@ -52,7 +52,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                         }));
 
                         // Obtener unidad de medida correspondiente desde el nuevo endpoint
-                        const responseMedida = await axios.get(`http://127.0.0.1:5000/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`);
+                        const responseMedida = await axios.get(`https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`);
                         const unidadMedida = responseMedida.data.medida.unidad;
 
                         // Guardar la unidad de la primera medida
@@ -123,7 +123,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
             newMedida = { nodo_id: newMedida.nodo_id, dispositivo_id: newMedida.dispositivo_id, sensor_id: newMedida.sensor_id, medida_id: newMedida.medida_id }; // Crear un identificador único
 
             // Obtener unidad de medida correspondiente desde el nuevo endpoint
-            const responseMedida = await axios.get(`http://127.0.0.1:5000/api/nodos/${newMedida.nodo_id}/dispositivos/${newMedida.dispositivo_id}/sensor/${newMedida.sensor_id}/medidas/${newMedida.medida_id}`);
+            const responseMedida = await axios.get(`https://sensor-service-production.up.railway.app/api/nodos/${newMedida.nodo_id}/dispositivos/${newMedida.dispositivo_id}/sensor/${newMedida.sensor_id}/medidas/${newMedida.medida_id}`);
             const unidadMedida = responseMedida.data.medida.unidad;
 
             // Verificar que la nueva medida tenga la misma unidad que la inicial

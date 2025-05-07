@@ -11,7 +11,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": ["https://kogia-orcin.vercel.app/", "https://kogia-qa.up.railway.app"], "allow_headers": ["Content-Type", "Authorization"], "expose_headers": ["Content-Range", "X-Content-Range"]}}, supports_credentials=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Configuración de InfluxDB

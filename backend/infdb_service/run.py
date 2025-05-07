@@ -24,7 +24,7 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 # URL del microservicio sensor_service
-SENSOR_SERVICE_URL = "http://localhost:5000/api/nodos"
+SENSOR_SERVICE_URL = "https://sensor-service-production.up.railway.app"
 
 
 # Función para enviar datos en tiempo real desde el microservicio

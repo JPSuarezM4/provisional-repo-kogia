@@ -113,7 +113,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const chartData = {
         datasets: [
             {
-                label: `Sensor ${sensor_id} - Medida ${medida_id}`,
+                label: `Sensor ${sensor_id} - Medida ${measureName || medida_id}`,
                 data: data,
                 borderColor: "#42A5F5",
                 backgroundColor: "rgba(66, 165, 245, 0.2)",

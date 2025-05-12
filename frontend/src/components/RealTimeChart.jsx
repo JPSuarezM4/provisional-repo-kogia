@@ -21,7 +21,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     useEffect(() => {
         const fetchMeasureDetails = async () => {
             try {
-                const response = await fetch("http://127.0.0.1:5001/api/measures/");
+                const response = await fetch("https://measures-service-production.up.railway.app/api/measures/");
                 const measures = await response.json();
                 const measure = measures.find((m) => String(m.measure_id) === String(medida_id));
 
@@ -41,7 +41,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     // Conexión al WebSocket para datos en tiempo real
     useEffect(() => {
-        const socket = io("http://localhost:5050", { transports: ["websocket"] });
+        const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
 
         socket.on("connect", () => {
             console.log("✅ Conectado al WebSocket con Socket.IO.");

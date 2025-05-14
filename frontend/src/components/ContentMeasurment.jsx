@@ -63,7 +63,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
 
   const fetchAvailableUnits = async () => {
     try {
-      const response = await axios.get('https://measures-service-production.up.railway.app//api/measures/');
+      const response = await axios.get('https://measures-service-production.up.railway.app/api/measures/');
       const units = response.data.map(measure => measure.unidad_medida);
       setAvailableUnits(units);
     } catch (error) {

@@ -65,7 +65,7 @@ export default function AddNodoDialog() {
 
   return (
     <Box>
-      <Tooltip title="Agregar nuevo dispositivo">
+      <Tooltip title="Agregar nuevo nodo">
           <Fab 
             color="primary" 
             aria-label="add" onClick={handleOpen} 

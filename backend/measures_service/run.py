@@ -8,7 +8,16 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Configurar CORS correctamente
-CORS(app, resources={r"/api/*": {"origins": ["https://kogia-orcin.vercel.app/", "https://kogia-qa.up.railway.app"], "allow_headers": ["Content-Type", "Authorization"], "expose_headers": ["Content-Range", "X-Content-Range"]}}, supports_credentials=True)
+CORS(app,
+     origins=[
+         "https://kogia-orcin.vercel.app",
+         "https://kogia-qa.up.railway.app"
+     ],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     expose_headers=["Content-Range", "X-Content-Range"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
 
 db.init_app(app)
 

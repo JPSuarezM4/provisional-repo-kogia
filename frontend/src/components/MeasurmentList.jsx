@@ -101,7 +101,7 @@ const MeasurementList = () => {
     };
 
     const handleEditMeasurement = () => {
-        fetch(`https://measures-service-production.up.railway.app/${currentMeasurement.measure_id}`, {
+        fetch(`https://measures-service-production.up.railway.app/api/measures/${currentMeasurement.measure_id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

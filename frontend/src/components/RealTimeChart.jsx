@@ -43,16 +43,20 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     useEffect(() => {
         const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
 
+        let lastUpdateTime = Date.now();
+
         socket.on("connect", () => {
             console.log("✅ Conectado al WebSocket con Socket.IO.");
         });
 
         socket.on("real_time_data", (message) => {
+            const now = Date.now();
+            if (now - lastUpdateTime < updateInterval) return;
+            lastUpdateTime = now;
+
             try {
                 const parsedData = JSON.parse(message);
-                console.log("📦 Datos recibidos:", parsedData);
-
-                // Filtrar datos específicos para este medida_id
+                // ...tu lógica de filtrado y actualización de datos...
                 const filteredData = parsedData.filter((point) => {
                     return (
                         String(point.nodo_id).trim() === String(nodo_id).trim() &&
@@ -62,21 +66,16 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                     );
                 });
 
-                console.log("Datos filtrados:", filteredData);
-
                 if (filteredData.length > 0) {
                     const newData = filteredData.map((point, index) => ({
-                        x: new Date(point._time).getTime() + index * 100, // Añadir un pequeño retraso para evitar solapamientos
+                        x: new Date(point._time).getTime() + index * 100,
                         y: point._value,
                     }));
 
                     setData((prevData) => {
                         const updatedData = [...prevData, ...newData];
-                        // Limitar los puntos a un número razonable para evitar sobrecarga
-                        return updatedData.slice(-50); // Mantener solo los últimos 50 puntos
+                        return updatedData.slice(-50);
                     });
-                } else {
-                    console.warn(`No se encontraron datos para medida_id: ${medida_id}`);
                 }
             } catch (error) {
                 console.error("❌ Error procesando los datos recibidos:", error);
@@ -84,9 +83,9 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         });
 
         return () => {
-            socket.disconnect(); // Desconectar el socket al desmontar el componente
+            socket.disconnect();
         };
-    }, [nodo_id, dispositivo_id, sensor_id, medida_id]);
+    }, [nodo_id, dispositivo_id, sensor_id, medida_id, updateInterval]);
 
     // Detectar si los valores superan los límites
     useEffect(() => {

@@ -16,6 +16,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [alertMessage, setAlertMessage] = useState(""); // Mensaje de la alerta
     const chartRef = useRef(null);
     const [updateInterval, setUpdateInterval] = useState(1000); // Intervalo en milisegundos (por defecto 1 segundo)
+    const MAX_TIME_WINDOW = 60 * 1000; // 60 segundos
+
 
     // Obtener los límites `max`, `min` y el nombre de la medida desde la API
     useEffect(() => {
@@ -76,7 +78,9 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
                     setData((prevData) => {
                         const updatedData = [...prevData, ...newData];
-                        return updatedData.slice(-50);
+                        const now = Date.now();
+                        const trimmedData = updatedData.filter(d => now - d.x <= MAX_TIME_WINDOW);
+                        return trimmedData;
                     });
                 }
             } catch (error) {

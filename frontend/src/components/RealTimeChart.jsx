@@ -68,11 +68,15 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         y: point._value,
                     })).sort((a, b) => a.x - b.x);
 
-                    const now = Date.now();
                     setData((prevData) => {
-                        const updated = [...prevData, ...newData];
-                        return updated.filter((d) => now - d.x <= MAX_TIME_WINDOW);
-                    });
+                            const updated = [...prevData, ...newData];
+                            const now = Date.now();
+                            // Filtra por ventana de tiempo
+                            const trimmedData = updated.filter((d) => now - d.x <= MAX_TIME_WINDOW);
+                            // Ordena por timestamp (x)
+                            trimmedData.sort((a, b) => a.x - b.x);
+                            return trimmedData;
+                        });
                 }
             } catch (error) {
                 console.error("❌ Error procesando los datos recibidos:", error);

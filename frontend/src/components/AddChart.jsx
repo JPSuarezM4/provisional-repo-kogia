@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Line } from "react-chartjs-2";
-import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Snackbar, Alert } from "@mui/material";
+import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Snackbar, Alert, DeleteIcon} from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -19,9 +19,10 @@ SensorChart.propTypes = {
     dispositivo_id: PropTypes.string.isRequired,
     sensor_id: PropTypes.string.isRequired,
     medida_id: PropTypes.string.isRequired,
+    onDelete: PropTypes.func.isRequired,
 };
 
-export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida_id }) {
+export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) {
     const [data, setData] = useState([]);
     const [unidad, setUnidad] = useState("");
     const [medidas, setMedidas] = useState([{ nodo_id, dispositivo_id, sensor_id, medida_id }]); // Estado para manejar múltiples medidas
@@ -247,6 +248,14 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                 style={{ color: 'white' }}
             >
                 <MoreVertIcon />
+            </IconButton>
+
+            <IconButton
+                aria-label="eliminar gráfico"
+                onClick={onDelete}
+                style={{ position: 'absolute', top: 8, right: 8, color: 'red' }}
+                >
+                <DeleteIcon />
             </IconButton>
 
             <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>

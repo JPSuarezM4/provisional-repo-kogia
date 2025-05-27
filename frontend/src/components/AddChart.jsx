@@ -254,8 +254,8 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
             <IconButton
                 aria-label="eliminar gráfico"
                 onClick={onDelete}
-                style={{ position: 'absolute', top: 8, right: 8, color: 'red' }}
-                >
+                style={{ position: 'absolute', top: 8, right: 48, color: 'red', zIndex: 2 }}
+            >
                 <DeleteIcon />
             </IconButton>
 

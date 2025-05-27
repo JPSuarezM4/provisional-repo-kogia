@@ -251,13 +251,6 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                 <MoreVertIcon />
             </IconButton>
 
-            <IconButton
-                aria-label="eliminar gráfico"
-                onClick={onDelete}
-                style={{ position: 'absolute', top: 8, right: 48, color: 'red', zIndex: 2 }}
-            >
-                <DeleteIcon />
-            </IconButton>
 
             <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
                 <MenuItem onClick={exportToPNG} style={{ color: 'black' }}>Exportar como PNG</MenuItem>
@@ -299,6 +292,17 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                     sx={{ marginLeft:"2 px"}}
                 >
                     <ShowChartIcon />
+                </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Eliminar gráfico">
+                <IconButton
+                    aria-label="delete chart"
+                    onClick={onDelete}
+                    className="absolute top-2 right-8"
+                    style={{ borderRadius: '50%', color: 'white' }}
+                >
+                    <DeleteIcon />
                 </IconButton>
             </Tooltip>
 

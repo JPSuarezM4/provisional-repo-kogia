@@ -11,7 +11,7 @@ const ChartContainer = ({ charts, onDeleteChart }) => {
                     dispositivo_id={chartConfig.dispositivo_id}
                     sensor_id={chartConfig.sensor_id}
                     medida_id={chartConfig.medida_id}
-                    onDelete={() => onDeleteChart(chartConfig.id || index)}
+                    onDelete={() => onDeleteChart(chartConfig.id)}
                 />
             ))}
         </>

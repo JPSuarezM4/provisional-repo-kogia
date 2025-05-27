@@ -55,7 +55,10 @@ function App() {
   };
 
   const handleAddChart = (chartConfig) => {
-    setCharts((prevCharts) => [...prevCharts, chartConfig]);
+    setCharts((prevCharts) => [
+      ...prevCharts,
+      { ...chartConfig, id: Date.now() + Math.random() } // id único
+    ]);
   };
 
   const handleDeleteChart = (id) => {

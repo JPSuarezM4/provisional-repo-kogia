@@ -58,6 +58,10 @@ function App() {
     setCharts((prevCharts) => [...prevCharts, chartConfig]);
   };
 
+  const handleDeleteChart = (id) => {
+  setCharts(prev => prev.filter(chart => chart.id !== id));
+  };
+
   const handleAddRealTimeChart = (chartConfig) => {
     if (realTimeCharts.length >= 4) {
       alert("No puedes agregar más de 4 gráficos en tiempo real.");
@@ -361,7 +365,7 @@ function App() {
               maxWidth: '1200px',
               margin: '0 auto',
             }}>
-              <ChartContainer charts={charts} />
+              <ChartContainer charts={charts} onDeleteChart={handleDeleteChart}/>
             </Box>
           </Fade>
         )}

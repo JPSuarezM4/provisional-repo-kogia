@@ -17,9 +17,9 @@ socketio = SocketIO(app, cors_allowed_origins=["https://kogia-orcin.vercel.app/"
 
 # Configuración de InfluxDB
 INFLUX_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
-INFLUX_TOKEN = "pUIq7NPMznh5n7mCo_ibwG6Ad3lFLGXvRC1NXN_kJZaBH3gQRFL89MjWKN-TtTAEhBTce1iGO6-i2D6VEVLP3A=="
+INFLUX_TOKEN = "YY2G3o8Du9uFpXeIn1SX4wSIYO32R3UArJbEgzCpyrbyE3zGGEiIdFzcVv1EvLa33TbFdsu_XENNtOhTy7W-Aw=="
 INFLUX_ORG = "3dcfd1ba132d8ffe"
-INFLUX_BUCKET = "KOGIA_TEST4"
+INFLUX_BUCKET = "KOGIA_TEST5"
 client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()

@@ -172,7 +172,7 @@ def get_data():
               r["sensor_id"] == "{sensor_id}" and
               r["medida_id"] == "{medida_id}"
           )
-          |> filter(fn: (r) => r["_field"] == "valor")  // ✅ Filtra solo valores numéricos
+          |> filter(fn: (r) => r["_field"] == "Humedad_del_aire")  // ✅ Filtra solo valores numéricos
           |> keep(columns: ["_time", "_value"])  // ✅ Mantiene unidad y fecha_creacion
         '''
 
@@ -191,7 +191,7 @@ def get_data():
 
                 data.append({
                     "time": record.get_time().isoformat(),  # ✅ Fecha registrada por InfluxDB
-                    "valor": value,
+                    "Humedad_del_aire": value,
                 })
 
         return jsonify(data), 200

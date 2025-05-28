@@ -64,8 +64,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
                 if (filteredData.length) {
                     const newData = filteredData.map((point) => ({
-                        x: new Date(point._time).getTime(),
-                        y: point._value,
+                        x: new Date(point.time).getTime(),
+                        y: point.valor,
                     })).sort((a, b) => a.x - b.x);
 
                     setData((prevData) => {

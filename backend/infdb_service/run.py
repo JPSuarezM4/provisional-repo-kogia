@@ -75,23 +75,25 @@ def send_real_time_data():
 # Evento de conexión al WebSocket
 # Enviar datos en tiempo real
 @socketio.on('connect')
-def handle_connect():
-    print("Cliente conectado")
-    socketio.start_background_task(send_real_time_data_to)
-
 def send_real_time_data_to():
     while True:
         try:
             query = f'from(bucket: "{INFLUX_BUCKET}") |> range(start: -1m)'
             result = query_api.query(org=INFLUX_ORG, query=query)
             
-            # Convertir los datos en una lista procesada
-            data = [
-                {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in record.values.items()}
-                for table in result for record in table.records
-            ]
-            
-           # print("Datos enviados:", data)  # Verifica los datos enviados
+            data = []
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "Humedad_del_aire":
+                        data.append({
+                            "nodo_id": record.values.get("nodo_id"),
+                            "dispositivo_id": record.values.get("dispositivo_id"),
+                            "sensor_id": record.values.get("sensor_id"),
+                            "medida_id": record.values.get("medida_id"),
+                            "valor": float(record.get_value()),
+                            "time": record.get_time().isoformat(),
+                            "campo": record.get_field()
+                        })
             socketio.emit('real_time_data', json.dumps(data))
         except Exception as e:
             print(f"Error obteniendo datos en tiempo real: {e}")

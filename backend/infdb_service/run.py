@@ -150,18 +150,17 @@ def migrar_datos():
 @app.route("/get_data", methods=["GET"])
 def get_data():
     try:
-        # Obtener y validar parámetros de la solicitud
         nodo_id = request.args.get("nodo_id")
         dispositivo_id = request.args.get("dispositivo_id")
         sensor_id = request.args.get("sensor_id")
         medida_id = request.args.get("medida_id")
-        rango = request.args.get("rango", "-1w")  # Rango de tiempo por defecto: última semana
-        measurement = request.args.get("measurement", "mediciones")  # Nuevo parámetro para el measurement con valor por defecto
+        rango = request.args.get("rango", "-1w")
+        measurement = request.args.get("measurement", "mediciones")
 
         if not all([nodo_id, dispositivo_id, sensor_id, medida_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400
 
-        # Construir la consulta Flux de manera segura
+        # No filtramos por _field == "valor", traemos todos los campos
         query = f'''
         from(bucket: "{INFLUX_BUCKET}")
           |> range(start: {rango})
@@ -172,36 +171,32 @@ def get_data():
               r["sensor_id"] == "{sensor_id}" and
               r["medida_id"] == "{medida_id}"
           )
-          |> filter(fn: (r) => r["_field"] == "Humedad_del_aire")  // ✅ Filtra solo valores numéricos
-          |> keep(columns: ["_time", "_value"])  // ✅ Mantiene unidad y fecha_creacion
+          |> keep(columns: ["_time", "_field", "_value"])
         '''
 
-        # Ejecutar la consulta
         query_api = client.query_api()
         result = query_api.query(query)
 
-        # Procesar los resultados
         data = []
         for table in result:
             for record in table.records:
                 try:
-                    value = float(record.get_value())  # Intentar convertir a número
+                    value = float(record.get_value())
                 except ValueError:
-                    continue  # Omitir valores que no sean numéricos
+                    continue
 
                 data.append({
-                    "time": record.get_time().isoformat(),  # ✅ Fecha registrada por InfluxDB
-                    "Humedad_del_aire": value,
+                    "time": record.get_time().isoformat(),
+                    "campo": record.get_field(),  # Nombre del campo, ej: Humedad_del_aire
+                    "valor": value,
                 })
 
         return jsonify(data), 200
 
     except InfluxDBError as e:
-        # Manejar errores específicos de InfluxDB
         return jsonify({"error": f"Error en la consulta a InfluxDB: {str(e)}"}), 500
 
     except Exception as e:
-        # Manejar otros errores inesperados
         return jsonify({"error": f"Error interno del servidor: {str(e)}"}), 500
     
 

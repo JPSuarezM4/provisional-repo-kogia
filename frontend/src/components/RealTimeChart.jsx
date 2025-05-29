@@ -16,7 +16,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [alertMessage, setAlertMessage] = useState(""); // Mensaje de la alerta
     const chartRef = useRef(null);
     const [updateInterval, setUpdateInterval] = useState(1000); // Intervalo en milisegundos (por defecto 1 segundo)
-    const [buffer, setBuffer] = useState([]);
+    const bufferRef = useRef([]);
+
 
     // Obtener los límites `max`, `min` y el nombre de la medida desde la API
     useEffect(() => {
@@ -60,8 +61,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 y: point.valor,
             }));
 
-            if (newPoints.length > 0) {
-                setBuffer(prev => [...prev, ...newPoints]);
+           if (newPoints.length > 0) {
+                bufferRef.current = [...bufferRef.current, ...newPoints];
             }
 
         } catch (error) {
@@ -78,14 +79,14 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             setData(prev => {
-                const combined = [...prev, ...buffer];
-                return combined.slice(-50); // Solo los últimos 50
+                const combined = [...prev, ...bufferRef.current];
+                bufferRef.current = []; // Limpiar el buffer
+                return combined.slice(-50); // Últimos 50 puntos
             });
-            setBuffer([]); // Limpiar el buffer
         }, updateInterval);
 
         return () => clearInterval(interval);
-    }, [updateInterval, buffer]);
+    }, [updateInterval]);
 
         // Detectar si los valores superan los límites
         useEffect(() => {

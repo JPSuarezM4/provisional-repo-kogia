@@ -16,6 +16,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [alertMessage, setAlertMessage] = useState(""); // Mensaje de la alerta
     const chartRef = useRef(null);
     const [updateInterval, setUpdateInterval] = useState(1000); // Intervalo en milisegundos (por defecto 1 segundo)
+    const [buffer, setBuffer] = useState([]);
 
     // Obtener los límites `max`, `min` y el nombre de la medida desde la API
     useEffect(() => {
@@ -41,69 +42,66 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     // Conexión al WebSocket para datos en tiempo real
     useEffect(() => {
-        const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
+    const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
 
-        socket.on("connect", () => {
-            console.log("✅ Conectado al WebSocket con Socket.IO.");
-        });
+    socket.on("real_time_data", (message) => {
+        try {
+            const parsedData = JSON.parse(message);
+            const filteredData = parsedData.filter((point) =>
+                String(point.nodo_id).trim() === String(nodo_id).trim() &&
+                String(point.dispositivo_id).trim() === String(dispositivo_id).trim() &&
+                String(point.sensor_id).trim() === String(sensor_id).trim() &&
+                String(point.medida_id).trim() === String(medida_id).trim() &&
+                point.campo === "Temperatura_del_aire"
+            );
 
-        socket.on("real_time_data", (message) => {
-            try {
-                const parsedData = JSON.parse(message);
-                console.log("📦 Datos recibidos:", parsedData);
+            const newPoints = filteredData.map((point, index) => ({
+                x: new Date(point.time).getTime() + index * 100,
+                y: point.valor,
+            }));
 
-                // Filtrar datos específicos para este medida_id
-                const filteredData = parsedData.filter((point) => {
-                    return (
-                        String(point.nodo_id).trim() === String(nodo_id).trim() &&
-                        String(point.dispositivo_id).trim() === String(dispositivo_id).trim() &&
-                        String(point.sensor_id).trim() === String(sensor_id).trim() &&
-                        String(point.medida_id).trim() === String(medida_id).trim() &&
-                        point.campo === "Temperatura_del_aire" // Asegurarse de que el campo sea "Temperatura"
-                    );
-                });
-
-                console.log("Datos filtrados:", filteredData);
-
-                if (filteredData.length > 0) {
-                    const newData = filteredData.map((point, index) => ({
-                        x: new Date(point.time).getTime() + index * 100, // Añadir un pequeño retraso para evitar solapamientos
-                        y: point.valor,
-                    }));
-
-                    setData((prevData) => {
-                        const updatedData = [...prevData, ...newData];
-                        // Limitar los puntos a un número razonable para evitar sobrecarga
-                        return updatedData.slice(-50); // Mantener solo los últimos 50 puntos
-                    });
-                } else {
-                    console.warn(`No se encontraron datos para medida_id: ${medida_id}`);
-                }
-            } catch (error) {
-                console.error("❌ Error procesando los datos recibidos:", error);
+            if (newPoints.length > 0) {
+                setBuffer(prev => [...prev, ...newPoints]);
             }
-        });
 
-        return () => {
-            socket.disconnect(); // Desconectar el socket al desmontar el componente
-        };
-    }, [nodo_id, dispositivo_id, sensor_id, medida_id]);
-
-    // Detectar si los valores superan los límites
-    useEffect(() => {
-        if (limits.max !== null && limits.min !== null) {
-            const lastPoint = data[data.length - 1]; // Obtener el último punto de datos
-            if (lastPoint) {
-                if (lastPoint.y > limits.max) {
-                    setAlertMessage(`El valor ${lastPoint.y} superó el límite máximo (${limits.max})`);
-                    setAlertOpen(true);
-                } else if (lastPoint.y < limits.min) {
-                    setAlertMessage(`El valor ${lastPoint.y} está por debajo del límite mínimo (${limits.min})`);
-                    setAlertOpen(true);
-                }
-            }
+        } catch (error) {
+            console.error("❌ Error procesando los datos recibidos:", error);
         }
-    }, [data, limits]);
+    });
+
+    return () => {
+        socket.disconnect();
+    };
+}, [nodo_id, dispositivo_id, sensor_id, medida_id]);
+
+    // Actualizar `data` cada `updateInterval` usando los datos en buffer
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setData(prev => {
+                const combined = [...prev, ...buffer];
+                return combined.slice(-50); // Solo los últimos 50
+            });
+            setBuffer([]); // Limpiar el buffer
+        }, updateInterval);
+
+        return () => clearInterval(interval);
+    }, [updateInterval, buffer]);
+
+        // Detectar si los valores superan los límites
+        useEffect(() => {
+            if (limits.max !== null && limits.min !== null) {
+                const lastPoint = data[data.length - 1]; // Obtener el último punto de datos
+                if (lastPoint) {
+                    if (lastPoint.y > limits.max) {
+                        setAlertMessage(`El valor ${lastPoint.y} superó el límite máximo (${limits.max})`);
+                        setAlertOpen(true);
+                    } else if (lastPoint.y < limits.min) {
+                        setAlertMessage(`El valor ${lastPoint.y} está por debajo del límite mínimo (${limits.min})`);
+                        setAlertOpen(true);
+                    }
+                }
+            }
+        }, [data, limits]);
 
     // Cerrar la alerta
     const handleAlertClose = () => {

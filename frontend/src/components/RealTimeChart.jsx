@@ -58,7 +58,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         String(point.nodo_id).trim() === String(nodo_id).trim() &&
                         String(point.dispositivo_id).trim() === String(dispositivo_id).trim() &&
                         String(point.sensor_id).trim() === String(sensor_id).trim() &&
-                        String(point.medida_id).trim() === String(medida_id).trim()
+                        String(point.medida_id).trim() === String(medida_id).trim() &&
+                        point.campo === "Temperatura_del_aire" // Asegurarse de que el campo sea "Temperatura"
                     );
                 });
 
@@ -66,8 +67,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
                 if (filteredData.length > 0) {
                     const newData = filteredData.map((point, index) => ({
-                        x: new Date(point._time).getTime() + index * 100, // Añadir un pequeño retraso para evitar solapamientos
-                        y: point._value,
+                        x: new Date(point.time).getTime() + index * 100, // Añadir un pequeño retraso para evitar solapamientos
+                        y: point.valor,
                     }));
 
                     setData((prevData) => {

@@ -56,8 +56,8 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 point.campo === "Temperatura_del_aire"
             );
 
-            const newPoints = filteredData.map((point, index) => ({
-                x: new Date(point.time).getTime() + index * 100,
+            const newPoints = filteredData.map((point) => ({
+                x: new Date(point.time).getTime(),
                 y: point.valor,
             }));
 

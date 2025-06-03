@@ -80,14 +80,24 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         const interval = setInterval(() => {
             setData(prev => {
                 const combined = [...prev, ...bufferRef.current];
-                bufferRef.current = []; // Limpiar el buffer
-                return combined.slice(-50); // Últimos 50 puntos
+                bufferRef.current = [];
+                // Ordenar por x (timestamp)
+                const sorted = combined.sort((a, b) => a.x - b.x);
+                // Filtrar duplicados por x
+                const unique = [];
+                const seen = new Set();
+                for (const point of sorted) {
+                    if (!seen.has(point.x)) {
+                        unique.push(point);
+                        seen.add(point.x);
+                    }
+                }
+                return unique.slice(-50);
             });
         }, updateInterval);
 
         return () => clearInterval(interval);
     }, [updateInterval]);
-
         // Detectar si los valores superan los límites
         useEffect(() => {
             if (limits.max !== null && limits.min !== null) {
@@ -118,7 +128,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 borderColor: "#42A5F5",
                 backgroundColor: "rgba(66, 165, 245, 0.2)",
                 tension: 0.1,
-                fill: true,
+                fill: false,
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 borderWidth: 2,

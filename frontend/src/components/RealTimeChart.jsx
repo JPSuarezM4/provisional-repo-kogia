@@ -233,6 +233,14 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
                         <MenuItem value={5000}>5 segundos</MenuItem>
                     </Select>
                 </FormControl>
+
+                <IconButton
+                    aria-label="Eliminar gráfico"
+                    onClick={onDelete}
+                    style={{ position: "absolute", top: 8, right: 8, color: "red", zIndex: 10 }}
+                    >
+                    <DeleteIcon />
+                </IconButton>
             </div>
 
             <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
@@ -240,13 +248,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
             </div>
 
             {/* Botón para eliminar el gráfico */}
-            <IconButton
-                aria-label="Eliminar gráfico"
-                onClick={onDelete}
-                style={{ position: "absolute", top: 8, right: 8, color: "red", zIndex: 10 }}
-                >
-                <DeleteIcon />
-            </IconButton>
+
 
 
             {/* Alerta con Material-UI */}

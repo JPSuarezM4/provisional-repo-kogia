@@ -237,7 +237,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
                 <IconButton
                     aria-label="Eliminar gráfico"
                     onClick={onDelete}
-                    style={{ position: "absolute", top: 8, right: 8, color: "red", zIndex: 10 }}
+                    style={{ position: "absolute", top: 8, right: 8, color: "white", zIndex: 10 }}
                     >
                     <DeleteIcon />
                 </IconButton>

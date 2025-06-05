@@ -215,7 +215,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
     };
 
     return (
-        <div className="relative flex flex-col items-center w-full p-4" style={{ backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+        <div className="relative flex flex-col items-center w-full p-4" style={{ position:"relative", backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             {/* Mostrar el nombre de la medida */}
             <h2 style={{ color: "white", marginBottom: "10px" }}>{measureName || "Cargando medida..."}</h2>
 

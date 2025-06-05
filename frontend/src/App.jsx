@@ -73,6 +73,10 @@ function App() {
     setRealTimeCharts((prevCharts) => [...prevCharts, chartConfig]);
   };
 
+  const handleDeleteRealTimeChart = (index) => {
+    setRealTimeCharts(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleGestionClick = () => {
     setIsGestionOpen((prev) => !prev); // Alterna el estado
   };
@@ -411,6 +415,7 @@ function App() {
                               dispositivo_id={chartConfig.dispositivo_id}
                               sensor_id={chartConfig.sensor_id}
                               medida_id={chartConfig.medida_id}
+                              onDelete={() => handleDeleteRealTimeChart(index)}
                           />
                       ))}
                   </Box>

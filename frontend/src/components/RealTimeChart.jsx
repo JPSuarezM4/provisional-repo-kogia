@@ -5,10 +5,12 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import annotationPlugin from "chartjs-plugin-annotation";
 import { io } from "socket.io-client";
 import { Select, MenuItem, InputLabel, FormControl, Snackbar, Alert } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, annotationPlugin, Filler);
 
-const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
+const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete}) => {
     const [data, setData] = useState([]); // Datos en tiempo real
     const [limits, setLimits] = useState({ max: null, min: null }); // Límites de la medida
     const [measureName, setMeasureName] = useState(""); // Nombre de la medida
@@ -237,6 +239,16 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 <Line ref={chartRef} data={chartData} options={chartOptions} />
             </div>
 
+            {/* Botón para eliminar el gráfico */}
+            <IconButton
+                aria-label="Eliminar gráfico"
+                onClick={onDelete}
+                style={{ position: "absolute", top: 8, right: 8, color: "red", zIndex: 10 }}
+                >
+                <DeleteIcon />
+            </IconButton>
+
+
             {/* Alerta con Material-UI */}
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="warning" sx={{ width: '100%' }}>
@@ -251,6 +263,7 @@ RealTimeChart.propTypes = {
     dispositivo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     sensor_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    onDelete: PropTypes.func.isRequired, // Función para manejar la eliminación del gráfico
 };
 
 

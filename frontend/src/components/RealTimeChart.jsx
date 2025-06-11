@@ -105,10 +105,10 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
                 const lastPoint = data[data.length - 1]; // Obtener el último punto de datos
                 if (lastPoint) {
                     if (lastPoint.y > limits.max) {
-                        setAlertMessage(`El valor ${lastPoint.y} superó el límite máximo (${limits.max})`);
+                        setAlertMessage(`El valor ${lastPoint.y} de ${measureName} superó el límite máximo (${limits.max})`);
                         setAlertOpen(true);
                     } else if (lastPoint.y < limits.min) {
-                        setAlertMessage(`El valor ${lastPoint.y} está por debajo del límite mínimo (${limits.min})`);
+                        setAlertMessage(`El valor ${lastPoint.y} de ${measureName} está por debajo del límite mínimo (${limits.min})`);
                         setAlertOpen(true);
                     }
                 }
@@ -251,7 +251,12 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
 
 
             {/* Alerta con Material-UI */}
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
+            <Snackbar
+                open={alertOpen}
+                autoHideDuration={6000}
+                onClose={handleAlertClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // <-- Esto la pone arriba a la derecha
+            >
                 <Alert onClose={handleAlertClose} severity="warning" sx={{ width: '100%' }}>
                     {alertMessage}
                 </Alert>

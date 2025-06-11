@@ -214,7 +214,7 @@ def get_all_data():
         dispositivo_id = request.args.get("dispositivo_id")
         sensor_id = request.args.get("sensor_id")
         rango = request.args.get("rango", "-1w")  # Rango de tiempo por defecto: última semana
-        measurement = request.args.get("measurement", "mediciones")  # Nuevo parámetro para el measurement con valor por defecto
+        measurement = request.args.get("mediciones_dht11_v2")  # Nuevo parámetro para el measurement con valor por defecto
 
         if not all([nodo_id, dispositivo_id, sensor_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400

@@ -26,7 +26,8 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   const [measurements, setMeasurements] = useState([]);
   const [newUnit, setNewUnit] = useState('');
   const [error, setError] = useState(null);
-  const [availableUnits, setAvailableUnits] = useState([]);
+  const [availableMeasures, setAvailableMeasures] = useState([]); // Cambia de units a measures
+  
 
   const fetchMeasurements = async () => {
     if (!nodoId || !dispositivoId || !sensorId) {
@@ -64,8 +65,7 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   const fetchAvailableUnits = async () => {
     try {
       const response = await axios.get('https://measures-service-production.up.railway.app/api/measures/');
-      const units = response.data.map(measure => measure.unidad_medida);
-      setAvailableUnits(units);
+      setAvailableMeasures(response.data); // Guarda el array de medidas completo
     } catch (error) {
       console.error('Error al obtener las unidades de medida:', error);
       setError('Error al obtener las unidades de medida');
@@ -75,23 +75,34 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
   const handleAddMeasurement = async () => {
     if (!newUnit) return;
 
-    // Verificar si la medida ya existe
-    if (measurements.some(measurement => measurement.unidad === newUnit)) {
-      setError(`La medida ${newUnit} ya existe.`);
+    // Busca el objeto medida seleccionado
+    const selectedMeasure = availableMeasures.find(m => m.measure_id === newUnit);
+
+    if (!selectedMeasure) {
+      setError('Medida seleccionada no encontrada');
       return;
     }
-  
+
+    // Verifica si ya existe
+    if (measurements.some(measurement => measurement.medida_id === selectedMeasure.measure_id)) {
+      setError(`La medida ${selectedMeasure.unidad_medida} ya existe.`);
+      return;
+    }
+
     try {
-      // Obtener la lista actual antes de agregar la nueva medida
-      const updatedMeasurements = [...measurements, { unidad: newUnit, valor: null }];
-  
-      // Enviar la lista actualizada al backend
+      // Actualiza la lista local
+      const updatedMeasurements = [...measurements, { 
+        medida_id: selectedMeasure.measure_id, 
+        unidad: selectedMeasure.unidad_medida, 
+        valor: null 
+      }];
+
+      // Envía al backend el objeto con medida_id
       await axios.put(
         `https://sensor-service-production.up.railway.app/api/nodos/${nodoId}/dispositivos/${dispositivoId}/sensor/${sensorId}/medidas`,
-        { medidas: [{ unidad: newUnit, valor: null }] }
+        { medidas: [{ medida_id: selectedMeasure.measure_id, unidad: selectedMeasure.unidad_medida, valor: null }] }
       );
-  
-      // **Actualizar el estado sin volver a hacer una petición extra**
+
       setMeasurements(updatedMeasurements);
       setNewUnit('');
       setError(null);
@@ -152,9 +163,9 @@ export default function ContentMeasurement({ open, onClose, nodoId, dispositivoI
               value={newUnit}
               onChange={(e) => setNewUnit(e.target.value)}
             >
-              {availableUnits.map((unit) => (
-                <MenuItem key={unit} value={unit}>
-                  {unit}
+              {availableMeasures.map((measure) => (
+                <MenuItem key={measure.measure_id} value={measure.measure_id}>
+                  {measure.unidad_medida}
                 </MenuItem>
               ))}
             </Select>

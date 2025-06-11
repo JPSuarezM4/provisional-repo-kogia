@@ -88,18 +88,16 @@ def send_real_time_data_to():
             data = []
             for table in result:
                 for record in table.records:
-                    # Solo incluir si el campo es Temperatura_del_aire
-                    if record.get_field() in ["Temperatura_del_aire", "Humedad_del_aire"]:
+                    # Solo enviar los puntos con el campo "valor"
+                    if record.get_field() == "valor":
                         data.append({
                             "nodo_id": record.values.get("nodo_id"),
                             "dispositivo_id": record.values.get("dispositivo_id"),
                             "sensor_id": record.values.get("sensor_id"),
                             "medida_id": record.values.get("medida_id"),
                             "valor": float(record.get_value()),
-                            "time": record.get_time().isoformat(),
-                            "campo": record.get_field()
+                            "time": record.get_time().isoformat()
                         })
-            # print("Datos enviados:", data)
             socketio.emit('real_time_data', json.dumps(data))
         except Exception as e:
             print(f"Error obteniendo datos en tiempo real: {e}")

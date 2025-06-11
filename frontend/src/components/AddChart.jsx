@@ -44,7 +44,7 @@ export default function SensorChart({ nodo_id, dispositivo_id, sensor_id, medida
                     medidas.map(async ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         // Obtener datos de InfluxDB
                         const responseInflux = await axios.get(`https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`);
-                        const dataInflux = responseInflux.data.filter(item => item.campo === "Temperatura_del_aire").map((item) => ({
+                        const dataInflux = responseInflux.data.map((item) => ({
                             x: new Date(item.time),
                             y: item.valor,
                             nodo_id,

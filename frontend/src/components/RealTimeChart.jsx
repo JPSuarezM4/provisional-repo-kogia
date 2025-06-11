@@ -54,8 +54,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
                 String(point.nodo_id).trim() === String(nodo_id).trim() &&
                 String(point.dispositivo_id).trim() === String(dispositivo_id).trim() &&
                 String(point.sensor_id).trim() === String(sensor_id).trim() &&
-                String(point.medida_id).trim() === String(medida_id).trim() &&
-                point.campo === "Temperatura_del_aire"
+                String(point.medida_id).trim() === String(medida_id).trim()
             );
 
             const newPoints = filteredData.map((point) => ({

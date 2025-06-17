@@ -438,8 +438,8 @@ def update_nodo(nodo_id):
         return jsonify({"error": str(e)}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-    
+
+
 # Edición de un sensor en un nodo
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>', methods=['PUT'])
 def update_sensor(nodo_id, dispositivo_id, sensor_id):
@@ -458,9 +458,8 @@ def update_sensor(nodo_id, dispositivo_id, sensor_id):
             return jsonify({"error": "Sensor no encontrado"}), 404
 
         # Actualiza solo los campos permitidos
-        for key in ['nombre_sensor', 'descripcion_sensor']:
-            if key in data:
-                sensor[key] = data[key]
+        for key in data:
+            sensor[key] = data[key]
 
         flag_modified(nodo, "dispositivos")
         db.session.commit()
@@ -487,7 +486,7 @@ def update_dispositivo(nodo_id, dispositivo_id):
             return jsonify({"error": "Dispositivo no encontrado"}), 404
 
         # Actualiza solo los campos permitidos
-        for key in ['nombre_dispositivo', 'descripcion_dispositivo']:
+        for key in ['nombre', 'tipo']:
             if key in data:
                 dispositivo[key] = data[key]
 
@@ -520,7 +519,7 @@ def update_sensor_edit(nodo_id, dispositivo_id, sensor_id):
             return jsonify({"error": "Sensor no encontrado"}), 404
 
         # Actualiza solo los campos permitidos
-        for key in ['nombre_sensor', 'descripcion_sensor']:
+        for key in ['unidad']:
             if key in data:
                 sensor[key] = data[key]
 

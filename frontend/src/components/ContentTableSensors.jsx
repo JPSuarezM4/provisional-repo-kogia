@@ -11,7 +11,7 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { Assessment as MeasuremenetIcon } from '@mui/icons-material';
-//import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from '@mui/icons-material/Edit';
 //import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Dialog from '@mui/material/Dialog';
@@ -25,6 +25,7 @@ import TextField from '@mui/material/TextField';
 import AddSensorDialog from './ButtonAddSensor';
 import { NodosContext } from '../context/NodosContext';
 import ContentMeasurement from './ContentMeasurment.jsx';
+//import PopupEditAll from './PopupEditAll'; // Ajusta la ruta si es necesario
 
 export default function DevicesTable() {
   const { nodos, fetchNodos } = useContext(NodosContext);
@@ -102,9 +103,9 @@ export default function DevicesTable() {
     setSelectedSensor(null);
   };
 
-  {/* const handleEdit = (sensor) => {
+  const handleEdit = (sensor) => {
     console.log('Editar sensor:', sensor);
-  }; */}
+  };
 
   const handleOpenMeasurementDialog = (sensor) => {
     console.log('Sensor seleccionado:', sensor); // Para verificar qué datos tenemos
@@ -114,38 +115,6 @@ export default function DevicesTable() {
 
   const handleCloseMeasurementDialog = () => setOpenMeasurementDialog(false);
 
- {/*  const handleDelete = (sensor) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar el sensor ${sensor.nombre}?`)) {
-      axios
-        .delete(`http://127.0.0.1:5000/api/sensores/${sensor.sensor_id}`)
-        .then(() => {
-          setSensors((prevSensors) =>
-            prevSensors.filter((s) => s.sensor_id !== sensor.sensor_id)
-          );
-          fetchNodos(); // Actualizar la lista de nodos en el contexto
-        })
-        .catch((error) => {
-          console.error('Error al eliminar el sensor:', error);
-        });
-    }
-  }; */}
-
-  {/*const columns =
-    sensors.length > 0
-      ? Object.keys(sensors[0])
-          .filter((key) => key !== 'tipo' && key !== 'medidas') // Filtrar la columna "medidas"
-          .filter((key) => key !== 'tipo' && key !== 'ultimo_id')
-          .filter((key) => key !== 'dispositivo_id')
-          .filter((key) => key !== 'nodo_id')
-          .filter((key) => key !== 'sensor_id')
-          .filter((key) => key !== 'tipo' && key !== 'fabricante')
-          .map((key) => ({
-            id: key,
-            label: key === 'nombre' ? 'Sensor' : key.charAt(0).toUpperCase() + key.slice(1),
-            minWidth: 100,
-            align: 'center',
-          }))
-      : []; */}
 
     const columns = [
       { id: 'nodo', label: 'Nodo', minWidth: 100, align: 'center' },
@@ -219,12 +188,12 @@ export default function DevicesTable() {
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
-                          {/*<Tooltip title="Editar">
+                          <Tooltip title="Editar">
                             <IconButton onClick={() => handleEdit(sensor)}>
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Eliminar">
+                         {/* <Tooltip title="Eliminar">
                             <IconButton onClick={() => handleDelete(sensor)}>
                               <DeleteIcon />
                             </IconButton>

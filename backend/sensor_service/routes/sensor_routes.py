@@ -413,3 +413,123 @@ def add_sensors_to_dispositivo(nodo_id, dispositivo_id):
 @nodo_bp.route('/nodos/<int:nodo_id>/dispositivos', methods=['OPTIONS'])
 def options_nodos(nodo_id):
     return '', 200
+
+#Edicíon de entidades 
+#Edicíon de un nodo
+
+@nodo_bp.route('/nodos/<int:nodo_id>', methods=['PUT'])
+def update_nodo(nodo_id):
+    data = request.get_json()
+    try:
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
+
+        # Actualiza solo los campos permitidos
+        for key in ['nombre_nodo', 'descripcion_nodo', 'longitud', 'latitud']:
+            if key in data:
+                setattr(nodo, key, data[key])
+
+        db.session.commit()
+        return jsonify({"message": "Nodo actualizado correctamente", "nodo": nodo.to_dict()}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+    
+# Edición de un sensor en un nodo
+@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>', methods=['PUT'])
+def update_sensor(nodo_id, dispositivo_id, sensor_id):
+    data = request.get_json()
+    try:
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
+
+        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        if not dispositivo:
+            return jsonify({"error": "Dispositivo no encontrado"}), 404
+
+        sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+
+        # Actualiza solo los campos permitidos
+        for key in ['nombre_sensor', 'descripcion_sensor']:
+            if key in data:
+                sensor[key] = data[key]
+
+        flag_modified(nodo, "dispositivos")
+        db.session.commit()
+        return jsonify({"message": "Sensor actualizado correctamente", "sensor": sensor}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+    
+# Edición de un dispositivo en un nodo
+@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>', methods=['PUT'])
+def update_dispositivo(nodo_id, dispositivo_id):
+    data = request.get_json()
+    try:
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
+
+        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        if not dispositivo:
+            return jsonify({"error": "Dispositivo no encontrado"}), 404
+
+        # Actualiza solo los campos permitidos
+        for key in ['nombre_dispositivo', 'descripcion_dispositivo']:
+            if key in data:
+                dispositivo[key] = data[key]
+
+        flag_modified(nodo, "dispositivos")
+        db.session.commit()
+        return jsonify({"message": "Dispositivo actualizado correctamente", "dispositivo": dispositivo}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# Edicion de una medida en un sensor
+@nodo_bp.route('/nodos/<int:nodo_id>/dispositivos/<int:dispositivo_id>/sensor/<int:sensor_id>', methods=['PUT'])
+def update_sensor_edit(nodo_id, dispositivo_id, sensor_id):
+    data = request.get_json()
+    try:
+        nodo = NodoData.query.get(nodo_id)
+        if not nodo:
+            return jsonify({"error": "Nodo no encontrado"}), 404
+
+        dispositivo = next((d for d in nodo.dispositivos if d['dispositivo_id'] == dispositivo_id), None)
+        if not dispositivo:
+            return jsonify({"error": "Dispositivo no encontrado"}), 404
+
+        sensor = next((s for s in dispositivo.get('sensor', []) if s['sensor_id'] == sensor_id), None)
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+
+        # Actualiza solo los campos permitidos
+        for key in ['nombre_sensor', 'descripcion_sensor']:
+            if key in data:
+                sensor[key] = data[key]
+
+        flag_modified(nodo, "dispositivos")
+        db.session.commit()
+        return jsonify({"message": "Sensor actualizado correctamente", "sensor": sensor}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

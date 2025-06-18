@@ -25,7 +25,7 @@ import TextField from '@mui/material/TextField';
 import AddSensorDialog from './ButtonAddSensor';
 import { NodosContext } from '../context/NodosContext';
 import ContentMeasurement from './ContentMeasurment.jsx';
-//import PopupEditAll from './PopupEditAll'; // Ajusta la ruta si es necesario
+import PopupEditAll from './PopupEditAll'; // Ajusta la ruta si es necesario
 
 export default function DevicesTable() {
   const { nodos, fetchNodos } = useContext(NodosContext);
@@ -37,6 +37,9 @@ export default function DevicesTable() {
   const [loading, setLoading] = useState(true); // Estado de carga
   const [openMeasurementDialog, setOpenMeasurementDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
+  const [editPopupOpen, setEditPopupOpen] = useState(false);
+  const [editPopupData, setEditPopupData] = useState({ nodo: null, dispositivo: null, sensor: null });
+
 
   useEffect(() => {
     // Llama a fetchNodos al iniciar la página para asegurar que los datos estén disponibles
@@ -104,8 +107,18 @@ export default function DevicesTable() {
   };
 
   const handleEdit = (sensor) => {
-    console.log('Editar sensor:', sensor);
+    const nodo = nodos.find((n) => n.nodo_id === sensor.nodo_id || n.id === sensor.nodo_id);
+    const dispositivo = nodo?.dispositivos?.find((d) => d.dispositivo_id === sensor.dispositivo_id || d.id === sensor.dispositivo_id);
+    const sensorData = dispositivo?.sensor?.find((s) => s.sensor_id === sensor.sensor_id || s.id === sensor.sensor_id);
+
+    setEditPopupData({
+      nodo,
+      dispositivo,
+      sensor: sensorData,
+    });
+    setEditPopupOpen(true);
   };
+
 
   const handleOpenMeasurementDialog = (sensor) => {
     console.log('Sensor seleccionado:', sensor); // Para verificar qué datos tenemos
@@ -263,6 +276,20 @@ export default function DevicesTable() {
             <Button onClick={handleCloseMeasurementDialog}>Cerrar</Button>
           </DialogActions>
         </Dialog>
+        <PopupEditAll
+          open={editPopupOpen}
+          onClose={() => setEditPopupOpen(false)}
+          nodo={editPopupData.nodo}
+          dispositivo={editPopupData.dispositivo}
+          sensor={editPopupData.sensor}
+          availableMeasures={editPopupData.sensor?.medidasDisponibles || []}
+          onSave={(updatedData) => {
+            console.log("Datos actualizados:", updatedData);
+            // Aquí puedes hacer tus llamadas al backend si quieres
+            setEditPopupOpen(false);
+            updateSensors(); // actualiza la tabla
+          }}
+        />
     </Paper>
   );
 }

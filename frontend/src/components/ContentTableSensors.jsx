@@ -25,7 +25,7 @@ import TextField from '@mui/material/TextField';
 import AddSensorDialog from './ButtonAddSensor';
 import { NodosContext } from '../context/NodosContext';
 import ContentMeasurement from './ContentMeasurment.jsx';
-import PopupEditAll from './PopupEditAll'; // Ajusta la ruta si es necesario
+import PopupEditAll from './PopupEditSensor.jsx'; // Ajusta la ruta si es necesario
 
 export default function DevicesTable() {
   const { nodos, fetchNodos } = useContext(NodosContext);

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-//import axios from 'axios';
+import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -276,20 +276,41 @@ export default function DevicesTable() {
             <Button onClick={handleCloseMeasurementDialog}>Cerrar</Button>
           </DialogActions>
         </Dialog>
-        <PopupEditAll
-          open={editPopupOpen}
-          onClose={() => setEditPopupOpen(false)}
-          nodo={editPopupData.nodo}
-          dispositivo={editPopupData.dispositivo}
-          sensor={editPopupData.sensor}
-          availableMeasures={editPopupData.sensor?.medidasDisponibles || []}
-          onSave={(updatedData) => {
-            console.log("Datos actualizados:", updatedData);
-            // Aquí puedes hacer tus llamadas al backend si quieres
-            setEditPopupOpen(false);
-            updateSensors(); // actualiza la tabla
-          }}
-        />
+          <PopupEditAll
+            open={editPopupOpen}
+            onClose={() => setEditPopupOpen(false)}
+            nodo={editPopupData.nodo}
+            dispositivo={editPopupData.dispositivo}
+            sensor={editPopupData.sensor}
+            availableMeasures={editPopupData.sensor?.medidasDisponibles || []}
+            onSave={async (updatedData) => {
+              try {
+                // Actualiza el nodo
+                await axios.put(
+                  `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}`,
+                  updatedData.nodo
+                );
+
+                // Actualiza el dispositivo
+                await axios.put(
+                  `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}/dispositivos/${updatedData.dispositivo.dispositivo_id}`,
+                  updatedData.dispositivo
+                );
+
+                // Actualiza el sensor
+                await axios.put(
+                  `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}/dispositivos/${updatedData.dispositivo.dispositivo_id}/sensor/${updatedData.sensor.sensor_id}`,
+                  updatedData.sensor
+                );
+
+                setEditPopupOpen(false);
+                updateSensors(); // actualiza la tabla
+              } catch (error) {
+                alert("Error al actualizar los datos");
+                console.error(error);
+              }
+            }}
+          />
     </Paper>
   );
 }

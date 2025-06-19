@@ -22,32 +22,31 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
     const [unidad, setUnidad] = useState("");
 
     useEffect(() => {
-    // Supón que tienes medida_id disponible
-    fetch("https://measures-service-production.up.railway.app/api/measures/")
-        .then(res => res.json())
-        .then(data => {
-        const medida = data.find(m => m.medida_id === medida_id);
-        setUnidad(medida ? medida.unidad_medida : "");
-        })
-        .catch(() => setUnidad(""));
-    }, [medida_id]);
-
-
-    // Obtener los límites `max`, `min` y el nombre de la medida desde la API
-    useEffect(() => {
         const fetchMeasureDetails = async () => {
             try {
                 const response = await fetch("https://measures-service-production.up.railway.app/api/measures/");
                 const measures = await response.json();
-                const measure = measures.find((m) => String(m.measure_id) === String(medida_id));
+                // Busca por ambos posibles nombres de ID
+                const measure = measures.find(
+                    (m) =>
+                        String(m.measure_id) === String(medida_id) ||
+                        String(m.medida_id) === String(medida_id)
+                );
 
                 if (measure) {
                     setLimits({ max: measure.max, min: measure.min });
-                    setMeasureName(measure.nombre_medida); // Guardar el nombre de la medida
+                    setMeasureName(measure.nombre_medida);
+                    setUnidad(measure.unidad_medida || ""); // <--- Aquí la unidad
                 } else {
+                    setUnidad("");
+                    setMeasureName("");
+                    setLimits({ max: null, min: null });
                     console.warn(`No se encontraron detalles para medida_id: ${medida_id}`);
                 }
             } catch (error) {
+                setUnidad("");
+                setMeasureName("");
+                setLimits({ max: null, min: null });
                 console.error("Error al obtener los detalles de la medida:", error);
             }
         };

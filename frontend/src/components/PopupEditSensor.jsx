@@ -20,16 +20,29 @@ export default function PopupEditAll({
   const [dispositivoForm, setDispositivoForm] = useState({ nombre: "", tipo: "" });
   const [sensorForm, setSensorForm] = useState({ nombre: "", tipo: "", fabricante: "", medidas: [] });
 
-  useEffect(() => {
-    if (nodo) setNodoForm({ nombre: nodo.nombre || "", descripcion: nodo.descripcion || "" });
-    if (dispositivo) setDispositivoForm({ nombre: dispositivo.nombre || "", tipo: dispositivo.tipo || "" });
-    if (sensor) setSensorForm({
+useEffect(() => {
+  if (nodo) {
+    setNodoForm({
+      nombre: nodo.nombre || nodo.nombre_nodo || "",
+      descripcion: nodo.descripcion || "",
+    });
+  }
+  if (dispositivo) {
+    setDispositivoForm({
+      nombre: dispositivo.nombre || "",
+      tipo: dispositivo.tipo || "",
+    });
+  }
+  if (sensor) {
+    setSensorForm({
       nombre: sensor.nombre || "",
       tipo: sensor.tipo || "",
       fabricante: sensor.fabricante || "",
       medidas: sensor.medidas ? sensor.medidas.map(m => m.medida_id) : [],
     });
-  }, [nodo, dispositivo, sensor, open]);
+  }
+}, [nodo, dispositivo, sensor, open]);
+
 
   const handleNodoChange = (e) => setNodoForm({ ...nodoForm, [e.target.name]: e.target.value });
   const handleDispositivoChange = (e) => setDispositivoForm({ ...dispositivoForm, [e.target.name]: e.target.value });

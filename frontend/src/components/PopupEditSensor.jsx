@@ -23,8 +23,8 @@ export default function PopupEditAll({
 useEffect(() => {
   if (nodo) {
     setNodoForm({
-      nombre: nodo.nombre || nodo.nombre_nodo || "",
-      descripcion: nodo.descripcion || "",
+      nombre: nodo.nombre_nodo || "",
+      descripcion: nodo.descripcion_nodo || "",
     });
   }
   if (dispositivo) {

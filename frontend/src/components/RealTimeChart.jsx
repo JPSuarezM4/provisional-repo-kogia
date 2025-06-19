@@ -19,6 +19,18 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
     const chartRef = useRef(null);
     const [updateInterval, setUpdateInterval] = useState(1000); // Intervalo en milisegundos (por defecto 1 segundo)
     const bufferRef = useRef([]);
+    const [unidad, setUnidad] = useState("");
+
+    useEffect(() => {
+    // Supón que tienes medida_id disponible
+    fetch("https://measures-service-production.up.railway.app/api/measures/")
+        .then(res => res.json())
+        .then(data => {
+        const medida = data.find(m => m.medida_id === medida_id);
+        setUnidad(medida ? medida.unidad_medida : "");
+        })
+        .catch(() => setUnidad(""));
+    }, [medida_id]);
 
 
     // Obtener los límites `max`, `min` y el nombre de la medida desde la API
@@ -154,7 +166,7 @@ const RealTimeChart = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
             y: {
                 title: {
                     display: true,
-                    text: "Valor",
+                    text: `Valor (${unidad || ""})`
                 },
             },
         },

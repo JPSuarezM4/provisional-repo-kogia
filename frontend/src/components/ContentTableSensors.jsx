@@ -288,19 +288,27 @@ export default function DevicesTable() {
                 // Actualiza el nodo
                 await axios.put(
                   `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}`,
-                  updatedData.nodo
+                  {
+                    nombre_nodo: updatedData.nodo.nombre_nodo,
+                    descripcion_nodo: updatedData.nodo.descripcion_nodo,
+                  }
                 );
 
-                // Actualiza el dispositivo
                 await axios.put(
                   `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}/dispositivos/${updatedData.dispositivo.dispositivo_id}`,
-                  updatedData.dispositivo
+                  {
+                    nombre: updatedData.dispositivo.nombre,
+                    tipo: updatedData.dispositivo.tipo,
+                  }
                 );
 
-                // Actualiza el sensor
                 await axios.put(
                   `https://sensor-service-production.up.railway.app/api/nodos/${updatedData.nodo.nodo_id}/dispositivos/${updatedData.dispositivo.dispositivo_id}/sensor/${updatedData.sensor.sensor_id}`,
-                  updatedData.sensor
+                  {
+                    nombre: updatedData.sensor.nombre,
+                    tipo: updatedData.sensor.tipo,
+                    fabricante: updatedData.sensor.fabricante,
+                  }
                 );
 
                 setEditPopupOpen(false);

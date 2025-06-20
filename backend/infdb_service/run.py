@@ -161,7 +161,7 @@ def get_data():
         sensor_id = request.args.get("sensor_id")
         medida_id = request.args.get("medida_id")
         rango = request.args.get("rango", "-1w")
-        measurement = request.args.get("measurement", "mediciones")
+        measurement = request.args.get("measurement", "mediciones_dht11_v2")
 
         if not all([nodo_id, dispositivo_id, sensor_id, medida_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400

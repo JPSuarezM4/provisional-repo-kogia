@@ -240,21 +240,22 @@ def get_all_data():
             except Exception as e:
                 raise ValueError(f"Error al interpretar el rango: {e}")
 
-        start_time = parse_rango(rango)
-        end_time = datetime.utcnow()
+        start_time = parse_rango(rango).isoformat() + 'Z'
+        end_time = datetime.utcnow().isoformat() + 'Z'
 
-        # Consulta Flux usando start y stop explícitos
+
+
         query = f'''
         from(bucket: "{INFLUX_BUCKET}")
-            |> range(start: time(v: "{start_time.isoformat()}"), stop: time(v: "{end_time.isoformat()}"))
-            |> filter(fn: (r) => 
-                r["_measurement"] == "{measurement}" and
-                r["nodo_id"] == "{nodo_id}" and
-                r["dispositivo_id"] == "{dispositivo_id}" and
-                r["sensor_id"] == "{sensor_id}"
-            )
-            |> filter(fn: (r) => r["_field"] == "valor")
-            |> keep(columns: ["_time", "_value", "medida_id"])
+        |> range(start: time(v: "{start_time}"), stop: time(v: "{end_time}"))
+        |> filter(fn: (r) => 
+            r["_measurement"] == "{measurement}" and
+            r["nodo_id"] == "{nodo_id}" and
+            r["dispositivo_id"] == "{dispositivo_id}" and
+            r["sensor_id"] == "{sensor_id}"
+        )
+        |> filter(fn: (r) => r["_field"] == "valor")
+        |> keep(columns: ["_time", "_value", "medida_id"])
         '''
 
         # Ejecutar consulta

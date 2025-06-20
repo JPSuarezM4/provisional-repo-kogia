@@ -8,7 +8,7 @@ import requests
 import time
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -209,62 +209,79 @@ def get_data():
 @app.route("/get_all_data", methods=["GET"])
 def get_all_data():
     try:
-        # Obtener y validar parámetros de la solicitud
+        # Obtener parámetros
         nodo_id = request.args.get("nodo_id")
         dispositivo_id = request.args.get("dispositivo_id")
         sensor_id = request.args.get("sensor_id")
-        rango = request.args.get("rango", "-1w")  # Rango de tiempo por defecto: última semana
-        measurement = request.args.get("mediciones_dht11_v2")  # Nuevo parámetro para el measurement con valor por defecto
+        rango = request.args.get("rango", "-1w")  # Rango por defecto
+        measurement = request.args.get("measurement", "mediciones_dht11_v2")  # Parámetro opcional
 
         if not all([nodo_id, dispositivo_id, sensor_id]):
             return jsonify({"error": "Faltan parámetros requeridos"}), 400
 
-        # Construir la consulta Flux de manera segura
+        # Interpretar rango de tiempo
+        def parse_rango(rango_str):
+            try:
+                now = datetime.utcnow()
+                if rango_str.endswith('d'):
+                    days = int(rango_str.strip('-d'))
+                    return now - timedelta(days=days)
+                elif rango_str.endswith('h'):
+                    hours = int(rango_str.strip('-h'))
+                    return now - timedelta(hours=hours)
+                elif rango_str.endswith('w'):
+                    weeks = int(rango_str.strip('-w'))
+                    return now - timedelta(weeks=weeks)
+                elif rango_str.endswith('m'):
+                    minutes = int(rango_str.strip('-m'))
+                    return now - timedelta(minutes=minutes)
+                else:
+                    raise ValueError("Formato de rango inválido")
+            except Exception as e:
+                raise ValueError(f"Error al interpretar el rango: {e}")
+
+        start_time = parse_rango(rango)
+        end_time = datetime.utcnow()
+
+        # Consulta Flux usando start y stop explícitos
         query = f'''
         from(bucket: "{INFLUX_BUCKET}")
-            |> range(start: {rango})
+            |> range(start: time(v: "{start_time.isoformat()}"), stop: time(v: "{end_time.isoformat()}"))
             |> filter(fn: (r) => 
                 r["_measurement"] == "{measurement}" and
                 r["nodo_id"] == "{nodo_id}" and
                 r["dispositivo_id"] == "{dispositivo_id}" and
                 r["sensor_id"] == "{sensor_id}"
             )
-            |> filter(fn: (r) => r["_field"] == "valor")  // ✅ Filtra solo valores numéricos
-            |> keep(columns: ["_time", "_value", "medida_id"])  // ✅ Mantiene unidad, fecha_creacion y medida_id
+            |> filter(fn: (r) => r["_field"] == "valor")
+            |> keep(columns: ["_time", "_value", "medida_id"])
         '''
 
-        # Ejecutar la consulta
+        # Ejecutar consulta
         query_api = client.query_api()
         result = query_api.query(query)
 
-        # Procesar los resultados
+        # Procesar resultados
         data = []
         for table in result:
             for record in table.records:
                 try:
-                    value = float(record.get_value())  # Intentar convertir a número
+                    value = float(record.get_value())
                 except ValueError:
-                    continue  # Omitir valores que no sean numéricos
-
-                # Obtener unidad, fecha_creacion y medida_id de los tags
-                medida_id = record.values.get("medida_id")
+                    continue
 
                 data.append({
-                    "time": record.get_time().isoformat(),  # ✅ Fecha registrada por InfluxDB
+                    "time": record.get_time().isoformat(),
                     "valor": value,
-                    "medida_id": medida_id  # ✅ Nueva medida_id agregada
+                    "medida_id": record.values.get("medida_id")
                 })
 
         return jsonify(data), 200
 
     except InfluxDBError as e:
-        # Manejar errores específicos de InfluxDB
         return jsonify({"error": f"Error en la consulta a InfluxDB: {str(e)}"}), 500
-
     except Exception as e:
-        # Manejar otros errores inesperados
         return jsonify({"error": f"Error interno del servidor: {str(e)}"}), 500
-    
     
 @app.route("/get_filters", methods=["GET"])
 def get_filters():

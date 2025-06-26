@@ -84,7 +84,7 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
             <p style={{ color: "white", marginBottom: "10px" }}>{value} {unidad}</p>
             <div style={{ width: "350px" }}>
                 <GaugeChart
-                    id="gauge-chart"
+                    id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
                     nrOfLevels={30}
                     percent={Math.max(0, Math.min(1, percent))}
                     colors={["#5BE12C", "#F5CD19", "#EA4228"]}

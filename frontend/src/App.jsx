@@ -75,6 +75,11 @@ function App() {
     setRealTimeGauge((prevCharts) => [...prevCharts, chartConfig]);
   };
 
+  const handleDeleteRealTimeGauge = (index) => {
+    setRealTimeGauge(prev => prev.filter((_, i) => i !== index));
+  };
+
+
   const handleAddRealTimeChart = (chartConfig) => {
     if (realTimeCharts.length >= 4) {
       alert("No puedes agregar más de 4 gráficos en tiempo real.");
@@ -438,7 +443,7 @@ function App() {
                               dispositivo_id={chartConfig.dispositivo_id}
                               sensor_id={chartConfig.sensor_id}
                               medida_id={chartConfig.medida_id}
-                              onDelete={() => handleDeleteRealTimeChart(index)}
+                              onDelete={() => handleDeleteRealTimeGauge(index)}
                           />
                       ))}
                   </Box>

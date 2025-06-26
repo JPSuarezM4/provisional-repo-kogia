@@ -37,6 +37,7 @@ import AddChartButton from './components/AddChartButton';
 import ChartContainer from './components/ChartContainer';
 import MeasurementList from './components/MeasurmentList';
 import RealTimeChart from './components/RealTimeChart';
+import RealTimeGauge from './components/RealTimeGauge';
 import {Routes, Route} from 'react-router-dom';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -48,6 +49,7 @@ function App() {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [charts, setCharts] = useState([]);
   const [realTimeCharts, setRealTimeCharts] = useState([]);
+  const [realTimeGauge, setRealTimeGauge] = useState([]); // Estado para el gráfico en tiempo real
   const [isGestionOpen, setIsGestionOpen] = useState(false); // Cambia a un booleano
 
   const handleMenuItemClick = (menu) => {
@@ -63,6 +65,14 @@ function App() {
 
   const handleDeleteChart = (id) => {
   setCharts(prev => prev.filter(chart => chart.id !== id));
+  };
+
+  const handleAddRealTimeGauge = (chartConfig) => {
+    if (realTimeGauge.length >= 4) {
+      alert("No puedes agregar más de 4 gráficos en tiempo real de gauge.");
+      return;
+    }   
+    setRealTimeGauge((prevCharts) => [...prevCharts, chartConfig]);
   };
 
   const handleAddRealTimeChart = (chartConfig) => {
@@ -393,6 +403,9 @@ function App() {
                       <Box>
                           <AddChartButton onAddChart={handleAddRealTimeChart} />
                       </Box>
+                      <Box>
+                          <AddChartButton onAddChart={handleAddRealTimeGauge} />
+                      </Box>
                   </Fade>
               </Box>
               <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
@@ -410,6 +423,16 @@ function App() {
                   >
                       {realTimeCharts.map((chartConfig, index) => (
                           <RealTimeChart
+                              key={index}
+                              nodo_id={chartConfig.nodo_id}
+                              dispositivo_id={chartConfig.dispositivo_id}
+                              sensor_id={chartConfig.sensor_id}
+                              medida_id={chartConfig.medida_id}
+                              onDelete={() => handleDeleteRealTimeChart(index)}
+                          />
+                      ))}
+                      {realTimeGauge.map((chartConfig, index) => (
+                          <RealTimeGauge
                               key={index}
                               nodo_id={chartConfig.nodo_id}
                               dispositivo_id={chartConfig.dispositivo_id}

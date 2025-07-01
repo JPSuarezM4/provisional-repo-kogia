@@ -395,7 +395,7 @@ function App() {
           <React.Fragment>
               <Box
                   sx={{
-                      position: 'absolute',
+                      position: 'relative',
                       bottom: 90,
                       right: 20,
                       justifyContent: 'center',
@@ -406,10 +406,10 @@ function App() {
               >
                   <Fade in={selectedMenu === 'Análisis de datos en tiempo real'} timeout={500}>
                       <Box>
-                          <AddChartButton onAddChart={handleAddRealTimeChart} />
+                          <AddChartButton onAddChart={handleAddRealTimeChart} label="Agregar gráfico"/>
                       </Box>
                       <Box>
-                          <AddChartButton onAddChart={handleAddRealTimeGauge} />
+                          <AddChartButton onAddChart={handleAddRealTimeGauge} label="Agregar gauge"/>
                       </Box>
                   </Fade>
               </Box>

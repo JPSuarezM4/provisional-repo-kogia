@@ -78,12 +78,24 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         ? (value - limits.min) / (limits.max - limits.min)
         : 0;
 
+
+    if (measureName && !isNaN(percent)) {
+        console.log('Rendering GaugeChart with:', {
+            value,
+            percent,
+            measureName,
+            min: limits.min,
+            max: limits.max,
+        });
+        }
+
     return (
         <div className="flex flex-col items-center w-full p-4" style={{ backgroundColor: "#1f2937", border: "1.5px solid white", borderRadius: "8px" }}>
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
             <p style={{ color: "white", marginBottom: "10px" }}>{value} {unidad}</p>
-            <div style={{ width: "350px" }}>
-                <GaugeChart
+            {measureName && !isNaN(percent) && (
+                <div style={{ width: "350px" }}>
+                    <GaugeChart
                     id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
                     nrOfLevels={30}
                     percent={Math.max(0, Math.min(1, percent))}
@@ -91,8 +103,9 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                     arcWidth={0.3}
                     textColor="#fff"
                     animate={true}
-                />
-            </div>
+                    />
+                </div>
+                )}
 
             <Snackbar
                 open={alertOpen}

@@ -395,7 +395,6 @@ function App() {
           <React.Fragment>
               <Box
                   sx={{
-                      position: 'relative',
                       bottom: 90,
                       right: 20,
                       justifyContent: 'center',

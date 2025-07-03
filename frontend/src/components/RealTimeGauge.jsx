@@ -12,7 +12,6 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
 
-    // Obtener límites y nombre de la medida
     useEffect(() => {
         const fetchMeasure = async () => {
             try {
@@ -25,6 +24,7 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 );
 
                 if (measure) {
+                    console.log("Medida encontrada:", measure);
                     setLimits({ min: measure.min, max: measure.max });
                     setMeasureName(measure.nombre_medida);
                     setUnidad(measure.unidad_medida || "");
@@ -39,21 +39,29 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         fetchMeasure();
     }, [medida_id]);
 
-    // Conectar al WebSocket y recibir datos en tiempo real
     useEffect(() => {
         const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
 
+        socket.on("connect", () => console.log("WebSocket conectado ✅"));
+        socket.on("disconnect", () => console.warn("WebSocket desconectado ❌"));
+
         socket.on("real_time_data", (message) => {
             try {
+                console.log("Mensaje recibido:", message);
                 const parsedData = JSON.parse(message);
-                const filtered = parsedData.find((p) =>
-                    String(p.nodo_id) === String(nodo_id) &&
-                    String(p.dispositivo_id) === String(dispositivo_id) &&
-                    String(p.sensor_id) === String(sensor_id) &&
-                    String(p.medida_id) === String(medida_id)
-                );
+
+                const filtered = Array.isArray(parsedData)
+                    ? parsedData.find(
+                        (p) =>
+                            String(p.nodo_id) === String(nodo_id) &&
+                            String(p.dispositivo_id) === String(dispositivo_id) &&
+                            String(p.sensor_id) === String(sensor_id) &&
+                            String(p.medida_id) === String(medida_id)
+                    )
+                    : null;
 
                 if (filtered) {
+                    console.log("Dato filtrado:", filtered);
                     setValue(filtered.valor);
 
                     if (limits.max && filtered.valor > limits.max) {
@@ -74,38 +82,42 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     const handleAlertClose = () => setAlertOpen(false);
 
-    const percent = limits.max > limits.min
-        ? (value - limits.min) / (limits.max - limits.min)
-        : 0;
+    // Cálculo corregido del porcentaje
+    const percent =
+        limits.max > limits.min
+            ? Math.max(0, Math.min(1, (value - limits.min) / (limits.max - limits.min)))
+            : 0;
 
-
-    if (measureName && !isNaN(percent)) {
-        console.log('Rendering GaugeChart with:', {
+    useEffect(() => {
+        console.log("⏱️ Actualización:", {
             value,
-            percent,
-            measureName,
             min: limits.min,
             max: limits.max,
+            percent: (percent * 100).toFixed(2) + "%",
         });
-        }
+    }, [value, limits, percent]);
 
     return (
         <div className="flex flex-col items-center w-full p-4" style={{ backgroundColor: "#1f2937", border: "1.5px solid white", borderRadius: "8px" }}>
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
-            <p style={{ color: "white", marginBottom: "10px" }}>{value} {unidad}</p>
+            <p style={{ color: "white", marginBottom: "5px" }}>{value} {unidad}</p>
+            <p style={{ color: "#ccc", fontSize: "14px", marginBottom: "10px" }}>
+                Porcentaje: {(percent * 100).toFixed(1)}%
+            </p>
+
             {measureName && !isNaN(percent) && (
                 <div style={{ width: "350px" }}>
                     <GaugeChart
-                    id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
-                    nrOfLevels={30}
-                    percent={Math.max(0, Math.min(1, percent))}
-                    colors={["#5BE12C", "#F5CD19", "#EA4228"]}
-                    arcWidth={0.3}
-                    textColor="#fff"
-                    animate={true}
+                        id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
+                        nrOfLevels={30}
+                        percent={percent}
+                        colors={["#5BE12C", "#F5CD19", "#EA4228"]}
+                        arcWidth={0.3}
+                        textColor="#fff"
+                        animate={true}
                     />
                 </div>
-                )}
+            )}
 
             <Snackbar
                 open={alertOpen}

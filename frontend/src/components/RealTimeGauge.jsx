@@ -6,13 +6,23 @@ import { Snackbar, Alert } from "@mui/material";
 
 const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [value, setValue] = useState(0);
-    const [limits, setLimits] = useState({ max: 100, min: 0 });
+    const [limits, setLimits] = useState({ min: null, max: null }); // Solo para alertas
     const [measureName, setMeasureName] = useState("");
     const [unidad, setUnidad] = useState("");
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
 
-    // Obtener límites y nombre de la medida
+    // ⚠️ Límites visuales del Gauge por medida_id
+    const gaugeRanges = {
+        1: { min: 0, max: 100 },
+        2: { min: 0, max: 10 },
+        3: { min: 0, max: 50 },
+        4: { min: 0, max: 500 },
+    };
+
+    const gaugeLimit = gaugeRanges[medida_id] || { min: 0, max: 100 };
+
+    // Obtener límites (alertas) y nombre de la medida
     useEffect(() => {
         const fetchMeasure = async () => {
             try {
@@ -25,8 +35,10 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 );
 
                 if (measure) {
-                    console.log("Medida encontrada:", measure);
-                    setLimits({ min: measure.min, max: measure.max });
+                    setLimits({
+                        min: typeof measure.min === "number" ? measure.min : null,
+                        max: typeof measure.max === "number" ? measure.max : null,
+                    });
                     setMeasureName(measure.nombre_medida);
                     setUnidad(measure.unidad_medida || "");
                 } else {
@@ -40,19 +52,18 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         fetchMeasure();
     }, [medida_id]);
 
-    // Conexión WebSocket y procesamiento de datos
+    // WebSocket para recibir datos en tiempo real
     useEffect(() => {
         const socket = io("https://infdb-service-production.up.railway.app", {
             transports: ["websocket"],
         });
 
-        socket.on("connect", () => console.log("WebSocket conectado ✅"));
-        socket.on("disconnect", () => console.warn("WebSocket desconectado ❌"));
+        socket.on("connect", () => console.log("✅ WebSocket conectado"));
+        socket.on("disconnect", () => console.warn("❌ WebSocket desconectado"));
 
         socket.on("real_time_data", (message) => {
             try {
                 const parsedData = JSON.parse(message);
-                console.log("Mensaje recibido:", parsedData);
 
                 const filtered = Array.isArray(parsedData)
                     ? parsedData
@@ -67,13 +78,13 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                     : null;
 
                 if (filtered) {
-                    console.log("Dato más reciente:", filtered);
                     setValue(filtered.valor);
 
-                    if (limits.max && filtered.valor > limits.max) {
+                    // Mostrar alertas si están definidos los límites
+                    if (limits.max !== null && filtered.valor > limits.max) {
                         setAlertMessage(`⚠️ Valor ${filtered.valor} supera el máximo permitido (${limits.max})`);
                         setAlertOpen(true);
-                    } else if (limits.min && filtered.valor < limits.min) {
+                    } else if (limits.min !== null && filtered.valor < limits.min) {
                         setAlertMessage(`⚠️ Valor ${filtered.valor} está por debajo del mínimo (${limits.min})`);
                         setAlertOpen(true);
                     }
@@ -88,20 +99,20 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     const handleAlertClose = () => setAlertOpen(false);
 
-    // Cálculo corregido del porcentaje
+    // Porcentaje real visual del Gauge
     const percent =
-        limits.max > limits.min
-            ? Math.max(0, Math.min(1, (value - limits.min) / (limits.max - limits.min)))
+        gaugeLimit.max > gaugeLimit.min
+            ? Math.max(0, Math.min(1, (value - gaugeLimit.min) / (gaugeLimit.max - gaugeLimit.min)))
             : 0;
 
     useEffect(() => {
-        console.log("⏱️ Actualización:", {
-            value,
-            min: limits.min,
-            max: limits.max,
-            percent: (percent * 100).toFixed(2) + "%",
+        console.log("Gauge:", {
+            valor: value,
+            porcentaje: (percent * 100).toFixed(2) + "%",
+            rango_visual: gaugeLimit,
+            limites_alerta: limits,
         });
-    }, [value, limits, percent]);
+    }, [value, percent]);
 
     return (
         <div className="flex flex-col items-center w-full p-4" style={{ backgroundColor: "#1f2937", border: "1.5px solid white", borderRadius: "8px" }}>

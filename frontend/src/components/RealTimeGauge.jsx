@@ -12,6 +12,7 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
 
+    // Obtener límites y nombre de la medida
     useEffect(() => {
         const fetchMeasure = async () => {
             try {
@@ -39,29 +40,34 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         fetchMeasure();
     }, [medida_id]);
 
+    // Conexión WebSocket y procesamiento de datos
     useEffect(() => {
-        const socket = io("https://infdb-service-production.up.railway.app", { transports: ["websocket"] });
+        const socket = io("https://infdb-service-production.up.railway.app", {
+            transports: ["websocket"],
+        });
 
         socket.on("connect", () => console.log("WebSocket conectado ✅"));
         socket.on("disconnect", () => console.warn("WebSocket desconectado ❌"));
 
         socket.on("real_time_data", (message) => {
             try {
-                console.log("Mensaje recibido:", message);
                 const parsedData = JSON.parse(message);
+                console.log("Mensaje recibido:", parsedData);
 
                 const filtered = Array.isArray(parsedData)
-                    ? parsedData.find(
-                        (p) =>
-                            String(p.nodo_id) === String(nodo_id) &&
-                            String(p.dispositivo_id) === String(dispositivo_id) &&
-                            String(p.sensor_id) === String(sensor_id) &&
-                            String(p.medida_id) === String(medida_id)
-                    )
+                    ? parsedData
+                          .filter(
+                              (p) =>
+                                  String(p.nodo_id) === String(nodo_id) &&
+                                  String(p.dispositivo_id) === String(dispositivo_id) &&
+                                  String(p.sensor_id) === String(sensor_id) &&
+                                  String(p.medida_id) === String(medida_id)
+                          )
+                          .sort((a, b) => new Date(b.time) - new Date(a.time))[0]
                     : null;
 
                 if (filtered) {
-                    console.log("Dato filtrado:", filtered);
+                    console.log("Dato más reciente:", filtered);
                     setValue(filtered.valor);
 
                     if (limits.max && filtered.valor > limits.max) {

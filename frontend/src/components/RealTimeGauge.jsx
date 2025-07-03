@@ -6,16 +6,24 @@ import { Snackbar, Alert } from "@mui/material";
 
 const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     const [value, setValue] = useState(0);
-    const [limits, setLimits] = useState({ max: 100, min: 0 });
+    const [limits, setLimits] = useState({ min: null, max: null });
     const [measureName, setMeasureName] = useState("");
     const [unidad, setUnidad] = useState("");
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
 
     const valueHistoryRef = useRef([]);
-    const SMOOTHING_WINDOW = 5; // Promedio simple de los últimos 5 valores
+    const SMOOTHING_WINDOW = 5;
 
-    // Obtener límites y datos de la medida
+    const gaugeRanges = {
+        1: { min: 0, max: 100 },
+        2: { min: 0, max: 10 },
+        3: { min: 0, max: 50 },
+        4: { min: 0, max: 500 },
+    };
+
+    const gaugeLimit = gaugeRanges[medida_id] || { min: 0, max: 100 };
+
     useEffect(() => {
         const fetchMeasure = async () => {
             try {
@@ -28,7 +36,10 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                 );
 
                 if (measure) {
-                    setLimits({ min: measure.min, max: measure.max });
+                    setLimits({
+                        min: typeof measure.min === "number" ? measure.min : null,
+                        max: typeof measure.max === "number" ? measure.max : null,
+                    });
                     setMeasureName(measure.nombre_medida);
                     setUnidad(measure.unidad_medida || "");
                 } else {
@@ -42,34 +53,45 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
         fetchMeasure();
     }, [medida_id]);
 
-    // Conexión al socket y procesamiento de datos
     useEffect(() => {
         const socket = io("https://infdb-service-production.up.railway.app", {
             transports: ["websocket"],
         });
 
+        socket.on("connect", () => console.log("✅ WebSocket conectado"));
+        socket.on("disconnect", () => console.warn("❌ WebSocket desconectado"));
+
         socket.on("real_time_data", (message) => {
             try {
                 const parsedData = JSON.parse(message);
-                const filtered = parsedData.find(
-                    (p) =>
-                        String(p.nodo_id) === String(nodo_id) &&
-                        String(p.dispositivo_id) === String(dispositivo_id) &&
-                        String(p.sensor_id) === String(sensor_id) &&
-                        String(p.medida_id) === String(medida_id)
-                );
+                const filtered = Array.isArray(parsedData)
+                    ? parsedData
+                          .filter(
+                              (p) =>
+                                  String(p.nodo_id) === String(nodo_id) &&
+                                  String(p.dispositivo_id) === String(dispositivo_id) &&
+                                  String(p.sensor_id) === String(sensor_id) &&
+                                  String(p.medida_id) === String(medida_id)
+                          )
+                          .sort((a, b) => new Date(b.time) - new Date(a.time))[0]
+                    : null;
 
                 if (filtered) {
-                    // Guardar historial en ref para suavizado
-                    valueHistoryRef.current = [...valueHistoryRef.current, filtered.valor].slice(-SMOOTHING_WINDOW);
-                    const avg = valueHistoryRef.current.reduce((a, b) => a + b, 0) / valueHistoryRef.current.length;
-                    setValue(Number(avg.toFixed(2)));
+                    // Suavizado simple
+                    valueHistoryRef.current = [
+                        ...valueHistoryRef.current,
+                        filtered.valor,
+                    ].slice(-SMOOTHING_WINDOW);
+                    const promedio =
+                        valueHistoryRef.current.reduce((a, b) => a + b, 0) /
+                        valueHistoryRef.current.length;
+                    setValue(Number(promedio.toFixed(2)));
 
-                    // Alertas con el valor original
-                    if (limits.max && filtered.valor > limits.max) {
+                    // Alertas con valor crudo
+                    if (limits.max !== null && filtered.valor > limits.max) {
                         setAlertMessage(`⚠️ Valor ${filtered.valor} supera el máximo permitido (${limits.max})`);
                         setAlertOpen(true);
-                    } else if (limits.min && filtered.valor < limits.min) {
+                    } else if (limits.min !== null && filtered.valor < limits.min) {
                         setAlertMessage(`⚠️ Valor ${filtered.valor} está por debajo del mínimo (${limits.min})`);
                         setAlertOpen(true);
                     }
@@ -84,20 +106,34 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     const handleAlertClose = () => setAlertOpen(false);
 
-    const percent = limits.max > limits.min
-        ? (value - limits.min) / (limits.max - limits.min)
-        : 0;
+    const percent =
+        gaugeLimit.max > gaugeLimit.min
+            ? Math.max(0, Math.min(1, (value - gaugeLimit.min) / (gaugeLimit.max - gaugeLimit.min)))
+            : 0;
+
+    useEffect(() => {
+        console.log("Gauge:", {
+            valor: value,
+            porcentaje: (percent * 100).toFixed(2) + "%",
+            rango_visual: gaugeLimit,
+            limites_alerta: limits,
+        });
+    }, [value, percent]);
 
     return (
         <div className="flex flex-col items-center w-full p-4" style={{ backgroundColor: "#1f2937", border: "1.5px solid white", borderRadius: "8px" }}>
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
-            <p style={{ color: "white", marginBottom: "10px" }}>{value} {unidad}</p>
+            <p style={{ color: "white", marginBottom: "5px" }}>{value} {unidad}</p>
+            <p style={{ color: "#ccc", fontSize: "14px", marginBottom: "10px" }}>
+                Porcentaje: {(percent * 100).toFixed(1)}%
+            </p>
+
             {measureName && !isNaN(percent) && (
                 <div style={{ width: "350px" }}>
                     <GaugeChart
                         id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
                         nrOfLevels={30}
-                        percent={Math.max(0, Math.min(1, percent))}
+                        percent={percent}
                         colors={["#5BE12C", "#F5CD19", "#EA4228"]}
                         arcWidth={0.3}
                         textColor="#fff"

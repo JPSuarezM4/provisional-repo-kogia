@@ -129,17 +129,32 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
             </p>
 
             {measureName && !isNaN(percent) && (
-                <div style={{ width: "350px" }}>
-                    <GaugeChart
-                        id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
-                        nrOfLevels={30}
-                        percent={percent}
-                        colors={["#5BE12C", "#F5CD19", "#EA4228"]}
-                        arcWidth={0.3}
-                        textColor="#fff"
-                        animate={true}
-                    />
+            <div style={{ position: "relative", width: "350px", height: "200px" }}>
+                <GaugeChart
+                    id={`gauge-chart-${nodo_id}-${dispositivo_id}-${sensor_id}-${medida_id}`}
+                    nrOfLevels={30}
+                    percent={percent}
+                    colors={["#5BE12C", "#F5CD19", "#EA4228"]}
+                    arcWidth={0.3}
+                    textColor="#fff"
+                    animate={true}
+                    hideText={true}
+                />
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        color: "white",
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                        textAlign: "center",
+                    }}
+                >
+                    {value} {unidad}
                 </div>
+            </div>
             )}
 
             <Snackbar

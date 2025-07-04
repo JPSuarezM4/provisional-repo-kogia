@@ -121,9 +121,8 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
     }, [value, percent]);
 
     return (
-        <div className="flex flex-col items-center w-full p-4" style={{ backgroundColor: "#1f2937", border: "1.5px solid white", borderRadius: "8px" }}>
+        <div className="relative flex flex-col items-center w-full p-4" style={{ position:"relative", backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
-            <p style={{ color: "white", marginBottom: "5px" }}>{value} {unidad}</p>
             <p style={{ color: "#ccc", fontSize: "14px", marginBottom: "10px" }}>
                 Porcentaje: {(percent * 100).toFixed(1)}%
             </p>

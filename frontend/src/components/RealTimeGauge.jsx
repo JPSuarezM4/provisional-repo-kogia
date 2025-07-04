@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import GaugeChart from "react-gauge-chart";
 import PropTypes from "prop-types";
 import { io } from "socket.io-client";
-import { Snackbar, Alert } from "@mui/material";
+import { Snackbar, Alert, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
+const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) => {
     const [value, setValue] = useState(0);
     const [limits, setLimits] = useState({ min: null, max: null });
     const [measureName, setMeasureName] = useState("");
@@ -77,7 +78,6 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                     : null;
 
                 if (filtered) {
-                    // Suavizado simple
                     valueHistoryRef.current = [
                         ...valueHistoryRef.current,
                         filtered.valor,
@@ -87,7 +87,6 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
                         valueHistoryRef.current.length;
                     setValue(Number(promedio.toFixed(2)));
 
-                    // Alertas con valor crudo
                     if (limits.max !== null && filtered.valor > limits.max) {
                         setAlertMessage(`⚠️ Valor ${filtered.valor} supera el máximo permitido (${limits.max})`);
                         setAlertOpen(true);
@@ -122,6 +121,15 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id }) => {
 
     return (
         <div className="relative flex flex-col items-center w-full p-4" style={{ position:"relative", backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+            {/* Botón eliminar */}
+            <IconButton
+                aria-label="Eliminar gauge"
+                onClick={onDelete}
+                style={{ position: "absolute", top: 8, right: 8, color: "white", zIndex: 10 }}
+            >
+                <DeleteIcon />
+            </IconButton>
+
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
             <p style={{ color: "#ccc", fontSize: "14px", marginBottom: "10px" }}>
                 Porcentaje: {(percent * 100).toFixed(1)}%
@@ -175,6 +183,7 @@ RealTimeGauge.propTypes = {
     dispositivo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     sensor_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    onDelete: PropTypes.func.isRequired, // <- NUEVO: callback para eliminar el gauge
 };
 
 export default RealTimeGauge;

@@ -131,9 +131,6 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
             </IconButton>
 
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
-            <p style={{ color: "#ccc", fontSize: "14px", marginBottom: "10px" }}>
-                Porcentaje: {(percent * 100).toFixed(1)}%
-            </p>
 
             {measureName && !isNaN(percent) && (
             <div style={{ position: "relative", width: "350px", height: "200px" }}>

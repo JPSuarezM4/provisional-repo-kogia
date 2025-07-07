@@ -24,8 +24,8 @@ import {
   Timeline as TimelineIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
-  People as PeopleIcon,
-  Devices as DevicesIcon,
+ // People as PeopleIcon,
+// Devices as DevicesIcon,
   ListAlt as ListAltIcon,
   AutoAwesomeMosaic as AutoAwesomeMosaicIcon
 } from '@mui/icons-material';
@@ -196,14 +196,14 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <ListItemIcon><ListAltIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de lista de medidas" />
                 </ListItem>
-                <ListItem sx={{ pl: 4 }} button>
+            {/* <ListItem sx={{ pl: 4 }} button>
                   <ListItemIcon><PeopleIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de usuarios" />
                 </ListItem>
                 <ListItem sx={{ pl: 4 }} button>
                   <ListItemIcon><DevicesIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de dispositivos" />
-                </ListItem>
+                </ListItem> */}
               </List>
             </Collapse>
           </List>

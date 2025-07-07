@@ -13,6 +13,7 @@ import {
   Alert,
   ToggleButton,
   ToggleButtonGroup,
+  Box,
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -122,9 +123,10 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Crear nuevo gráfico</DialogTitle>
       <DialogContent>
+        <Box sx={{ minWidth: 320, maxWidth: 500 }}>
         <TextField
           select
           label="Seleccionar Nodo"
@@ -218,6 +220,7 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
             Gauge
           </ToggleButton>
         </ToggleButtonGroup>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

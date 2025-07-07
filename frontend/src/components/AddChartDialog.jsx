@@ -11,7 +11,12 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import SpeedIcon from '@mui/icons-material/Speed';
+
 
 export default function AddChartDialog({ open, onClose, onAddChart }) {
   const [formData, setFormData] = useState({
@@ -38,6 +43,7 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
       sensor_id: '',
       medidas: [],
       medida_id: '',
+      chartType: 'line', // Default chart type
     });
   };
 
@@ -97,6 +103,12 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
       ...prev,
       medida_id: parseInt(medida_id, 10),
     }));
+  };
+
+  const handleChartTypeChange = (event, newType) => {
+    if (newType !== null) {
+      setFormData((prev) => ({ ...prev, chartType: newType }));
+    }
   };
 
   const handleSnackbarClose = () => {
@@ -190,6 +202,22 @@ export default function AddChartDialog({ open, onClose, onAddChart }) {
             <MenuItem disabled>Selecciona un sensor primero</MenuItem>
           )}
         </TextField>
+        <ToggleButtonGroup
+          value={formData.chartType}
+          exclusive
+          onChange={handleChartTypeChange}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          <ToggleButton value="line" aria-label="Gráfico de Línea">
+            <ShowChartIcon sx={{ mr: 1 }} />
+            Línea
+          </ToggleButton>
+          <ToggleButton value="gauge" aria-label="Gráfico de Aguja">
+            <SpeedIcon sx={{ mr: 1 }} />
+            Gauge
+          </ToggleButton>
+        </ToggleButtonGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

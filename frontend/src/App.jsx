@@ -67,26 +67,30 @@ function App() {
   setCharts(prev => prev.filter(chart => chart.id !== id));
   };
 
-  const handleAddRealTimeGauge = (chartConfig) => {
-    if (realTimeGauge.length >= 4) {
-      alert("No puedes agregar más de 4 gráficos en tiempo real de gauge.");
-      return;
-    }   
-    setRealTimeGauge((prevCharts) => [...prevCharts, chartConfig]);
-  };
+
 
   const handleDeleteRealTimeGauge = (index) => {
     setRealTimeGauge(prev => prev.filter((_, i) => i !== index));
   };
 
 
-  const handleAddRealTimeChart = (chartConfig) => {
+const handleAddRealTimeChart = (chartConfig) => {
+  if (chartConfig.chartType === 'line') {
     if (realTimeCharts.length >= 4) {
       alert("No puedes agregar más de 4 gráficos en tiempo real.");
       return;
-    }   
+    }
     setRealTimeCharts((prevCharts) => [...prevCharts, chartConfig]);
-  };
+  } else if (chartConfig.chartType === 'gauge') {
+    if (realTimeGauge.length >= 4) {
+      alert("No puedes agregar más de 4 gráficos en tiempo real de gauge.");
+      return;
+    }
+    setRealTimeGauge((prevCharts) => [...prevCharts, chartConfig]);
+  } else {
+    alert("Tipo de gráfico no válido.");
+  }
+};
 
   const handleDeleteRealTimeChart = (index) => {
     setRealTimeCharts(prev => prev.filter((_, i) => i !== index));
@@ -271,7 +275,6 @@ function App() {
             <>
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <AddChartButton onAddChart={handleAddRealTimeChart} />
-                <AddChartButton onAddChart={handleAddRealTimeGauge} />
               </Box>
               <Fade in timeout={500}>
                 <Box sx={{

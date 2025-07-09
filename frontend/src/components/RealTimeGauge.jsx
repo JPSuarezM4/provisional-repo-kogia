@@ -120,7 +120,24 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
     }, [value, percent]);
 
     return (
-        <div className="relative flex flex-col items-center w-full p-4" style={{ position:"relative", backgroundColor: '#1f2937', border: '1.5px solid white', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+        <div    
+            className="relative flex flex-col items-center"
+            style={{
+            position: "relative",
+            backgroundColor: "#1f2937",
+            border: "1.5px solid white",
+            borderRadius: "8px",
+            padding: "20px",
+            marginBottom: "20px",
+            width: 370, // Fija el ancho
+            minWidth: 280,
+            maxWidth: "100%",
+            margin: "0 auto", // Centra horizontalmente
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            }}>
             {/* Botón eliminar */}
             <IconButton
                 aria-label="Eliminar gauge"

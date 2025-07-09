@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import { Snackbar, Alert, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) => {
+const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, nodo_nombre }) => {
     const [value, setValue] = useState(0);
     const [limits, setLimits] = useState({ min: null, max: null });
     const [measureName, setMeasureName] = useState("");
@@ -147,6 +147,13 @@ const RealTimeGauge = ({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete
                 <DeleteIcon />
             </IconButton>
 
+                        {/* Información adicional con nombres */}
+            <div style={{ color: "#bbb", fontSize: 14, marginBottom: 8, textAlign: "center" }}>
+                <div>
+                    <strong>Nodo:</strong> {nodo_nombre || nodo_id}
+                </div>
+            </div>
+
             <h2 style={{ color: "white" }}>{measureName || "Cargando..."}</h2>
 
             {measureName && !isNaN(percent) && (
@@ -197,6 +204,7 @@ RealTimeGauge.propTypes = {
     dispositivo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     sensor_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    nodo_nombre: PropTypes.string, // <- NUEVO: nombre del nodo
     onDelete: PropTypes.func.isRequired, // <- NUEVO: callback para eliminar el gauge
 };
 

@@ -33,6 +33,9 @@ export default function UserManagement() {
 
   const token = localStorage.getItem('token');
 
+  
+  console.log("TOKEN JWT:", token); 
+
   const headers = {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',

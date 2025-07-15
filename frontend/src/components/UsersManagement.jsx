@@ -77,7 +77,7 @@ export default function UserManagement() {
   };
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', mt: 5 }}>
+    <Box sx={{ width: '100%', mt: 5, px: 3 }}>
       <Typography variant="h5" gutterBottom align="center">
         Gestión de Usuarios
       </Typography>

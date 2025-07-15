@@ -75,7 +75,7 @@ def create_user():
     return jsonify({"message": f"Usuario {email} creado exitosamente con rol {role}"}), 201
 
 @app.route('/api/users', methods=['GET'])
-@jwt_required()
+
 def get_users():
     current_user = get_jwt_identity()
 
@@ -90,7 +90,7 @@ def get_users():
 
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
-@jwt_required()
+
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     db.session.delete(user)

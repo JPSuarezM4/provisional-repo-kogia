@@ -262,14 +262,13 @@ const handleAddRealTimeChart = (chartConfig) => {
                 <AddChartButton onAddChart={handleAddChart} />
               </Box>
               <Fade in timeout={500}>
-                <Box sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 3,
-                  maxWidth: '1200px',
-                  margin: '0 auto',
-                }}>
-                  <ChartContainer charts={charts} onDeleteChart={handleDeleteChart} />
+                  <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+                    gap: 3,
+                    width: '100%',
+                  }}>
+                    <ChartContainer charts={charts} onDeleteChart={handleDeleteChart} />
                 </Box>
               </Fade>
             </>
@@ -282,13 +281,12 @@ const handleAddRealTimeChart = (chartConfig) => {
                 <AddChartButton onAddChart={handleAddRealTimeChart} />
               </Box>
               <Fade in timeout={500}>
-                <Box sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 3,
-                  maxWidth: '1200px',
-                  margin: '0 auto',
-                }}>
+                    <Box sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+                      gap: 3,
+                      width: '100%',
+                    }}>
                   {realTimeCharts.map((config, i) => (
                     <RealTimeChart
                       key={i}
@@ -311,7 +309,7 @@ const handleAddRealTimeChart = (chartConfig) => {
           {/* GESTIÓN DE USUARIOS */}
           {selectedMenu === 'Gestión de usuarios' && (
             <Fade in timeout={500}>
-              <Box sx={{ p: 3, width: '100%' }}>
+              <Box sx={{ mt: 3 }}>
                 <UserManagement />
               </Box>
             </Fade>

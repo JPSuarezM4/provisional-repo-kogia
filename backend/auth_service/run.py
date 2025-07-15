@@ -77,9 +77,17 @@ def create_user():
 @app.route('/api/users', methods=['GET'])
 @jwt_required()
 def get_users():
+    current_user = get_jwt_identity()
+
+    # Opcional: proteger para que solo los admin puedan ver los usuarios
+    if current_user["role"] != "admin":
+        return jsonify({"message": "Acceso denegado"}), 403
+
     users = User.query.all()
-    users_data = [{"id": u.id, "email": u.email, "role": u.role} for u in users]
+    users_data = [{"id": user.id, "email": user.email, "role": user.role} for user in users]
     return jsonify(users_data), 200
+
+
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()

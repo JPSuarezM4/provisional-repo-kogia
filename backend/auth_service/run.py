@@ -74,5 +74,21 @@ def create_user():
 
     return jsonify({"message": f"Usuario {email} creado exitosamente con rol {role}"}), 201
 
+@app.route('/api/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    users = User.query.all()
+    users_data = [{"id": u.id, "email": u.email, "role": u.role} for u in users]
+    return jsonify(users_data), 200
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "Usuario eliminado"}), 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

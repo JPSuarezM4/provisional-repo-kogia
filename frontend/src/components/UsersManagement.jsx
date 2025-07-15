@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -7,89 +7,155 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Paper
+  Paper,
+  Tabs,
+  Tab,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
 } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
 
 const roles = ['admin', 'user'];
 
 export default function UserManagement() {
+  const [tab, setTab] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [users, setUsers] = useState([]);
 
   const token = localStorage.getItem('token');
 
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+
+  // Obtener usuarios al cargar o cuando se cambie algo
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('https://auth-service-production-9571.up.railway.app/api/users', { headers });
+      setUsers(res.data);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const handleCreateUser = async () => {
     try {
-      const response = await axios.post(
-        'https://auth-service-production-9571.up.railway.app/create-user',
+      const res = await axios.post(
+        'https://auth-service-production-9571.up.railway.app/api/create-user',
         { email, password, role },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
+        { headers }
       );
-
-      setSuccessMessage(response.data.message);
+      setSuccessMessage(res.data.message);
       setEmail('');
       setPassword('');
       setRole('user');
-    } catch (error) {
-      setErrorMessage(
-        error?.response?.data?.message || 'Error al crear el usuario.'
-      );
+      fetchUsers();
+    } catch {
+      setErrorMessage('Error al crear usuario');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      await axios.delete(`https://auth-service-production-9571.up.railway.app/api/users/${userId}`, { headers });
+      fetchUsers();
+    } catch {
+      setErrorMessage('Error al eliminar usuario');
     }
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4, maxWidth: 400, mx: 'auto', mt: 6 }}>
-      <Typography variant="h5" gutterBottom>
-        Crear nuevo usuario
+    <Paper sx={{ p: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Gestión de usuarios
       </Typography>
 
-      <Box display="flex" flexDirection="column" gap={2}>
-        <TextField
-          label="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          fullWidth
-        />
+      {/* Pestañas */}
+      <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} sx={{ mb: 2 }}>
+        <Tab label="Crear Usuario" />
+        <Tab label="Lista de Usuarios" />
+      </Tabs>
 
-        <TextField
-          label="Contraseña"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          fullWidth
-        />
+      {/* Crear Usuario */}
+      {tab === 0 && (
+        <Box display="flex" flexDirection="column" gap={2} maxWidth={400}>
+          <TextField
+            label="Correo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Contraseña"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <TextField
+            select
+            label="Rol"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            {roles.map((r) => (
+              <MenuItem key={r} value={r}>
+                {r}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Button variant="contained" onClick={handleCreateUser}>
+            Crear Usuario
+          </Button>
+        </Box>
+      )}
 
-        <TextField
-          label="Rol"
-          select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          fullWidth
-        >
-          {roles.map((r) => (
-            <MenuItem key={r} value={r}>
-              {r}
-            </MenuItem>
-          ))}
-        </TextField>
+      {/* Lista de Usuarios */}
+      {tab === 1 && (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Email</TableCell>
+              <TableCell>Rol</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  {/* Aquí puedes agregar funcionalidad de edición más adelante */}
+                  <IconButton color="error" onClick={() => handleDeleteUser(user.id)}>
+                    <Delete />
+                  </IconButton>
+                  <IconButton color="primary" disabled>
+                    <Edit />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
-        <Button variant="contained" onClick={handleCreateUser}>
-          Crear Usuario
-        </Button>
-      </Box>
-
+      {/* Alertas */}
       <Snackbar
         open={!!successMessage}
-        autoHideDuration={4000}
+        autoHideDuration={3000}
         onClose={() => setSuccessMessage('')}
       >
         <Alert severity="success" onClose={() => setSuccessMessage('')}>
@@ -99,7 +165,7 @@ export default function UserManagement() {
 
       <Snackbar
         open={!!errorMessage}
-        autoHideDuration={4000}
+        autoHideDuration={3000}
         onClose={() => setErrorMessage('')}
       >
         <Alert severity="error" onClose={() => setErrorMessage('')}>

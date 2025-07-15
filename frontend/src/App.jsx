@@ -24,7 +24,7 @@ import {
   Timeline as TimelineIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
- // People as PeopleIcon,
+  People as PeopleIcon,
 // Devices as DevicesIcon,
   ListAlt as ListAltIcon,
   AutoAwesomeMosaic as AutoAwesomeMosaicIcon
@@ -40,6 +40,7 @@ import RealTimeChart from './components/RealTimeChart';
 import RealTimeGauge from './components/RealTimeGauge';
 import {Routes, Route} from 'react-router-dom';
 import Login from './components/Login';
+import UserManagement from './components/UsersManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -196,11 +197,16 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <ListItemIcon><ListAltIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de lista de medidas" />
                 </ListItem>
-            {/* <ListItem sx={{ pl: 4 }} button>
-                  <ListItemIcon><PeopleIcon /></ListItemIcon>
-                  <ListItemText primary="Gestión de usuarios" />
-                </ListItem>
-                <ListItem sx={{ pl: 4 }} button>
+              <ListItem
+                sx={{ pl: 4 }}
+                button
+                selected={selectedMenu === 'Gestión de usuarios'}
+                onClick={() => setSelectedMenu('Gestión de usuarios')}
+              >
+                <ListItemIcon><PeopleIcon /></ListItemIcon>
+                <ListItemText primary="Gestión de usuarios" />
+              </ListItem>
+                {/* <ListItem sx={{ pl: 4 }} button>
                   <ListItemIcon><DevicesIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de dispositivos" />
                 </ListItem> */}
@@ -301,6 +307,15 @@ const handleAddRealTimeChart = (chartConfig) => {
                 </Box>
               </Fade>
             </>
+          )}
+
+          {/* GESTIÓN DE USUARIOS */}
+          {selectedMenu === 'Gestión de usuarios' && (
+            <Fade in timeout={500}>
+              <Box sx={{ mt: 3 }}>
+                <UserManagement />
+              </Box>
+            </Fade>
           )}
         </Box>
       </Box>

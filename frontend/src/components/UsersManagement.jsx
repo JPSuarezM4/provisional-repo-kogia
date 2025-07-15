@@ -42,6 +42,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       const res = await axios.get('https://auth-service-production-9571.up.railway.app/api/users', { headers });
+      console.log("Usuarios obtenidos:", res.data); // <-- AGREGA ESTO
       setUsers(res.data);
     } catch (error) {
       console.error('Error al cargar usuarios:', error);

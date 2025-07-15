@@ -41,16 +41,21 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"message": "Credenciales incorrectas"}), 401
 
-    # Crear un token JWT con el email como identidad y el rol como claim adicional
-    access_token = create_access_token(identity=user.email, additional_claims={"role": user.role})
+    # Crear el token JWT correctamente:
+    access_token = create_access_token(
+        identity=user.email,  # <-- identity debe ser un string
+        additional_claims={"role": user.role}  # <-- el rol va en claims adicionales
+    )
     return jsonify({"token": access_token}), 200
 
 # Ruta protegida
 @app.route('/api/admin', methods=['GET'])
 @jwt_required()
 def admin_dashboard():
-    current_user = get_jwt_identity()  # Obtener información del token
-    return jsonify({"message": f"Bienvenido, {current_user}"}), 200
+    current_user_email = get_jwt_identity()  # Esto es un string (el email)
+    claims = get_jwt()
+    role = claims["role"]
+    return jsonify({"message": f"Bienvenido, {current_user_email} (rol: {role})"}), 200
 
 @app.route('/api/create-user', methods=['POST'])
 def create_user():

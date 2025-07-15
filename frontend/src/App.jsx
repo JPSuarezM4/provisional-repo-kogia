@@ -311,7 +311,7 @@ const handleAddRealTimeChart = (chartConfig) => {
           {/* GESTIÓN DE USUARIOS */}
           {selectedMenu === 'Gestión de usuarios' && (
             <Fade in timeout={500}>
-              <Box sx={{ mt: 3 }}>
+              <Box sx={{ p: 3, width: '100%' }}>
                 <UserManagement />
               </Box>
             </Fade>

@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from database import db
 from models import User
 from flask_cors import CORS
+
 
 
 load_dotenv()
@@ -40,8 +41,8 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"message": "Credenciales incorrectas"}), 401
 
-    # Crear un token JWT
-    access_token = create_access_token(identity={"email": user.email, "role": user.role})
+    # Crear un token JWT con el email como identidad y el rol como claim adicional
+    access_token = create_access_token(identity=user.email, additional_claims={"role": user.role})
     return jsonify({"token": access_token}), 200
 
 # Ruta protegida
@@ -77,10 +78,8 @@ def create_user():
 @app.route('/api/users', methods=['GET'])
 @jwt_required()
 def get_users():
-    current_user = get_jwt_identity()
-
-    # Opcional: proteger para que solo los admin puedan ver los usuarios
-    if current_user["role"] != "admin":
+    claims = get_jwt()
+    if claims["role"] != "admin":
         return jsonify({"message": "Acceso denegado"}), 403
 
     users = User.query.all()

@@ -50,7 +50,7 @@ def login():
 @jwt_required()
 def admin_dashboard():
     current_user = get_jwt_identity()  # Obtener información del token
-    return jsonify({"message": f"Bienvenido, {current_user['email']}"}), 200
+    return jsonify({"message": f"Bienvenido, {current_user}"}), 200
 
 @app.route('/api/create-user', methods=['POST'])
 def create_user():

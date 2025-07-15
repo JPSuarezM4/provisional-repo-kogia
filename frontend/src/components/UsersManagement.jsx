@@ -38,7 +38,7 @@ export default function UserManagement() {
 
   const headers = {
     Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
+    //'Content-Type': 'application/json',
   };
 
   // Obtener usuarios al cargar o cuando se cambie algo

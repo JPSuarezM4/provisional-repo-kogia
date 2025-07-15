@@ -110,7 +110,7 @@ const handleAddRealTimeChart = (chartConfig) => {
   const MainApp = () => {
     return (
 <NodosProvider>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#121212' }}>
         {/* AppBar */}
         <AppBar
           position="fixed"
@@ -223,11 +223,10 @@ const handleAddRealTimeChart = (chartConfig) => {
         <Box
           component="main"
           sx={{
-            flexGrow: 1,
+            flex: 1,
             p: 3,
-            width: `calc(100% - ${drawerWidth}px)`,
+            overflowY: 'auto',
             backgroundColor: '#121212',
-            minHeight: '100vh',
           }}
         >
           <Toolbar />

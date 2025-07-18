@@ -43,6 +43,28 @@ services:
     networks:
       - backend_network
 
+
+  alert_service:
+    build: 
+      context: .
+      dockerfile: alert_service/Dockerfile
+    ports:
+      - "5004:5000"
+    environment:
+      - FLASK_ENV=production
+      - EMAIL_ADDRESS=kogiaalerts@gmail.com
+      - EMAIL_PASSWORD=kogia9030K
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=465
+      - ALERT_RECEIVER=yitaw30211@simerm.com
+      - LIMITS_API_URL=https://measures-service-production.up.railway.app/api/measures
+      - INFLUX_URL=http://infdb_service:8086
+      - INFLUX_TOKEN=YY2G3o8Du9uFpXeIn1SX4wSIYO32R3UArJbEgzCpyrbyE3zGGEiIdFzcVv1EvLa33TbFdsu_XENNtOhTy7W
+      - INFLUX_ORG=3dcfd1ba132d8ffe
+      - INFLUX_BUCKET=KOGIA_TEST5
+    networks:
+      - backend_network
+
 networks:
   backend_network:
     driver: bridge

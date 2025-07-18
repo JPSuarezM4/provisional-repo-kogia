@@ -71,3 +71,20 @@ def get_measures():
     """
     measures = db.session.query(MedidaData).all()
     return jsonify(medidas_schema.dump(measures))
+
+
+@medida_bp.route("/measures/limits/<string:nombre_medida>", methods=["GET"])
+def get_measure_limits(nombre_medida):
+    """
+    Get max and min limits for a specific measure by name.
+    """
+    measure = db.session.query(MedidaData).filter(MedidaData.nombre_medida == nombre_medida).first()
+    if measure:
+        return jsonify({
+            "nombre_medida": measure.nombre_medida,
+            "unidad_medida": measure.unidad_medida,
+            "max": measure.max,
+            "min": measure.min
+        })
+    return jsonify({"detail": "Measure not found"}), 404
+

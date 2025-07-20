@@ -16,7 +16,9 @@ def create_app():
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
         # Obtener el nombre del measurement
-        measurement_name = limits["nombre_medida"]
+        measurement_name = limits.get("nombre_medida")
+        if not measurement_name:
+            return jsonify({"error": "nombre_medida no está presente en los límites"}), 500
         data = get_data(measurement_name)
 
         if not data or not isinstance(data, list) or len(data) == 0:

@@ -7,9 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_data():
-    # Usamos el nombre fijo del measurement
-    measurement_name = "mediciones_dht11_v2"
+def get_data(measurement_name):
     return read_measurements(measurement_name)
 
 def create_app():
@@ -22,20 +20,19 @@ def create_app():
         if not limits:
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
-        # Obtener los datos del measurement fijo
-        data = get_data()
-        logger.info(f"Datos obtenidos: {data}")
-        print("Datos obtenidos:", data)  # Para pruebas
+        measurement_name = limits.get("nombre_medida")
+        data = get_data(measurement_name)
+        logger.info(f"Datos obtenidos: {data[:2]}")  # Muestra los dos primeros para debug
 
         if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
-        # Filtrar los datos por medida_id
+        logger.info(f"medida_id en datos: {[d.get('medida_id') for d in data]}")
+
         valores_filtrados = [d for d in data if d.get("medida_id") == medida_id]
         if not valores_filtrados:
             return jsonify({"error": f"No se encontraron datos para la medida {medida_id}"}), 404
 
-        # Suponiendo que el último dato tiene clave 'valor'
         valor = valores_filtrados[0].get("valor")
         logger.info(f"Valor leído: {valor}")
         if valor is None:

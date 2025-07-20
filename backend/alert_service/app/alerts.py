@@ -3,9 +3,9 @@ import requests
 from email.mime.text import MIMEText
 from app.config import *
 
-def get_limits(measure_id: int):
+def get_limits(measurement_id: str):
     try:
-        response = requests.get(f"{LIMITS_API_URL}/measures/limits/id/{measure_id}")
+        response = requests.get(f"{LIMITS_API_URL}/api/measures/limits/id/{measurement_id}")
         if response.status_code == 200:
             data = response.json()
             return {"min": data["min"], "max": data["max"]}

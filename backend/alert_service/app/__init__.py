@@ -12,20 +12,24 @@ def create_app():
     @app.route("/check-alerts/<int:medida_id>", methods=["GET"])
     def check_alerts(medida_id):
         limits = get_limits(medida_id)
+        print("Límites obtenidos:", limits)  # <-- AQUÍ
         if not limits:
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
         # Obtener el nombre del measurement
         measurement_name = limits.get("nombre_medida")
+        print("Measurement name:", measurement_name)  # <-- AQUÍ
         if not measurement_name:
             return jsonify({"error": "nombre_medida no está presente en los límites"}), 500
         data = get_data(measurement_name)
+        print("Datos obtenidos:", data)  # <-- AQUÍ
 
         if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
         # Suponiendo que el último dato tiene clave 'valor'
         valor = data[0].get("valor")
+        print("Valor leído:", valor)  # <-- AQUÍ
         if valor is None:
             return jsonify({"error": "Dato inválido"}), 500
 

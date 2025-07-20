@@ -20,8 +20,7 @@ def create_app():
         if not limits:
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
-        measurement_name = limits.get("nombre_medida")
-        data = get_data(measurement_name)
+        data = read_measurements(medida_id)
         logger.info(f"Datos obtenidos: {data[:2]}")  # Muestra los dos primeros para debug
 
         if not data or not isinstance(data, list) or len(data) == 0:

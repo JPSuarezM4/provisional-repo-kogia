@@ -12,12 +12,13 @@ bucket = os.getenv("INFLUX_BUCKET")
 client = InfluxDBClient(url=url, token=token, org=org)
 query_api = client.query_api()
 
-def read_measurements(measurement: str):
+def read_measurements(measurement_id: int):
     query = f'''
         from(bucket: "{bucket}")
           |> range(start: -5m)
-          |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-          |> filter(fn: (r) => r["_field"] == "value")
+          |> filter(fn: (r) => r["_measurement"] == "mediciones_dht11_v2")
+          |> filter(fn: (r) => r["medida_id"] == "{measurement_id}")
+          |> filter(fn: (r) => r["_field"] == "valor")
     '''
     result = query_api.query(org=org, query=query)
 

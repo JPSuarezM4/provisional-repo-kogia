@@ -78,7 +78,7 @@ def get_measure_limits_by_id(medida_id):
     """
     Get max and min limits for a specific measure by ID.
     """
-    measure = db.session.query(MedidaData).filter(MedidaData.id == medida_id).first()
+    measure = db.session.query(MedidaData).filter(MedidaData.measure_id == medida_id).first()
     if measure:
         return jsonify({
             "nombre_medida": measure.nombre_medida,
@@ -87,5 +87,6 @@ def get_measure_limits_by_id(medida_id):
             "min": measure.min
         })
     return jsonify({"detail": "Measure not found"}), 404
+
 
 

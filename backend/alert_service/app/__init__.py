@@ -2,31 +2,47 @@ from flask import Flask, jsonify
 from app.influx import read_measurements
 from app.alerts import get_limits, check_limits, send_email_alert
 
-def get_data(measurement):
-    # Puedes mejorar esta función para incluir filtros, rangos de tiempo, etc.
-    return read_measurements(measurement)
+def get_data(measurement_name):
+    # Aquí podrías agregar filtros de tiempo si lo necesitas.
+    return read_measurements(measurement_name)
 
 def create_app():
     app = Flask(__name__)
 
-    @app.route("/check-alerts/<measurement>", methods=["GET"])
-    def check_alerts(measurement):
-        limits = get_limits(measurement)
+    @app.route("/check-alerts/<int:medida_id>", methods=["GET"])
+    def check_alerts(medida_id):
+        limits = get_limits(medida_id)
         if not limits:
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
-        data = get_data(measurement)
-        if not data:
+        # Obtener el nombre del measurement
+        measurement_name = limits["nombre_medida"]
+        data = get_data(measurement_name)
+
+        if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
-        alerts = check_limits(data, limits)
-        if alerts:
-            send_email_alert(
-                subject=f"Alerta para {measurement}",
-                body=f"Se detectaron valores fuera de los límites:\n\n{alerts}"
-            )
-            return jsonify({"message": "Alerta enviada", "alerts": alerts}), 200
+        # Suponiendo que el último dato tiene clave 'valor'
+        valor = data[0].get("valor")
+        if valor is None:
+            return jsonify({"error": "Dato inválido"}), 500
 
-        return jsonify({"message": "Todo dentro de los límites"}), 200
+        if valor < limits["min"] or valor > limits["max"]:
+            send_email_alert(
+                subject=f"Alerta para {limits['nombre_medida']}",
+                body=f"Valor {valor} fuera de los límites: {limits['min']} - {limits['max']}"
+            )
+            return jsonify({
+                "alerta": True,
+                "valor": valor,
+                "limites": {"min": limits["min"], "max": limits["max"]},
+                "mensaje": "El valor está fuera del rango permitido."
+            }), 200
+
+        return jsonify({
+            "alerta": False,
+            "valor": valor,
+            "mensaje": "Todo está dentro de los límites."
+        }), 200
 
     return app

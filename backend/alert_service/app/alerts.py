@@ -8,12 +8,18 @@ def get_limits(measurement_id: str):
         response = requests.get(f"{LIMITS_API_URL}/api/measures/limits/id/{measurement_id}")
         if response.status_code == 200:
             data = response.json()
-            return {"min": data["min"], "max": data["max"]}
+            return {
+                "min": data["min"],
+                "max": data["max"],
+                "nombre_medida": data["nombre_medida"],
+                "unidad_medida": data.get("unidad_medida")
+            }
         else:
             print(f"Error: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"Error al obtener límites: {e}")
     return None
+
 
 def check_limits(data, limits):
     alerts = []

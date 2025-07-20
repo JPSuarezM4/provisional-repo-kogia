@@ -7,8 +7,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_data(measurement_name):
-    # Aquí podrías agregar filtros de tiempo si lo necesitas.
+def get_data():
+    # Usamos el nombre fijo del measurement
+    measurement_name = "mediciones_dht11_v2"
     return read_measurements(measurement_name)
 
 def create_app():
@@ -21,20 +22,21 @@ def create_app():
         if not limits:
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
-        # Obtener el nombre del measurement
-        measurement_name = limits.get("nombre_medida")
-        logger.info(f"Measurement name: {measurement_name}")
-        if not measurement_name:
-            return jsonify({"error": "nombre_medida no está presente en los límites"}), 500
-        data = get_data(measurement_name)
+        # Obtener los datos del measurement fijo
+        data = get_data()
         logger.info(f"Datos obtenidos: {data}")
-        print("Datos obtenidos:", data)  # <-- AQUÍ
+        print("Datos obtenidos:", data)  # Para pruebas
 
         if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
+        # Filtrar los datos por medida_id
+        valores_filtrados = [d for d in data if d.get("medida_id") == medida_id]
+        if not valores_filtrados:
+            return jsonify({"error": f"No se encontraron datos para la medida {medida_id}"}), 404
+
         # Suponiendo que el último dato tiene clave 'valor'
-        valor = data[0].get("valor")
+        valor = valores_filtrados[0].get("valor")
         logger.info(f"Valor leído: {valor}")
         if valor is None:
             return jsonify({"error": "Dato inválido"}), 500

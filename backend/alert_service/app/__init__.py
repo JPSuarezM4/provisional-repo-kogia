@@ -28,7 +28,7 @@ def create_app():
 
         logger.info(f"medida_id en datos: {[d.get('medida_id') for d in data]}")
 
-        valores_filtrados = [d for d in data if d.get("medida_id") == medida_id]
+        valores_filtrados = [d for d in data if str(d.get("medida_id")) == str(medida_id)]
         if not valores_filtrados:
             return jsonify({"error": f"No se encontraron datos para la medida {medida_id}"}), 404
 

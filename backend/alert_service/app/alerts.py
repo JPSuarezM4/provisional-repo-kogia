@@ -2,6 +2,9 @@ import smtplib
 import requests
 from email.mime.text import MIMEText
 from app.config import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_limits(measurement_id: str):
     try:
@@ -15,9 +18,9 @@ def get_limits(measurement_id: str):
                 "unidad_medida": data.get("unidad_medida")
             }
         else:
-            print(f"Error: {response.status_code} - {response.text}")
+            logger.error(f"Error: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"Error al obtener límites: {e}")
+        logger.error(f"Error al obtener límites: {e}")
     return None
 
 

@@ -25,10 +25,10 @@ def read_measurements(measurement_id: int):
     values = []
     for table in result:
         for record in table.records:
-            # Incluye medida_id en el diccionario
+            # Incluye medida_id en el diccionario hola
             values.append({
                 "time": record.get_time(),
-                "value": record.get_value(),
+                "valor": record.get_value(),
                 "medida_id": record.values.get("medida_id")  # <-- agrega esto
             })
     return values

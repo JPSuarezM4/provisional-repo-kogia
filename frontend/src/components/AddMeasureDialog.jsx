@@ -106,7 +106,22 @@ export default function AddMeasureDialog({ open, onClose, onAddMeasure }) {
   };
 
   const handleAdd = () => {
-    onAddMeasure(formData);
+    // Busca la medida seleccionada
+    const selectedMedida = formData.medidas.find(
+      (m) => m.medida_id === formData.medida_id
+    );
+    if (!selectedMedida) {
+      setSnackbar({ open: true, message: "Selecciona una medida válida", severity: "error" });
+      return;
+    }
+
+    // Puedes enviar también info del nodo, dispositivo y sensor si lo necesitas
+    onAddMeasure({
+      nodo_id: formData.nodo_id,
+      dispositivo_id: formData.dispositivo_id,
+      sensor_id: formData.sensor_id,
+      medida: selectedMedida, // <-- Aquí va la medida completa
+    });
     onClose();
   };
 

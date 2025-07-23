@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Typography, Box, Alert } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+}
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,10 +29,14 @@ const Login = () => {
 
             const data = await response.json();
             if (response.ok) {
-                localStorage.setItem('token', data.token); // Guarda el token en localStorage
+                localStorage.setItem('token', data.token);
+                const payload = parseJwt(data.token);
+                if (payload && payload.role) {
+                localStorage.setItem('role', payload.role);
+                }
                 setMessage('Inicio de sesión exitoso');
                 setError(false);
-                navigate('/'); // Redirige a la aplicación principal
+                navigate('/');
             } else {
                 setMessage(data.message || 'Error al iniciar sesión');
                 setError(true);

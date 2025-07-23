@@ -52,6 +52,7 @@ function App() {
   const [realTimeCharts, setRealTimeCharts] = useState([]);
   const [realTimeGauge, setRealTimeGauge] = useState([]); // Estado para el gráfico en tiempo real
   const [isGestionOpen, setIsGestionOpen] = useState(false); // Cambia a un booleano
+  const userRole = localStorage.getItem('role');
 
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -197,15 +198,18 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <ListItemIcon><ListAltIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de lista de medidas" />
                 </ListItem>
-              <ListItem
-                sx={{ pl: 4 }}
-                button
-                selected={selectedMenu === 'Gestión de usuarios'}
-                onClick={() => setSelectedMenu('Gestión de usuarios')}
-              >
-                <ListItemIcon><PeopleIcon /></ListItemIcon>
-                <ListItemText primary="Gestión de usuarios" />
-              </ListItem>
+              
+                {userRole === 'admin' && (
+                  <ListItem
+                    sx={{ pl: 4 }}
+                    button
+                    selected={selectedMenu === 'Gestión de usuarios'}
+                    onClick={() => setSelectedMenu('Gestión de usuarios')}
+                  >
+                    <ListItemIcon><PeopleIcon /></ListItemIcon>
+                    <ListItemText primary="Gestión de usuarios" />
+                  </ListItem>
+                )}
                 {/* <ListItem sx={{ pl: 4 }} button>
                   <ListItemIcon><DevicesIcon /></ListItemIcon>
                   <ListItemText primary="Gestión de dispositivos" />

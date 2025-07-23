@@ -227,15 +227,15 @@ def add_medidas_to_sensor(nodo_id, dispositivo_id, sensor_id):
 
         # Agregar nuevas medidas con IDs autoincrementales
         for medida in medidas:
-            if not isinstance(medida, dict) or 'unidad' not in medida:
-                return jsonify({"error": "Cada medida debe tener una 'unidad'"}), 400
+            if not isinstance(medida, dict) or 'unidad' not in medida or 'medida_id' not in medida:
+                return jsonify({"error": "Cada medida debe tener 'unidad' y 'medida_id'"}), 400
 
-            # Evitar duplicados por unidad
+            # Evitar duplicados por medida_id o unidad
+            if any(m.get('medida_id') == medida['medida_id'] for m in sensor['medidas']):
+                continue  # o return jsonify({"error": f"medida_id {medida['medida_id']} ya existe"}), 400
             if any(m.get('unidad') == medida['unidad'] for m in sensor['medidas']):
                 continue  # o return jsonify({"error": f"Unidad {medida['unidad']} ya existe"}), 400
 
-            max_medida_id += 1
-            medida['medida_id'] = max_medida_id
             sensor['medidas'].append(medida)
 
         # Marcar la columna dispositivos como modificada

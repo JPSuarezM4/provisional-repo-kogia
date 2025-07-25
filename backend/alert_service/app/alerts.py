@@ -23,6 +23,27 @@ def get_limits(measurement_id: str):
         logger.error(f"Error al obtener límites: {e}")
     return None
 
+def get_measure_context(medida_id):
+    try:
+        response = requests.get("https://sensor-service-production.up.railway.app/api/nodos")
+        if response.status_code == 200:
+            nodos = response.json()
+            for nodo in nodos:
+                for dispositivo in nodo.get("dispositivos", []):
+                    for sensor in dispositivo.get("sensor", []):
+                        for medida in sensor.get("medidas", []):
+                            if str(medida.get("medida_id")) == str(medida_id):
+                                return {
+                                    "nodo": nodo.get("nombre_nodo", "Desconocido"),
+                                    "dispositivo": dispositivo.get("nombre", "Desconocido"),
+                                    "sensor": sensor.get("nombre", "Desconocido")
+                                }
+        else:
+            logger.error(f"Error al obtener nodos: {response.status_code} - {response.text}")
+    except Exception as e:
+        logger.error(f"Error al obtener contexto de medida: {e}")
+    return {"nodo": "Desconocido", "dispositivo": "Desconocido", "sensor": "Desconocido"}
+
 
 def check_limits(data, limits):
     alerts = []

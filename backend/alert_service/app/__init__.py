@@ -1,14 +1,10 @@
 from flask import Flask, jsonify
 from app.influx import read_measurements
-from app.alerts import get_limits, check_limits, send_email_alert
+from app.alerts import get_limits, send_email_alert, get_measure_context
 import logging
 
-# Configura el logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-def get_data(measurement_name):
-    return read_measurements(measurement_name)
 
 def create_app():
     app = Flask(__name__)
@@ -21,26 +17,37 @@ def create_app():
             return jsonify({"error": "No se pudieron obtener los límites"}), 500
 
         data = read_measurements(medida_id)
-        logger.info(f"Datos obtenidos: {data[:2]}")  # Muestra los dos primeros para debug
+        logger.info(f"Datos obtenidos: {data[:2]}")
 
         if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No se pudieron obtener los datos"}), 500
-
-        logger.info(f"medida_id en datos: {[d.get('medida_id') for d in data]}")
 
         valores_filtrados = [d for d in data if str(d.get("medida_id")) == str(medida_id)]
         if not valores_filtrados:
             return jsonify({"error": f"No se encontraron datos para la medida {medida_id}"}), 404
 
         valor = valores_filtrados[0].get("valor")
+        fecha_hora = str(valores_filtrados[0].get("time"))
         logger.info(f"Valor leído: {valor}")
         if valor is None:
             return jsonify({"error": "Dato inválido"}), 500
 
         if valor < limits["min"] or valor > limits["max"]:
+            # Obtén el contexto de la medida (nodo, dispositivo, sensor)
+            context = get_measure_context(medida_id)
+            body = (
+                f"¡Alerta de medida fuera de rango!\n\n"
+                f"Nodo: {context['nodo']}\n"
+                f"Dispositivo: {context['dispositivo']}\n"
+                f"Sensor: {context['sensor']}\n"
+                f"Medida: {limits['nombre_medida']}\n"
+                f"Valor actual: {valor} {limits.get('unidad_medida', '')}\n"
+                f"Rango permitido: {limits['min']} - {limits['max']} {limits.get('unidad_medida', '')}\n"
+                f"Fecha y hora: {fecha_hora}\n"
+            )
             send_email_alert(
-                subject=f"Alerta para {limits['nombre_medida']}",
-                body=f"Valor {valor} fuera de los límites: {limits['min']} - {limits['max']}"
+                subject=f"⚠️ Alerta: {limits['nombre_medida']} fuera de rango",
+                body=body
             )
             return jsonify({
                 "alerta": True,

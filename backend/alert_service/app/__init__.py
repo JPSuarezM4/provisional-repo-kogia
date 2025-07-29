@@ -116,7 +116,7 @@ def create_app():
 
     # Inicia el scheduler solo una vez
     scheduler = BackgroundScheduler()
-    scheduler.add_job(check_all_alerts, 'interval', minutes=5)  # cada 5 minutos
+    scheduler.add_job(check_all_alerts, 'interval', seconds=1)  # cada 1 segundo
     scheduler.start()
 
     return app

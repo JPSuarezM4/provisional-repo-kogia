@@ -70,7 +70,7 @@ def get_jwt_token():
         })
         logger.info(f"Respuesta del endpoint de login: {response.status_code} - {response.text}")
         if response.status_code == 200:
-            token = response.json().get("access_token")
+            token = response.json().get("token")
             if token:
                 logger.info("Token JWT obtenido correctamente.")
             else:

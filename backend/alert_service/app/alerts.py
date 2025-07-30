@@ -4,6 +4,12 @@ from email.mime.text import MIMEText
 from app.config import *
 import logging
 
+
+AUTH_URL = "https://auth-service-production-9571.up.railway.app/api/login"
+USERS_URL = "https://auth-service-production-9571.up.railway.app/api/users"
+SERVICE_EMAIL = "alert_service@alert.com"
+SERVICE_PASSWORD = "alert_service_password"
+
 logger = logging.getLogger(__name__)
 
 def get_limits(measurement_id: str):
@@ -55,13 +61,31 @@ def check_limits(data, limits):
     return alerts
 
 
-def get_alert_emails():
+def get_jwt_token():
     try:
-        response = requests.get("https://auth-service-production-9571.up.railway.app/api/users")
+        response = requests.post(AUTH_URL, json={
+            "email": SERVICE_EMAIL,
+            "password": SERVICE_PASSWORD
+        })
+        if response.status_code == 200:
+            return response.json().get("access_token")
+    except Exception as e:
+        logger.error(f"Error obteniendo token JWT: {e}")
+    return None
+
+def get_alert_emails():
+    token = get_jwt_token()
+    if not token:
+        logger.error("No se pudo obtener el token JWT para consultar usuarios.")
+        return []
+    try:
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get(USERS_URL, headers=headers)
         if response.status_code == 200:
             users = response.json()
-            # Filtra por rol admin o como prefieras
             return [u["email"] for u in users if u["role"] == "admin"]
+        else:
+            logger.error(f"Error: {response.status_code} - {response.text}")
     except Exception as e:
         logger.error(f"Error obteniendo correos de usuarios: {e}")
     return []

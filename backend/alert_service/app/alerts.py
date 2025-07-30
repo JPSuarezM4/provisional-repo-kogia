@@ -62,15 +62,24 @@ def check_limits(data, limits):
 
 
 def get_jwt_token():
+    logger.info(f"Intentando obtener token JWT para usuario: {SERVICE_EMAIL}")
     try:
         response = requests.post(AUTH_URL, json={
             "email": SERVICE_EMAIL,
             "password": SERVICE_PASSWORD
         })
+        logger.info(f"Respuesta del endpoint de login: {response.status_code} - {response.text}")
         if response.status_code == 200:
-            return response.json().get("access_token")
+            token = response.json().get("access_token")
+            if token:
+                logger.info("Token JWT obtenido correctamente.")
+            else:
+                logger.error("No se encontró 'access_token' en la respuesta.")
+            return token
+        else:
+            logger.error(f"Error al obtener token JWT: {response.status_code} - {response.text}")
     except Exception as e:
-        logger.error(f"Error obteniendo token JWT: {e}")
+        logger.error(f"Excepción al obtener token JWT: {e}")
     return None
 
 def get_alert_emails():

@@ -103,9 +103,8 @@ def send_email_alert(subject, body, recipients):
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = EMAIL_ADDRESS
+    msg["To"] = ", ".join(recipients)  # <-- todos los destinatarios en un solo header
 
     with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT) as server:
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        for email in recipients:
-            msg["To"] = email
-            server.send_message(msg)
+        server.send_message(msg)

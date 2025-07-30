@@ -54,12 +54,25 @@ def check_limits(data, limits):
             alerts.append((value, time))
     return alerts
 
-def send_email_alert(subject, body):
+
+def get_alert_emails():
+    try:
+        response = requests.get("https://auth-service-production-9571.up.railway.app/api/users")
+        if response.status_code == 200:
+            users = response.json()
+            # Filtra por rol admin o como prefieras
+            return [u["email"] for u in users if u["role"] == "admin"]
+    except Exception as e:
+        logger.error(f"Error obteniendo correos de usuarios: {e}")
+    return []
+
+def send_email_alert(subject, body, recipients):
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = EMAIL_ADDRESS
-    msg["To"] = ALERT_RECEIVER
 
     with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT) as server:
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        server.send_message(msg)
+        for email in recipients:
+            msg["To"] = email
+            server.send_message(msg)

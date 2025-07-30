@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from app.influx import read_measurements
-from app.alerts import get_limits, send_email_alert, get_measure_context
+from app.alerts import get_alert_emails, get_limits, send_email_alert, get_measure_context
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
@@ -53,10 +53,13 @@ def check_all_alerts():
                 f"Rango permitido: {limits['min']} - {limits['max']} {limits.get('unidad_medida', '')}\n"
                 f"Fecha y hora: {fecha_hora}\n"
             )
-            send_email_alert(
-                subject=f"⚠️ Alerta: {limits['nombre_medida']} fuera de rango",
-                body=body
-            )
+            recipients = get_alert_emails()  # <-- AQUÍ
+            if recipients:
+                send_email_alert(
+                    subject=f"⚠️ Alerta: {limits['nombre_medida']} fuera de rango",
+                    body=body,
+                    recipients=recipients
+                )
             logger.info(f"Alerta enviada para medida {medida_id}")
 
 def create_app():
@@ -97,10 +100,13 @@ def create_app():
                 f"Rango permitido: {limits['min']} - {limits['max']} {limits.get('unidad_medida', '')}\n"
                 f"Fecha y hora: {fecha_hora}\n"
             )
-            send_email_alert(
-                subject=f"⚠️ Alerta: {limits['nombre_medida']} fuera de rango",
-                body=body
-            )
+            recipients = get_alert_emails()  # <-- AQUÍ
+            if recipients:
+                send_email_alert(
+                    subject=f"⚠️ Alerta: {limits['nombre_medida']} fuera de rango",
+                    body=body,
+                    recipients=recipients
+                )
             return jsonify({
                 "alerta": True,
                 "valor": valor,

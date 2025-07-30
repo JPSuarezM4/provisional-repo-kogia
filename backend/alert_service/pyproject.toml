@@ -28,6 +28,7 @@ PyJWT = "^2.0.0"
 flask-bcrypt = "^1.0.1"
 flask-jwt-extended = "^4.7.1"
 apscheduler = "^3.11.0"
+redis = "^6.2.0"
 
 
 [build-system]

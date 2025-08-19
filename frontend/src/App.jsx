@@ -127,6 +127,8 @@ const handleAddRealTimeChart = (chartConfig) => {
           <Toolbar>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {selectedMenu === 'Análisis de datos' && <BarChartIcon sx={{ mr: 2 }} />}
+              {selectedMenu === 'Modelado' && <ListAltIcon sx={{ mr: 2 }} />}
+              {selectedMenu === 'Procesamiento' && <PeopleIcon sx={{ mr: 2 }} />}
               {selectedMenu === 'Ubicación de dispositivos' && <MapIcon sx={{ mr: 2 }} />}
               {selectedMenu === 'Gestión de sensores' && <SettingsIcon sx={{ mr: 2 }} />}
               {selectedMenu === 'Análisis de datos en tiempo real' && <TimelineIcon sx={{ mr: 2 }} />}

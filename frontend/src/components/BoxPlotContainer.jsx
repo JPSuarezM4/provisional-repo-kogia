@@ -1,11 +1,11 @@
-import SensorChart from './AddBloxPlot';
+import AddBoxPlot from './AddBoxPlot';
 import PropTypes from 'prop-types';
 
 const BoxPlotContainer = ({ charts, onDeleteChart }) => {
     return (
         <>
             {charts.map((chartConfig, index) => (
-                <SensorChart
+                <AddBoxPlot
                     key={index}
                     nodo_id={chartConfig.nodo_id}
                     dispositivo_id={chartConfig.dispositivo_id}

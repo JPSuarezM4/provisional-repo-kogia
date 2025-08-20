@@ -68,6 +68,13 @@ function App() {
     ]);
   };
 
+    const handleAddBoxPlot = (chartConfig) => {
+    setCharts((prevCharts) => [
+      ...prevCharts,
+      { ...chartConfig, id: Date.now() + Math.random() } // id único
+    ]);
+  };
+
   const handleDeleteChart = (id) => {
   setCharts(prev => prev.filter(chart => chart.id !== id));
   };
@@ -300,7 +307,7 @@ const handleAddRealTimeChart = (chartConfig) => {
           {selectedMenu === ' Procesamiento' && (
             <>
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <AddBoxPlotButton onAddChart={handleAddChart} />
+                <AddBoxPlotButton onAddChart={handleAddBoxPlot} />
               </Box>
               <Fade in timeout={500}>
                 <Box sx={{

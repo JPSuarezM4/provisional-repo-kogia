@@ -32,7 +32,7 @@ const AddBoxPlotButton = ({ onAddChart }) => {
                     },
                 }}
             >
-                Agregar gráfico
+                Agregar Boxplot
             </Button>
 
             <AddBoxPlotDialog 

@@ -38,6 +38,7 @@ import DevicesTable from './components/ContentTableSensors';
 import AddChartButton from './components/AddChartButton';
 import AddBoxPlotButton from './components/AddBoxPlotButton';
 import ChartContainer from './components/ChartContainer';
+import BoxPlotContainer from './components/BoxPlotContainer';
 import MeasurementList from './components/MeasurmentList';
 import RealTimeChart from './components/RealTimeChart';
 import RealTimeGauge from './components/RealTimeGauge';
@@ -316,7 +317,7 @@ const handleAddRealTimeChart = (chartConfig) => {
                   maxWidth: '1200px',
                   margin: '0 auto',
                 }}>
-                  <ChartContainer charts={charts} onDeleteChart={handleDeleteChart} />
+                  <BoxPlotContainer charts={charts} onDeleteChart={handleDeleteChart} />
                 </Box>
               </Fade>
             </>

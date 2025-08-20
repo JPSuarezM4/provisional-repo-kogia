@@ -303,7 +303,7 @@ const handleAddRealTimeChart = (chartConfig) => {
           )}
 
           {/* Opción: Procesamiento */}
-          {selectedMenu === ' Procesamiento' && (
+          {selectedMenu === 'Procesamiento' && (
             <>
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <AddBoxPlotButton onAddChart={handleAddBoxPlot} />

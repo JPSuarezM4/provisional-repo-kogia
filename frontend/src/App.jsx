@@ -36,6 +36,7 @@ import AddNodoDialog from './components/PopupAddNodo';
 import AddDeviceDialog from './components/ButtonAddDevice';
 import DevicesTable from './components/ContentTableSensors';
 import AddChartButton from './components/AddChartButton';
+import AddBoxPlotButton from './components/AddBoxPlotButton';
 import ChartContainer from './components/ChartContainer';
 import MeasurementList from './components/MeasurmentList';
 import RealTimeChart from './components/RealTimeChart';
@@ -294,6 +295,29 @@ const handleAddRealTimeChart = (chartConfig) => {
               </Fade>
             </>
           )}
+
+          {/* Opción: Procesamiento */}
+          {selectedMenu === ' Procesamiento' && (
+            <>
+              <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <AddBoxPlotButton onAddChart={handleAddChart} />
+              </Box>
+              <Fade in timeout={500}>
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 3,
+                  maxWidth: '1200px',
+                  margin: '0 auto',
+                }}>
+                  <ChartContainer charts={charts} onDeleteChart={handleDeleteChart} />
+                </Box>
+              </Fade>
+            </>
+          )}
+
+
+
 
           {/* ANÁLISIS DE DATOS EN TIEMPO REAL */}
           {selectedMenu === 'Análisis de datos en tiempo real' && (

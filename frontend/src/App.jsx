@@ -253,8 +253,7 @@ const handleAddRealTimeChart = (chartConfig) => {
         sx={{
           flex: 1,
           p: 3,
-          overflowY: 'auto',
-          backgroundColor: '#121212',
+          overflowY: 'auto'
         }}
       >
           <Toolbar />

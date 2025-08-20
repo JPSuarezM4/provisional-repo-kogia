@@ -7,12 +7,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
-import { Chart as ChartJS, CategoryScale, LinearScale, BoxPlotController, BoxAndWiskers, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
+import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
 import "chartjs-chart-box-and-violin-plot";
 
 
 // Registrar componentes en Chart.js
-ChartJS.register(CategoryScale, LinearScale, BoxPlotController, BoxAndWiskers, Title, ChartTooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
 
 AddBoxPlot.propTypes = {
     nodo_id: PropTypes.string.isRequired,

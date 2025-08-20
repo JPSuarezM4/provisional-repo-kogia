@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { BoxPlot } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -154,7 +154,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
             </FormControl>
 
             <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
-                <BoxPlot ref={chartRef} data={chartData} options={chartOptions} />
+                <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
             </div>
 
             <IconButton

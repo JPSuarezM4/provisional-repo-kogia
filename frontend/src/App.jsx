@@ -188,6 +188,18 @@ const handleAddRealTimeChart = (chartConfig) => {
               <ListItemIcon><AutoAwesomeMosaicIcon /></ListItemIcon>
               <ListItemText primary="Gestión de sensores" />
             </ListItem>
+            
+            {/* Opción:  Procesamiento */}
+            <ListItem selected={selectedMenu === 'Procesamiento'} onClick={() => setSelectedMenu('Procesamiento')} button>
+              <ListItemIcon><PeopleIcon/></ListItemIcon>
+              <ListItemText primary="Procesamiento" />
+            </ListItem>
+
+            {/* Opción: Modelado */}
+            <ListItem selected={selectedMenu === 'Modelado'} onClick={() => setSelectedMenu('Modelado')} button>
+              <ListItemIcon><ScienceIcon/></ListItemIcon>
+              <ListItemText primary="Modelado" />
+            </ListItem>
 
             {/* Submenú Gestión */}
             <ListItem onClick={handleGestionClick} button>

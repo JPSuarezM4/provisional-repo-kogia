@@ -8,11 +8,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
+import { BoxPlotController, BoxAndWiskers } from "chartjs-chart-box-and-violin-plot";
 import "chartjs-chart-box-and-violin-plot";
+
 
 
 // Registrar componentes en Chart.js
 ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
+ChartJS.register(BoxPlotController, BoxAndWiskers);
 
 AddBoxPlot.propTypes = {
     nodo_id: PropTypes.string.isRequired,

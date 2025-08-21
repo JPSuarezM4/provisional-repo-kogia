@@ -16,9 +16,10 @@ import {
   Legend,
 } from "chart.js";
 
-// 👇 esto registra los controladores al importar
-import "chartjs-chart-box-and-violin-plot";
+// ✅ Importa la librería correcta
+import "chartjs-chart-boxplot";
 
+// ✅ Registrar escalas y plugins
 ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
 
 AddBoxPlot.propTypes = {

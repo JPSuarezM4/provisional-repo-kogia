@@ -107,7 +107,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       legend: { display: true },
       title: {
         display: true,
-        text: "Boxplot de valores por día",
+        text: "Boxplot de valores tiempo",
       },
     },
     scales: {
@@ -179,7 +179,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
           <MenuItem value="-30d">Último mes</MenuItem>
           <MenuItem value="-90d">Últimos 3 meses</MenuItem>
         </Select>
-      </FormControl>
+      </FormControl> 
 
       <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
         <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />

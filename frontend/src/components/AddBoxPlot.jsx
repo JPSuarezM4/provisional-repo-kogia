@@ -72,21 +72,12 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         }
     }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-    const grouped = {};
-    data.forEach(item => {
-    const day = item.time.slice(0, 10); // Agrupa por fecha YYYY-MM-DD
-    if (!grouped[day]) grouped[day] = [];
-    grouped[day].push(item.valor);
-    });
-    const labels = Object.keys(grouped);
-    const boxplotData = Object.values(grouped);
-
     const chartData = {
-    labels,
+    labels: data.map((_, i) => `Dato ${i + 1}`), // crea una etiqueta por grupo
     datasets: [
         {
         label: `Boxplot ${medida_id} (${unidad})`,
-        data: boxplotData,
+        data: data.map(v => [v]), // 👈 ahora cada valor se convierte en un array (cada uno es un boxplot)
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
         outlierColor: "#ff7300",

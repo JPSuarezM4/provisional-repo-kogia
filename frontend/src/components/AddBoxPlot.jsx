@@ -8,9 +8,24 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
-import "chartjs-chart-box-and-violin-plot";
+import {
+  BoxPlotController,
+  BoxAndWhiskers,
+  ViolinController,
+  Violin,
+} from "chartjs-chart-box-and-violin-plot";
 
-ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  Title,
+  ChartTooltip,
+  Legend,
+  BoxPlotController,
+  BoxAndWhiskers,
+  ViolinController,
+  Violin
+);
 AddBoxPlot.propTypes = {
     nodo_id: PropTypes.string.isRequired,
     dispositivo_id: PropTypes.string.isRequired,

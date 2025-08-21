@@ -16,11 +16,24 @@ import {
   Legend,
 } from "chart.js";
 
-// ✅ Importa la librería correcta
-import "chartjs-chart-boxplot";
+import {
+  BoxPlotController,
+  BoxAndWiskers,
+  ViolinController,
+  Violin,
+} from "@sgratzl/chartjs-chart-boxplot";
 
-// ✅ Registrar escalas y plugins
-ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  Title,
+  ChartTooltip,
+  Legend,
+  BoxPlotController,
+  BoxAndWiskers,
+  ViolinController,
+  Violin
+);
 
 AddBoxPlot.propTypes = {
     nodo_id: PropTypes.string.isRequired,

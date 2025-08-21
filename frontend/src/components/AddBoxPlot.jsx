@@ -16,24 +16,11 @@ import {
   Legend,
 } from "chart.js";
 
-import {
-  BoxPlotController,
-  BoxAndWhiskers,
-  ViolinController,
-  Violin,
-} from "chartjs-chart-box-and-violin-plot";
+// 👇 esto registra los controladores al importar
+import "chartjs-chart-box-and-violin-plot";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  Title,
-  ChartTooltip,
-  Legend,
-  BoxPlotController,
-  BoxAndWhiskers,
-  ViolinController,
-  Violin
-);
+ChartJS.register(CategoryScale, LinearScale, Title, ChartTooltip, Legend);
+
 AddBoxPlot.propTypes = {
     nodo_id: PropTypes.string.isRequired,
     dispositivo_id: PropTypes.string.isRequired,

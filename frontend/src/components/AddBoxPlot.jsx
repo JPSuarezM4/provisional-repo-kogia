@@ -114,15 +114,23 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         callbacks: {
           label: function(context) {
             const v = context.raw;
-            if (!v) return '';
-            return [
-              `Min: ${v.min}`,
-              `Q1: ${v.q1}`,
-              `Median: ${v.median}`,
-              `Q3: ${v.q3}`,
-              `Max: ${v.max}`,
-              ...(v.outliers && v.outliers.length ? [`Outliers: ${v.outliers.join(', ')}`] : [])
-            ].join('\n');
+            // Si v es un objeto con los estadísticos
+            if (v && typeof v === "object" && v.min !== undefined) {
+              return [
+                `Min: ${v.min}`,
+                `Q1: ${v.q1}`,
+                `Median: ${v.median}`,
+                `Q3: ${v.q3}`,
+                `Max: ${v.max}`,
+                ...(v.outliers && v.outliers.length ? [`Outliers: ${v.outliers.join(', ')}`] : [])
+              ].join('\n');
+            }
+            // Si v es un array de valores (fallback)
+            if (Array.isArray(v)) {
+              return `Valores: ${v.join(', ')}`;
+            }
+            // Si no hay datos
+            return '';
           }
         },
         bodySpacing: 6,

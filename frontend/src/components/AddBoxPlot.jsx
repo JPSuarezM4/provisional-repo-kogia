@@ -113,8 +113,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         enabled: true,
         callbacks: {
           label: function(context) {
-            // Muestra los valores del boxplot en líneas separadas
-            const v = context.dataset.data[context.dataIndex];
+            const v = context.raw;
             if (!v) return '';
             return [
               `Min: ${v.min}`,
@@ -126,7 +125,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
             ].join('\n');
           }
         },
-        // Para que el tooltip sea más ancho y vertical
         bodySpacing: 6,
         multiKeyBackground: "#fff",
         displayColors: false,

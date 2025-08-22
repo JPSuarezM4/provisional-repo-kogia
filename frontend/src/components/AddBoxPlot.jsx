@@ -114,22 +114,34 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         callbacks: {
           label: function(context) {
             const v = context.raw;
+            // Si Chart.js calcula los estadísticos, los muestra aquí
             if (v && typeof v === "object" && v.min !== undefined) {
-              let resumen = [
+              return [
                 `Min: ${v.min}`,
                 `Q1: ${v.q1}`,
                 `Median: ${v.median}`,
                 `Q3: ${v.q3}`,
                 `Max: ${v.max}`,
+                ...(v.outliers && v.outliers.length ? [`Outliers: ${v.outliers.length}`] : [])
               ];
-              if (v.outliers && v.outliers.length) {
-                resumen.push(`Outliers: ${v.outliers.length}`);
-              }
-              return resumen;
             }
-            // Si no es objeto boxplot, muestra los valores
+            // Si solo hay valores, muestra un resumen
             if (Array.isArray(v)) {
-              return [`Valores: ${v.slice(0, 5).join(', ')}${v.length > 5 ? ', ...' : ''}`];
+              // Calcula los estadísticos manualmente
+              const sorted = [...v].sort((a, b) => a - b);
+              const min = sorted[0];
+              const max = sorted[sorted.length - 1];
+              const median = sorted[Math.floor(sorted.length / 2)];
+              const q1 = sorted[Math.floor(sorted.length / 4)];
+              const q3 = sorted[Math.floor(3 * sorted.length / 4)];
+              return [
+                `Min: ${min}`,
+                `Q1: ${q1}`,
+                `Median: ${median}`,
+                `Q3: ${q3}`,
+                `Max: ${max}`,
+                `N: ${v.length}`,
+              ];
             }
             return '';
           }

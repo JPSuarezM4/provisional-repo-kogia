@@ -111,6 +111,13 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       },
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: 90,
+          minRotation: 60,
+          autoSkip: false,
+        },
+      },
       y: {
         title: {
           display: true,
@@ -177,7 +184,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
-          <MenuItem value="-90d">Últimos 3 meses</MenuItem>
         </Select>
       </FormControl> 
 

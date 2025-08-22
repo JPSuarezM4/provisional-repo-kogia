@@ -109,69 +109,8 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         display: true,
         text: "Boxplot de valores tiempo",
       },
-      tooltip: {
-        enabled: false, // Desactiva el tooltip nativo
-        external: function(context) {
-          // Elimina el tooltip anterior si existe
-          let tooltipEl = document.getElementById('chartjs-tooltip');
-          if (tooltipEl) {
-            tooltipEl.remove();
-          }
-
-          const tooltipModel = context.tooltip;
-          if (!tooltipModel || !tooltipModel.opacity) return;
-
-          // Crea el nuevo tooltip
-          tooltipEl = document.createElement('div');
-          tooltipEl.id = 'chartjs-tooltip';
-          tooltipEl.style.background = '#fff';
-          tooltipEl.style.border = '1px solid #888';
-          tooltipEl.style.borderRadius = '8px';
-          tooltipEl.style.padding = '10px';
-          tooltipEl.style.position = 'absolute';
-          tooltipEl.style.zIndex = '100';
-          tooltipEl.style.maxHeight = '200px';
-          tooltipEl.style.overflowY = 'auto';
-          tooltipEl.style.whiteSpace = 'pre-line';
-          tooltipEl.style.fontSize = '0.95rem';
-          tooltipEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-
-          let label = '';
-          if (tooltipModel.dataPoints && tooltipModel.dataPoints.length) {
-            const v = tooltipModel.dataPoints[0].raw;
-            if (v && typeof v === "object" && v.min !== undefined) {
-              label = [
-                `Min: ${v.min}`,
-                `Q1: ${v.q1}`,
-                `Median: ${v.median}`,
-                `Q3: ${v.q3}`,
-                `Max: ${v.max}`,
-                ...(v.outliers && v.outliers.length ? [`Outliers: ${v.outliers.join(', ')}`] : [])
-              ].join('\n');
-            } else if (Array.isArray(v)) {
-              label = v.map(val => `Valor: ${val}`).join('\n');
-            }
-          }
-
-          tooltipEl.innerText = label;
-
-          document.body.appendChild(tooltipEl);
-
-          // Posiciona el tooltip
-          const position = context.chart.canvas.getBoundingClientRect();
-          tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
-          tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
-        }
-      }
     },
     scales: {
-      x: {
-        ticks: {
-          maxRotation: 90,
-          minRotation: 60,
-          autoSkip: false,
-        },
-      },
       y: {
         title: {
           display: true,

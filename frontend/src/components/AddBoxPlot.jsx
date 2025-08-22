@@ -109,8 +109,41 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         display: true,
         text: "Boxplot de valores tiempo",
       },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: function(context) {
+            const v = context.raw;
+            if (v && typeof v === "object" && v.min !== undefined) {
+              let resumen = [
+                `Min: ${v.min}`,
+                `Q1: ${v.q1}`,
+                `Median: ${v.median}`,
+                `Q3: ${v.q3}`,
+                `Max: ${v.max}`,
+              ];
+              if (v.outliers && v.outliers.length) {
+                resumen.push(`Outliers: ${v.outliers.length}`);
+              }
+              return resumen;
+            }
+            // Si no es objeto boxplot, muestra los valores
+            if (Array.isArray(v)) {
+              return [`Valores: ${v.slice(0, 5).join(', ')}${v.length > 5 ? ', ...' : ''}`];
+            }
+            return '';
+          }
+        }
+      }
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: 90,
+          minRotation: 60,
+          autoSkip: false,
+        },
+      },
       y: {
         title: {
           display: true,

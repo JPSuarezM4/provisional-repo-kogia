@@ -78,21 +78,33 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-  // Agrupar valores por día
-  const grouped = {};
-  data.forEach((item) => {
-    if (!item.timestamp) return;
-    const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-    if (!grouped[day]) grouped[day] = [];
-    grouped[day].push(item.value);
-  });
+  // Agrupar valores según el rango de tiempo
+  let labels = [];
+  let boxplotData = [];
+
+  if (timeRange === "-30d") {
+    // Un solo boxplot con todos los valores del mes
+    labels = ["Último mes"];
+    boxplotData = [data.map(item => item.value)];
+  } else {
+    // Agrupa por día como antes
+    const grouped = {};
+    data.forEach((item) => {
+      if (!item.timestamp) return;
+      const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push(item.value);
+    });
+    labels = Object.keys(grouped);
+    boxplotData = Object.values(grouped);
+  }
 
   const chartData = {
-    labels: Object.keys(grouped), // cada día será una etiqueta
+    labels,
     datasets: [
       {
         label: `Boxplot ${medida_id} (${unidad})`,
-        data: Object.values(grouped), // cada grupo es un array de valores (boxplot)
+        data: boxplotData,
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
         outlierColor: "#ff7300",

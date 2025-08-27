@@ -44,6 +44,8 @@ AddBoxPlot.propTypes = {
   onDelete: PropTypes.func.isRequired,
 };
 
+
+
 export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) {
   const [data, setData] = useState([]); // aquí guardamos objetos {timestamp, value}
   const [unidad, setUnidad] = useState("");
@@ -51,6 +53,19 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const [processingType, setProcessingType] = useState("none"); // none, normalize, log, etc.
+
+  function processValues(values) {
+  if (processingType === "normalize") {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    return values.map(v => (max - min ? (v - min) / (max - min) : 0));
+  }
+  if (processingType === "log") {
+    return values.map(v => Math.log(v + 1));
+  }
+  return values;
+}
 
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
@@ -81,13 +96,14 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   // Agrupar valores según el rango de tiempo
   let labels = [];
   let boxplotData = [];
+  let boxplotDataProcessed = [];
 
   if (timeRange === "-30d") {
-    // Un solo boxplot con todos los valores del mes
     labels = ["Último mes"];
-    boxplotData = [data.map(item => item.value)];
+    const original = data.map(item => item.value);
+    boxplotData = [original];
+    boxplotDataProcessed = [processValues(original)];
   } else {
-    // Agrupa por día como antes
     const grouped = {};
     data.forEach((item) => {
       if (!item.timestamp) return;
@@ -97,16 +113,30 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     });
     labels = Object.keys(grouped);
     boxplotData = Object.values(grouped);
+    boxplotDataProcessed = Object.values(grouped).map(processValues);
   }
 
   const chartData = {
     labels,
     datasets: [
       {
-        label: `Boxplot ${medida_id} (${unidad})`,
+        label: `Original ${medida_id} (${unidad})`,
         data: boxplotData,
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
+        outlierColor: "#ff7300",
+      },
+    ],
+  };
+
+  const chartDataProcessed = {
+    labels,
+    datasets: [
+      {
+        label: `Procesado (${processingType})`,
+        data: boxplotDataProcessed,
+        backgroundColor: "#4caf50",
+        borderColor: "#4caf50",
         outlierColor: "#ff7300",
       },
     ],
@@ -210,7 +240,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         borderRadius: "8px",
         padding: "20px",
         width: "500px",
-        height: "350px",
+        minHeight: "600px",
       }}
     >
       <IconButton
@@ -237,9 +267,31 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         </Select>
       </FormControl> 
 
+      <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
+        <InputLabel style={{ color: "white" }}>Procesamiento</InputLabel>
+        <Select
+          value={processingType}
+          onChange={e => setProcessingType(e.target.value)}
+          label="Procesamiento"
+          style={{ color: "white" }}
+        >
+          <MenuItem value="none">Original</MenuItem>
+          <MenuItem value="normalize">Normalizado</MenuItem>
+          <MenuItem value="log">Logaritmo</MenuItem>
+          {/* Agrega más rutinas aquí */}
+        </Select>
+      </FormControl>
+
       <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
         <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
       </div>
+
+      {processingType !== "none" && (
+        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
+          <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
+        </div>
+      )}
+
 
       <Tooltip title="Eliminar gráfico">
         <IconButton

@@ -56,16 +56,20 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   const [processingType, setProcessingType] = useState("none"); // none, normalize, log, etc.
 
   function processValues(values) {
-  if (processingType === "normalize") {
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    return values.map(v => (max - min ? (v - min) / (max - min) : 0));
+    if (processingType === "normalize") {
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      if (max === min) {
+        // Todos los valores son iguales, devuelve un array con el mismo valor
+        return values.map(() => 0.5); 
+      }
+      return values.map(v => (v - min) / (max - min));
+    }
+    if (processingType === "log") {
+      return values.map(v => Math.log(v + 1));
+    }
+    return values;
   }
-  if (processingType === "log") {
-    return values.map(v => Math.log(v + 1));
-  }
-  return values;
-}
 
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {

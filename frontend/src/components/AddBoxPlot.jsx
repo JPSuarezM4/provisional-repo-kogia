@@ -19,7 +19,7 @@ import {
 
 import {
   BoxPlotController,
-  BoxAndWhiskers,
+  BoxAndWiskers,
   ViolinController,
   Violin,
 } from "@sgratzl/chartjs-chart-boxplot";
@@ -31,7 +31,7 @@ ChartJS.register(
   ChartTooltip,
   Legend,
   BoxPlotController,
-  BoxAndWhiskers,
+  BoxAndWiskers,
   ViolinController,
   Violin
 );

@@ -292,7 +292,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
       </div>
 
-      {processingType !== "none" && (
+      {processingType !== "none" && showProcessedChart && (
         <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
           <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
         </div>

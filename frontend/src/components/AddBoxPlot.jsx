@@ -99,7 +99,13 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   let boxplotDataProcessed = [];
 
   if (timeRange === "-30d") {
-    labels = ["Último mes"];
+    if (data.length > 0) {
+      const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
+      const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
+      labels = [`${firstDate} a ${lastDate}`];
+    } else {
+      labels = ["Sin datos"];
+    }
     const original = data.map(item => item.value);
     boxplotData = [original];
     boxplotDataProcessed = [processValues(original)];

@@ -19,7 +19,7 @@ import {
 
 import {
   BoxPlotController,
-  BoxAndWiskers,
+  BoxAndWhiskers,
   ViolinController,
   Violin,
 } from "@sgratzl/chartjs-chart-boxplot";
@@ -31,7 +31,7 @@ ChartJS.register(
   ChartTooltip,
   Legend,
   BoxPlotController,
-  BoxAndWiskers,
+  BoxAndWhiskers,
   ViolinController,
   Violin
 );
@@ -233,8 +233,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
   const exportToPNG = () => {
     if (chartRef.current) {
-      const chartInstance = chartRef.current;
-      const url = chartInstance.toBase64Image();
+      const url = chartRef.current.toBase64Image();  // válido en v4
       const link = document.createElement("a");
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.href = url;

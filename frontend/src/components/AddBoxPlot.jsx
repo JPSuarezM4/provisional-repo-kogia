@@ -70,6 +70,10 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
     return values;
   }
+  
+  function allEqual(arr) {
+    return arr.every(v => v === arr[0]);
+  }
 
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
@@ -101,6 +105,16 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
+
+  let showProcessedChart = true;
+  if (
+    processingType === "normalize" &&
+    boxplotDataProcessed.length > 0 &&
+    boxplotDataProcessed[0].length > 0 &&
+    allEqual(boxplotDataProcessed[0])
+  ) {
+    showProcessedChart = false;
+  }
 
   if (timeRange === "-30d") {
     if (data.length > 0) {
@@ -299,6 +313,12 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       {processingType !== "none" && (
         <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
           <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
+        </div>
+      )}
+
+      {processingType !== "none" && !showProcessedChart && (
+        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span>Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.</span>
         </div>
       )}
 

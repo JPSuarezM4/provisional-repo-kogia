@@ -96,6 +96,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         setUnidad(responseMedida.data.medida.unidad);
 
         setData(influxData);
+        console.log("Datos recibidos:", influxData);
       };
       fetchData().catch(error => console.error("Error fetching data:", error));
     }

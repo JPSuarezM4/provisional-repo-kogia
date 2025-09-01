@@ -270,6 +270,8 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
+          <MenuItem value="-90d">Últimos 3 meses</MenuItem>
+          <MenuItem value="-365d">Último año</MenuItem>
         </Select>
       </FormControl> 
 

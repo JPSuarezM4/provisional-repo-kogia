@@ -116,7 +116,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     showProcessedChart = false;
   }
 
-  if (timeRange === "-30d") {
+  if (["-30d", "-90d", "-365d"].includes(timeRange)) {
     if (data.length > 0) {
       const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
       const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");

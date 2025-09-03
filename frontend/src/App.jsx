@@ -46,6 +46,7 @@ import {Routes, Route} from 'react-router-dom';
 import Login from './components/Login';
 import UserManagement from './components/UsersManagement';
 import ProtectedRoute from './components/ProtectedRoute';
+import ExportButton from './components/ExportButton';
 
 
 const drawerWidth = 240;
@@ -307,27 +308,14 @@ const handleAddRealTimeChart = (chartConfig) => {
           {/* Opción: Procesamiento */}
           {selectedMenu === 'Procesamiento' && (
             <>
-              <Box sx={{ mb: 2 }}>
-                <button
-                  style={{
-                    padding: "10px 24px",
-                    background: "#4caf50",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    fontWeight: "bold",
-                    cursor: "pointer"
-                  }}
-                  onClick={() => {
-                    // Aquí exportas todos los datos seleccionados
-                    console.log("Exportando datos seleccionados:", selectedBoxPlots);
-                    // Puedes descargar como CSV, enviar a backend, etc.
-                  }}
-                  disabled={selectedBoxPlots.length === 0}
-                >
-                  Exportar
-                </button>
-              </Box>
+              <ExportButton
+                disabled={selectedBoxPlots.length === 0}
+                onExport={() => {
+                  // Aquí exportas todos los datos seleccionados
+                  console.log("Exportando datos seleccionados:", selectedBoxPlots);
+                  // Puedes descargar como CSV, enviar a backend, etc.
+                }}
+              />
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <AddBoxPlotButton onAddChart={handleAddBoxPlot} />
               </Box>

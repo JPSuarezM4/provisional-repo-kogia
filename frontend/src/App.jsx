@@ -57,6 +57,7 @@ function App() {
   const [realTimeGauge, setRealTimeGauge] = useState([]); // Estado para el gráfico en tiempo real
   const [isGestionOpen, setIsGestionOpen] = useState(false); // Cambia a un booleano
   const userRole = localStorage.getItem('role');
+  const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
 
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -306,6 +307,27 @@ const handleAddRealTimeChart = (chartConfig) => {
           {/* Opción: Procesamiento */}
           {selectedMenu === 'Procesamiento' && (
             <>
+              <Box sx={{ mb: 2 }}>
+                <button
+                  style={{
+                    padding: "10px 24px",
+                    background: "#4caf50",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    fontWeight: "bold",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => {
+                    // Aquí exportas todos los datos seleccionados
+                    console.log("Exportando datos seleccionados:", selectedBoxPlots);
+                    // Puedes descargar como CSV, enviar a backend, etc.
+                  }}
+                  disabled={selectedBoxPlots.length === 0}
+                >
+                  Exportar
+                </button>
+              </Box>
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <AddBoxPlotButton onAddChart={handleAddBoxPlot} />
               </Box>
@@ -317,7 +339,20 @@ const handleAddRealTimeChart = (chartConfig) => {
                   maxWidth: '1200px',
                   margin: '0 auto',
                 }}>
-                  <BoxPlotContainer charts={charts} onDeleteChart={handleDeleteChart} />
+                  <BoxPlotContainer
+                    charts={charts}
+                    onDeleteChart={handleDeleteChart}
+                    onSelectBoxPlot={(id, selected, processedData, processingType) => {
+                      setSelectedBoxPlots(prev => {
+                        if (selected) {
+                          const filtered = prev.filter(item => item.id !== id);
+                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
+                        } else {
+                          return prev.filter(item => item.id !== id);
+                        }
+                      });
+                    }}
+                  />
                 </Box>
               </Fade>
             </>

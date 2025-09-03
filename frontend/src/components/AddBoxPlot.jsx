@@ -18,7 +18,7 @@ import {
   Legend,
 } from "chart.js";
 
-import { Checkbox, FormControlLabel, Button } from "@mui/material";
+import { Checkbox, FormControlLabel } from "@mui/material";
 
 import {
 
@@ -80,14 +80,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     return arr.every(v => v === arr[0]);
   }
 
-  function exportSelectedData() {
-  if (selected) {
-    // Exporta solo los datos procesados de este gráfico
-    const exportData = processingType === "none" ? boxplotData : boxplotDataProcessed;
-    // Aquí puedes guardar/exportar exportData
-    console.log("Exportando datos seleccionados:", exportData);
-  }
-}
+
 
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
@@ -287,20 +280,8 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
             color="primary"
           />
         }
-        label="Seleccionar para exportar"
         style={{ alignSelf: "flex-start", marginBottom: 8, color: "white" }}
       />
-
-      <Button
-        variant="contained"
-        color="success"
-        size="small"
-        disabled={!selected}
-        onClick={exportSelectedData}
-        style={{ marginBottom: 12, alignSelf: "flex-start" }}
-      >
-        Exportar datos procesados
-      </Button>
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Rango de tiempo</InputLabel>

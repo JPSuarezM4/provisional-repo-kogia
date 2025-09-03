@@ -20,7 +20,7 @@ const ExportButton = ({ disabled, onExport }) => (
         },
     }}
   >
-    Exportar datos seleccionados
+    Exportar datos
   </Button>
 );
 

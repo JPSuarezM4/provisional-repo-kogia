@@ -308,14 +308,16 @@ const handleAddRealTimeChart = (chartConfig) => {
           {/* Opción: Procesamiento */}
           {selectedMenu === 'Procesamiento' && (
             <>
-              <ExportButton
-                disabled={selectedBoxPlots.length === 0}
-                onExport={() => {
-                  // Aquí exportas todos los datos seleccionados
-                  console.log("Exportando datos seleccionados:", selectedBoxPlots);
-                  // Puedes descargar como CSV, enviar a backend, etc.
-                }}
-              />
+            <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <ExportButton
+                  disabled={selectedBoxPlots.length === 0}
+                  onExport={() => {
+                    // Aquí exportas todos los datos seleccionados
+                    console.log("Exportando datos seleccionados:", selectedBoxPlots);
+                    // Puedes descargar como CSV, enviar a backend, etc.
+                  }}
+                />
+              </Box>
               <Box sx={{ position: 'absolute', bottom: 90, right: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <AddBoxPlotButton onAddChart={handleAddBoxPlot} />
               </Box>

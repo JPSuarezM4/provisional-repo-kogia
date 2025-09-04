@@ -5,6 +5,7 @@ import { Chart as ReactChart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+  import { useMemo } from "react";
 // import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { parseISO, format } from "date-fns";
@@ -98,33 +99,60 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
   // 🔹 Construcción de labels y datasets
-  let labels = [];
-  let boxplotData = [];
-  let boxplotDataProcessed = [];
 
-  if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-    if (data.length > 0) {
-      const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
-      const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
-      labels = [`${firstDate} a ${lastDate}`];
+
+  const labels = useMemo(() => {
+    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
+      if (data.length > 0) {
+        const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
+        const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
+        return [`${firstDate} a ${lastDate}`];
+      } else {
+        return ["Sin datos"];
+      }
     } else {
-      labels = ["Sin datos"];
+      const grouped = {};
+      data.forEach(item => {
+        if (!item.timestamp) return;
+        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+        if (!grouped[day]) grouped[day] = [];
+        grouped[day].push(item.value);
+      });
+      return Object.keys(grouped);
     }
-    const original = data.map(item => item.value);
-    boxplotData = [original];
-    boxplotDataProcessed = [processValues(original)];
-  } else {
-    const grouped = {};
-    data.forEach(item => {
-      if (!item.timestamp) return;
-      const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-      if (!grouped[day]) grouped[day] = [];
-      grouped[day].push(item.value);
-    });
-    labels = Object.keys(grouped);
-    boxplotData = Object.values(grouped);
-    boxplotDataProcessed = Object.values(grouped).map(processValues);
-  }
+  }, [data, timeRange]);
+
+  const boxplotData = useMemo(() => {
+    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
+      const original = data.map(item => item.value);
+      return [original];
+    } else {
+      const grouped = {};
+      data.forEach(item => {
+        if (!item.timestamp) return;
+        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+        if (!grouped[day]) grouped[day] = [];
+        grouped[day].push(item.value);
+      });
+      return Object.values(grouped);
+    }
+  }, [data, timeRange]);
+
+  const boxplotDataProcessed = useMemo(() => {
+    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
+      const original = data.map(item => item.value);
+      return [processValues(original)];
+    } else {
+      const grouped = {};
+      data.forEach(item => {
+        if (!item.timestamp) return;
+        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+        if (!grouped[day]) grouped[day] = [];
+        grouped[day].push(item.value);
+      });
+      return Object.values(grouped).map(processValues);
+    }
+  }, [data, timeRange, processValues]);
 
   let showProcessedChart = true;
   if (

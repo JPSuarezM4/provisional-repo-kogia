@@ -21,7 +21,6 @@ import {
 import { Checkbox, FormControlLabel } from "@mui/material";
 
 import {
-
   BoxPlotController,
   BoxAndWiskers,
   ViolinController,
@@ -40,15 +39,14 @@ ChartJS.register(
   Violin
 );
 
-
 export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
-  const [data, setData] = useState([]); // aquí guardamos objetos {timestamp, value}
+  const [data, setData] = useState([]); // {timestamp, value}
   const [unidad, setUnidad] = useState("");
   const [timeRange, setTimeRange] = useState("-4d");
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const [processingType, setProcessingType] = useState("none"); // none, normalize, log, etc.
+  const [processingType, setProcessingType] = useState("none"); // none, normalize, log
   const [selected, setSelected] = useState(false);
 
   function processValues(values) {
@@ -56,8 +54,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       const min = Math.min(...values);
       const max = Math.max(...values);
       if (max === min) {
-        // Todos los valores son iguales, devuelve un array con el mismo valor
-        return values.map(() => 0.5); 
+        return values.map(() => 0.5);
       }
       return values.map(v => (v - min) / (max - min));
     }
@@ -66,58 +63,44 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
     return values;
   }
-  
+
   function allEqual(arr) {
     return arr.every(v => v === arr[0]);
   }
 
-
-
-
-
+  // 🔹 Fetch de datos
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
-        // Obtener datos de InfluxDB
-        const responseInflux = await axios.get(
-          `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
-        );
+        try {
+          const responseInflux = await axios.get(
+            `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
+          );
 
-        // ahora guardamos valor + timestamp
-        const influxData = responseInflux.data.map(item => ({
-          timestamp: item._time || item.time, // depende de cómo venga de Influx
-          value: item.valor,
-        }));
+          const influxData = responseInflux.data.map(item => ({
+            timestamp: item._time || item.time,
+            value: item.valor,
+          }));
 
-        // Obtener unidad de medida
-        const responseMedida = await axios.get(
-          `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
-        );
-        setUnidad(responseMedida.data.medida.unidad);
+          const responseMedida = await axios.get(
+            `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
+          );
+          setUnidad(responseMedida.data.medida.unidad);
 
-        setData(influxData);
-        console.log("Datos recibidos:", influxData);
+          setData(influxData);
+          console.log("Datos recibidos:", influxData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       };
-      fetchData().catch(error => console.error("Error fetching data:", error));
+      fetchData();
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-
-
-  // Agrupar valores según el rango de tiempo
+  // 🔹 Construcción de labels y datasets
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
-
-  let showProcessedChart = true;
-  if (
-    processingType === "normalize" &&
-    boxplotDataProcessed.length > 0 &&
-    boxplotDataProcessed[0].length > 0 &&
-    allEqual(boxplotDataProcessed[0])
-  ) {
-    showProcessedChart = false;
-  }
 
   if (["-30d", "-90d", "-365d"].includes(timeRange)) {
     if (data.length > 0) {
@@ -132,7 +115,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     boxplotDataProcessed = [processValues(original)];
   } else {
     const grouped = {};
-    data.forEach((item) => {
+    data.forEach(item => {
       if (!item.timestamp) return;
       const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
       if (!grouped[day]) grouped[day] = [];
@@ -142,6 +125,24 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     boxplotData = Object.values(grouped);
     boxplotDataProcessed = Object.values(grouped).map(processValues);
   }
+
+  let showProcessedChart = true;
+  if (
+    processingType === "normalize" &&
+    boxplotDataProcessed.length > 0 &&
+    boxplotDataProcessed[0].length > 0 &&
+    allEqual(boxplotDataProcessed[0])
+  ) {
+    showProcessedChart = false;
+  }
+
+  // 🔹 useEffect que depende de boxplotData y boxplotDataProcessed
+  useEffect(() => {
+    if (onSelect) {
+      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
+      onSelect(selected, processedData, processingType);
+    }
+  }, [selected, processingType, boxplotData, boxplotDataProcessed, onSelect]);
 
   const chartData = {
     labels,
@@ -174,13 +175,10 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     maintainAspectRatio: false,
     plugins: {
       legend: { display: true },
-      title: {
-        display: true,
-        text: "Boxplot de valores tiempo",
-      },
+      title: { display: true, text: "Boxplot de valores tiempo" },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const v = context.raw;
             if (v && typeof v === "object" && v.min !== undefined) {
               return `Min: ${v.min} | Q1: ${v.q1} | Median: ${v.median} | Q3: ${v.q3} | Max: ${v.max}` +
@@ -195,31 +193,22 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
               const q3 = sorted[Math.floor(3 * sorted.length / 4)];
               return `Min: ${min} | Q1: ${q1} | Median: ${median} | Q3: ${q3} | Max: ${max} | N: ${v.length}`;
             }
-            return '';
-          }
-        }
-      }
+            return "";
+          },
+        },
+      },
     },
     scales: {
       x: {
-        ticks: {
-          maxRotation: 90,
-          minRotation: 60,
-          autoSkip: false,
-        },
+        ticks: { maxRotation: 90, minRotation: 60, autoSkip: false },
       },
-      y: {
-        title: {
-          display: true,
-          text: unidad,
-        },
-      },
+      y: { title: { display: true, text: unidad } },
     },
   };
 
   const exportToPNG = () => {
     if (chartRef.current) {
-      const url = chartRef.current.toBase64Image();  // válido en v4
+      const url = chartRef.current.toBase64Image();
       const link = document.createElement("a");
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.href = url;
@@ -227,26 +216,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       link.click();
     }
   };
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleTimeRangeChange = (event) => {
-    setTimeRange(event.target.value);
-  };
-
-  useEffect(() => {
-    if (onSelect) {
-      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
-      onSelect(selected, processedData, processingType);
-    }
-    // eslint-disable-next-line
-  }, [selected, processingType, boxplotData, boxplotDataProcessed]);
 
   return (
     <div
@@ -262,14 +231,14 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     >
       <IconButton
         aria-label="more"
-        onClick={handleMenuOpen}
+        onClick={(e) => setAnchorEl(e.currentTarget)}
         className="absolute top-2 right-2"
         style={{ color: "white" }}
       >
         <MoreVertIcon />
       </IconButton>
 
-      <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={exportToPNG} style={{ color: "black" }}>
           Exportar como PNG
         </MenuItem>
@@ -279,7 +248,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         control={
           <Checkbox
             checked={selected}
-            onChange={e => setSelected(e.target.checked)}
+            onChange={(e) => setSelected(e.target.checked)}
             color="primary"
           />
         }
@@ -288,27 +257,21 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Rango de tiempo</InputLabel>
-        <Select value={timeRange} onChange={handleTimeRangeChange} label="Rango de tiempo" style={{ color: "white" }}>
+        <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} label="Rango de tiempo" style={{ color: "white" }}>
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
           <MenuItem value="-90d">Últimos 3 meses</MenuItem>
           <MenuItem value="-365d">Último año</MenuItem>
         </Select>
-      </FormControl> 
+      </FormControl>
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Procesamiento</InputLabel>
-        <Select
-          value={processingType}
-          onChange={e => setProcessingType(e.target.value)}
-          label="Procesamiento"
-          style={{ color: "white" }}
-        >
+        <Select value={processingType} onChange={(e) => setProcessingType(e.target.value)} label="Procesamiento" style={{ color: "white" }}>
           <MenuItem value="none">Original</MenuItem>
           <MenuItem value="normalize">Normalizado</MenuItem>
           <MenuItem value="log">Logaritmo</MenuItem>
-          {/* Agrega más rutinas aquí */}
         </Select>
       </FormControl>
 
@@ -323,11 +286,21 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       )}
 
       {processingType !== "none" && !showProcessedChart && (
-        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{
+            width: "500px",
+            height: "250px",
+            overflow: "hidden",
+            marginTop: 16,
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <span>Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.</span>
         </div>
       )}
-
 
       <Tooltip title="Eliminar gráfico">
         <IconButton

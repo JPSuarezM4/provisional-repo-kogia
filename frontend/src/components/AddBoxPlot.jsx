@@ -73,6 +73,8 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
 
 
+
+
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
@@ -100,13 +102,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-    useEffect(() => {
-    if (onSelect) {
-      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
-      onSelect(selected, processedData, processingType);
-    }
-    // eslint-disable-next-line
-  }, [selected, processingType, boxplotData, boxplotDataProcessed]);
+
 
   // Agrupar valores según el rango de tiempo
   let labels = [];
@@ -243,6 +239,14 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   const handleTimeRangeChange = (event) => {
     setTimeRange(event.target.value);
   };
+
+  useEffect(() => {
+    if (onSelect) {
+      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
+      onSelect(selected, processedData, processingType);
+    }
+    // eslint-disable-next-line
+  }, [selected, processingType, boxplotData, boxplotDataProcessed]);
 
   return (
     <div

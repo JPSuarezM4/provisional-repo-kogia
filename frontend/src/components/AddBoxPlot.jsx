@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { Chart } from "react-chartjs-2";
+import { Chart as ReactChart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -39,16 +39,6 @@ ChartJS.register(
   ViolinController,
   Violin
 );
-
-AddBoxPlot.propTypes = {
-  nodo_id: PropTypes.string.isRequired,
-  dispositivo_id: PropTypes.string.isRequired,
-  sensor_id: PropTypes.string.isRequired,
-  medida_id: PropTypes.string.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-};
-
 
 
 export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
@@ -319,12 +309,12 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       </FormControl>
 
       <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
-        <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
+        <ReactChart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
       </div>
 
       {processingType !== "none" && showProcessedChart && (
         <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
-          <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
+          <ReactChart type="boxplot" data={chartDataProcessed} options={chartOptions} />
         </div>
       )}
 
@@ -348,3 +338,12 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     </div>
   );
 }
+
+AddBoxPlot.propTypes = {
+  nodo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  dispositivo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  sensor_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};

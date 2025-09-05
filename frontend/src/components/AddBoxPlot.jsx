@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { Chart as ReactChart } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -21,6 +21,7 @@ import {
 import { Checkbox, FormControlLabel } from "@mui/material";
 
 import {
+
   BoxPlotController,
   BoxAndWiskers,
   ViolinController,
@@ -39,22 +40,34 @@ ChartJS.register(
   Violin
 );
 
+AddBoxPlot.propTypes = {
+  nodo_id: PropTypes.string.isRequired,
+  dispositivo_id: PropTypes.string.isRequired,
+  sensor_id: PropTypes.string.isRequired,
+  medida_id: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
+
+
+
 export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
-  const [data, setData] = useState([]); // {timestamp, value}
+  const [data, setData] = useState([]); // aquí guardamos objetos {timestamp, value}
   const [unidad, setUnidad] = useState("");
   const [timeRange, setTimeRange] = useState("-4d");
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const [processingType, setProcessingType] = useState("none"); // none, normalize, log
+  const [processingType, setProcessingType] = useState("none"); // none, normalize, log, etc.
   const [selected, setSelected] = useState(false);
 
-  const processValues = useCallback((values) => {
+  function processValues(values) {
     if (processingType === "normalize") {
       const min = Math.min(...values);
       const max = Math.max(...values);
       if (max === min) {
-        return values.map(() => 0.5);
+        // Todos los valores son iguales, devuelve un array con el mismo valor
+        return values.map(() => 0.5); 
       }
       return values.map(v => (v - min) / (max - min));
     }
@@ -62,101 +75,53 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       return values.map(v => Math.log(v + 1));
     }
     return values;
-  }, [processingType]);
-
-
+  }
+  
   function allEqual(arr) {
     return arr.every(v => v === arr[0]);
   }
 
-  // 🔹 Fetch de datos
+
+
   useEffect(() => {
-    let cancelled = false;
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
-        try {
-          const responseInflux = await axios.get(
-            `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
-          );
-          if (!cancelled) {
-            const influxData = responseInflux.data.map(item => ({
-              timestamp: item._time || item.time,
-              value: item.valor,
-            }));
-            setData(influxData);
-          }
-          const responseMedida = await axios.get(
-            `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
-          );
-          if (!cancelled) {
-            setUnidad(responseMedida.data.medida.unidad);
-          }
-        } catch (error) {
-          if (!cancelled) {
-            console.error("Error fetching data:", error);
-          }
-        }
+        // Obtener datos de InfluxDB
+        const responseInflux = await axios.get(
+          `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
+        );
+
+        // ahora guardamos valor + timestamp
+        const influxData = responseInflux.data.map(item => ({
+          timestamp: item._time || item.time, // depende de cómo venga de Influx
+          value: item.valor,
+        }));
+
+        // Obtener unidad de medida
+        const responseMedida = await axios.get(
+          `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
+        );
+        setUnidad(responseMedida.data.medida.unidad);
+
+        setData(influxData);
+        console.log("Datos recibidos:", influxData);
       };
-      fetchData();
+      fetchData().catch(error => console.error("Error fetching data:", error));
     }
-    return () => { cancelled = true; };
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-  // 🔹 Construcción de labels y datasets
-
-
-  const labels = useMemo(() => {
-    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-      if (data.length > 0) {
-        const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
-        const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
-        return [`${firstDate} a ${lastDate}`];
-      } else {
-        return ["Sin datos"];
-      }
-    } else {
-      const grouped = {};
-      data.forEach(item => {
-        if (!item.timestamp) return;
-        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-        if (!grouped[day]) grouped[day] = [];
-        grouped[day].push(item.value);
-      });
-      return Object.keys(grouped);
+    useEffect(() => {
+    if (onSelect) {
+      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
+      onSelect(selected, processedData, processingType);
     }
-  }, [data, timeRange]);
+    // eslint-disable-next-line
+  }, [selected, processingType, boxplotData, boxplotDataProcessed]);
 
-  const boxplotData = useMemo(() => {
-    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-      const original = data.map(item => item.value);
-      return [original];
-    } else {
-      const grouped = {};
-      data.forEach(item => {
-        if (!item.timestamp) return;
-        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-        if (!grouped[day]) grouped[day] = [];
-        grouped[day].push(item.value);
-      });
-      return Object.values(grouped);
-    }
-  }, [data, timeRange]);
-
-  const boxplotDataProcessed = useMemo(() => {
-    if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-      const original = data.map(item => item.value);
-      return [processValues(original)];
-    } else {
-      const grouped = {};
-      data.forEach(item => {
-        if (!item.timestamp) return;
-        const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-        if (!grouped[day]) grouped[day] = [];
-        grouped[day].push(item.value);
-      });
-      return Object.values(grouped).map(processValues);
-    }
-  }, [data, timeRange, processValues]);
+  // Agrupar valores según el rango de tiempo
+  let labels = [];
+  let boxplotData = [];
+  let boxplotDataProcessed = [];
 
   let showProcessedChart = true;
   if (
@@ -168,18 +133,29 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     showProcessedChart = false;
   }
 
-  // 🔹 useEffect que depende de boxplotData y boxplotDataProcessed
-  const processedData = useMemo(() => {
-    return processingType === "none"
-      ? boxplotData
-      : boxplotDataProcessed;
-  }, [processingType, boxplotData, boxplotDataProcessed]);
-
-  useEffect(() => {
-    if (onSelect) {
-      onSelect(selected, processedData, processingType);
+  if (["-30d", "-90d", "-365d"].includes(timeRange)) {
+    if (data.length > 0) {
+      const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
+      const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
+      labels = [`${firstDate} a ${lastDate}`];
+    } else {
+      labels = ["Sin datos"];
     }
-  }, [selected, processedData, processingType, onSelect]);
+    const original = data.map(item => item.value);
+    boxplotData = [original];
+    boxplotDataProcessed = [processValues(original)];
+  } else {
+    const grouped = {};
+    data.forEach((item) => {
+      if (!item.timestamp) return;
+      const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push(item.value);
+    });
+    labels = Object.keys(grouped);
+    boxplotData = Object.values(grouped);
+    boxplotDataProcessed = Object.values(grouped).map(processValues);
+  }
 
   const chartData = {
     labels,
@@ -212,10 +188,13 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     maintainAspectRatio: false,
     plugins: {
       legend: { display: true },
-      title: { display: true, text: "Boxplot de valores tiempo" },
+      title: {
+        display: true,
+        text: "Boxplot de valores tiempo",
+      },
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: function(context) {
             const v = context.raw;
             if (v && typeof v === "object" && v.min !== undefined) {
               return `Min: ${v.min} | Q1: ${v.q1} | Median: ${v.median} | Q3: ${v.q3} | Max: ${v.max}` +
@@ -230,28 +209,49 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
               const q3 = sorted[Math.floor(3 * sorted.length / 4)];
               return `Min: ${min} | Q1: ${q1} | Median: ${median} | Q3: ${q3} | Max: ${max} | N: ${v.length}`;
             }
-            return "";
-          },
-        },
-      },
+            return '';
+          }
+        }
+      }
     },
     scales: {
       x: {
-        ticks: { maxRotation: 90, minRotation: 60, autoSkip: false },
+        ticks: {
+          maxRotation: 90,
+          minRotation: 60,
+          autoSkip: false,
+        },
       },
-      y: { title: { display: true, text: unidad } },
+      y: {
+        title: {
+          display: true,
+          text: unidad,
+        },
+      },
     },
   };
 
   const exportToPNG = () => {
     if (chartRef.current) {
-      const url = chartRef.current.toBase64Image();
+      const url = chartRef.current.toBase64Image();  // válido en v4
       const link = document.createElement("a");
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.href = url;
       link.download = `boxplot_${sensor_id}_${timestamp}.png`;
       link.click();
     }
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleTimeRangeChange = (event) => {
+    setTimeRange(event.target.value);
   };
 
   return (
@@ -268,14 +268,14 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     >
       <IconButton
         aria-label="more"
-        onClick={(e) => setAnchorEl(e.currentTarget)}
+        onClick={handleMenuOpen}
         className="absolute top-2 right-2"
         style={{ color: "white" }}
       >
         <MoreVertIcon />
       </IconButton>
 
-      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={exportToPNG} style={{ color: "black" }}>
           Exportar como PNG
         </MenuItem>
@@ -285,7 +285,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         control={
           <Checkbox
             checked={selected}
-            onChange={(e) => setSelected(e.target.checked)}
+            onChange={e => setSelected(e.target.checked)}
             color="primary"
           />
         }
@@ -294,50 +294,46 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Rango de tiempo</InputLabel>
-        <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} label="Rango de tiempo" style={{ color: "white" }}>
+        <Select value={timeRange} onChange={handleTimeRangeChange} label="Rango de tiempo" style={{ color: "white" }}>
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
           <MenuItem value="-90d">Últimos 3 meses</MenuItem>
           <MenuItem value="-365d">Último año</MenuItem>
         </Select>
-      </FormControl>
+      </FormControl> 
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Procesamiento</InputLabel>
-        <Select value={processingType} onChange={(e) => setProcessingType(e.target.value)} label="Procesamiento" style={{ color: "white" }}>
+        <Select
+          value={processingType}
+          onChange={e => setProcessingType(e.target.value)}
+          label="Procesamiento"
+          style={{ color: "white" }}
+        >
           <MenuItem value="none">Original</MenuItem>
           <MenuItem value="normalize">Normalizado</MenuItem>
           <MenuItem value="log">Logaritmo</MenuItem>
+          {/* Agrega más rutinas aquí */}
         </Select>
       </FormControl>
 
       <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
-        <ReactChart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
+        <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
       </div>
 
       {processingType !== "none" && showProcessedChart && (
         <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
-          <ReactChart type="boxplot" data={chartDataProcessed} options={chartOptions} />
+          <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
         </div>
       )}
 
       {processingType !== "none" && !showProcessedChart && (
-        <div
-          style={{
-            width: "500px",
-            height: "250px",
-            overflow: "hidden",
-            marginTop: 16,
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span>Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.</span>
         </div>
       )}
+
 
       <Tooltip title="Eliminar gráfico">
         <IconButton
@@ -352,12 +348,3 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     </div>
   );
 }
-
-AddBoxPlot.propTypes = {
-  nodo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  dispositivo_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  sensor_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  onDelete: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-};

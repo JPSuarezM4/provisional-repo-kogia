@@ -144,19 +144,6 @@ export default function AddBoxPlot({
     boxplotDataProcessed = Object.values(grouped).map(processValues);
   }
 
-  const processedData = useMemo(() => {
-    if (processingType === "none") return boxplotData;
-    return boxplotDataProcessed;
-  }, [processingType, boxplotData, boxplotDataProcessed]);
-
-
-  // 🔹 notificar al padre
-  useEffect(() => {
-    if (onSelect) {
-      onSelect(id, selected, processedData, processingType);
-    }
-  }, [id, selected, processedData, processingType, onSelect]);
-
   const chartData = {
     labels,
     datasets: [
@@ -207,6 +194,32 @@ export default function AddBoxPlot({
     }
   };
 
+  const processedData = useMemo(() => {
+    return processingType === "none" ? boxplotData : boxplotDataProcessed;
+  }, [processingType, boxplotData, boxplotDataProcessed]);
+
+    // Handler para selección
+  const handleSelectChange = (e) => {
+    setSelected(e.target.checked);
+    if (onSelect) {
+      onSelect(id, e.target.checked, processedData, processingType);
+    }
+  };
+
+  // Handler para procesamiento
+  const handleProcessingChange = (e) => {
+    setProcessingType(e.target.value);
+    if (onSelect) {
+      onSelect(id, selected, processedData, e.target.value);
+    }
+  };
+
+  // Handler para rango de tiempo
+  const handleTimeRangeChange = (e) => {
+    setTimeRange(e.target.value);
+    // No notifica selección aquí, solo cambia el rango
+  };
+
   return (
     <div
       className="relative flex flex-col items-center p-4"
@@ -237,7 +250,7 @@ export default function AddBoxPlot({
         control={
           <Checkbox
             checked={selected}
-            onChange={(e) => setSelected(e.target.checked)}
+            onChange={handleSelectChange}
             color="primary"
           />
         }
@@ -246,7 +259,7 @@ export default function AddBoxPlot({
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Rango de tiempo</InputLabel>
-        <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} label="Rango de tiempo" style={{ color: "white" }}>
+        <Select value={timeRange} onChange={handleTimeRangeChange} label="Rango de tiempo" style={{ color: "white" }}>
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
@@ -259,7 +272,7 @@ export default function AddBoxPlot({
         <InputLabel style={{ color: "white" }}>Procesamiento</InputLabel>
         <Select
           value={processingType}
-          onChange={(e) => setProcessingType(e.target.value)}
+          onChange={handleProcessingChange}
           label="Procesamiento"
           style={{ color: "white" }}
         >

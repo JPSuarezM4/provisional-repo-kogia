@@ -3,7 +3,6 @@ import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
 const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
-    // Memoizamos para evitar renders innecesarios
     const handleDelete = useCallback(
         (chartId) => {
             onDeleteChart(chartId);

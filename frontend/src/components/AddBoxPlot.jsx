@@ -46,12 +46,11 @@ AddBoxPlot.propTypes = {
   sensor_id: PropTypes.string.isRequired,
   medida_id: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
 };
 
 
 
-export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
+export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) {
   const [data, setData] = useState([]); // aquí guardamos objetos {timestamp, value}
   const [unidad, setUnidad] = useState("");
   const [timeRange, setTimeRange] = useState("-4d");
@@ -109,14 +108,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       fetchData().catch(error => console.error("Error fetching data:", error));
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
-
-    useEffect(() => {
-    if (onSelect) {
-      const processedData = processingType === "none" ? boxplotData : boxplotDataProcessed;
-      onSelect(selected, processedData, processingType);
-    }
-    // eslint-disable-next-line
-  }, [selected, processingType, boxplotData, boxplotDataProcessed]);
 
   // Agrupar valores según el rango de tiempo
   let labels = [];

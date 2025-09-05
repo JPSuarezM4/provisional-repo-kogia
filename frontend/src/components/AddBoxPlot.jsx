@@ -169,15 +169,17 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   }
 
   // 🔹 useEffect que depende de boxplotData y boxplotDataProcessed
+  const processedData = useMemo(() => {
+    return processingType === "none"
+      ? boxplotData
+      : boxplotDataProcessed;
+  }, [processingType, boxplotData, boxplotDataProcessed]);
+
   useEffect(() => {
     if (onSelect) {
-      const processedData = processingType === "none"
-        ? boxplotData
-        : boxplotDataProcessed;
       onSelect(selected, processedData, processingType);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, processingType, data]);
+  }, [selected, processedData, processingType, onSelect]);
 
   const chartData = {
     labels,

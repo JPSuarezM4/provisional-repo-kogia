@@ -21,16 +21,18 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
     return (
         <>
             {charts.map((chartConfig) => (
-                <AddBoxPlot
-                    key={chartConfig.id}
-                    id={chartConfig.id}
-                    nodo_id={chartConfig.nodo_id}
-                    dispositivo_id={chartConfig.dispositivo_id}
-                    sensor_id={chartConfig.sensor_id}
-                    medida_id={chartConfig.medida_id}
-                    onDelete={handleDelete}
-                    onSelect={handleSelect}
-                />
+            <AddBoxPlot
+                key={chartConfig.id}
+                id={chartConfig.id}
+                nodo_id={chartConfig.nodo_id}
+                dispositivo_id={chartConfig.dispositivo_id}
+                sensor_id={chartConfig.sensor_id}
+                medida_id={chartConfig.medida_id}
+                onDelete={() => handleDelete(chartConfig.id)}
+                onSelect={(selected, processedData, processingType) =>
+                handleSelect(chartConfig.id, selected, processedData, processingType)
+                }
+            />
             ))}
         </>
     );

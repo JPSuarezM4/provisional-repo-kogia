@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Chart } from "react-chartjs-2";
-import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
+import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Checkbox, FormControlLabel } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-// import RefreshIcon from "@mui/icons-material/Refresh";
-
 import { parseISO, format } from "date-fns";
 
 import {
@@ -18,10 +16,7 @@ import {
   Legend,
 } from "chart.js";
 
-import { Checkbox, FormControlLabel } from "@mui/material";
-
 import {
-
   BoxPlotController,
   BoxAndWiskers,
   ViolinController,
@@ -46,18 +41,17 @@ AddBoxPlot.propTypes = {
   sensor_id: PropTypes.string.isRequired,
   medida_id: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onSelect: PropTypes.func, // opcional
 };
 
-
-
-export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete }) {
-  const [data, setData] = useState([]); // aquí guardamos objetos {timestamp, value}
+export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
+  const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
   const [timeRange, setTimeRange] = useState("-4d");
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const [processingType, setProcessingType] = useState("none"); // none, normalize, log, etc.
+  const [processingType, setProcessingType] = useState("none");
   const [selected, setSelected] = useState(false);
 
   function processValues(values) {
@@ -65,51 +59,50 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       const min = Math.min(...values);
       const max = Math.max(...values);
       if (max === min) {
-        // Todos los valores son iguales, devuelve un array con el mismo valor
-        return values.map(() => 0.5); 
+        return values.map(() => 0.5);
       }
-      return values.map(v => (v - min) / (max - min));
+      return values.map((v) => (v - min) / (max - min));
     }
     if (processingType === "log") {
-      return values.map(v => Math.log(v + 1));
+      return values.map((v) => Math.log(v + 1));
     }
     return values;
   }
-  
+
   function allEqual(arr) {
-    return arr.every(v => v === arr[0]);
+    return arr.every((v) => v === arr[0]);
   }
 
-
-
+  // fetch datos
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
-        // Obtener datos de InfluxDB
-        const responseInflux = await axios.get(
-          `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
-        );
+        try {
+          const responseInflux = await axios.get(
+            `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
+          );
 
-        // ahora guardamos valor + timestamp
-        const influxData = responseInflux.data.map(item => ({
-          timestamp: item._time || item.time, // depende de cómo venga de Influx
-          value: item.valor,
-        }));
+          const influxData = responseInflux.data.map((item) => ({
+            timestamp: item._time || item.time,
+            value: item.valor,
+          }));
 
-        // Obtener unidad de medida
-        const responseMedida = await axios.get(
-          `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
-        );
-        setUnidad(responseMedida.data.medida.unidad);
+          const responseMedida = await axios.get(
+            `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
+          );
+          setUnidad(responseMedida.data.medida.unidad);
 
-        setData(influxData);
-        console.log("Datos recibidos:", influxData);
+          setData(influxData);
+          console.log("Datos recibidos:", influxData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       };
-      fetchData().catch(error => console.error("Error fetching data:", error));
+      fetchData();
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-  // Agrupar valores según el rango de tiempo
+  // agrupar datos
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
@@ -132,7 +125,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     } else {
       labels = ["Sin datos"];
     }
-    const original = data.map(item => item.value);
+    const original = data.map((item) => item.value);
     boxplotData = [original];
     boxplotDataProcessed = [processValues(original)];
   } else {
@@ -147,6 +140,18 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     boxplotData = Object.values(grouped);
     boxplotDataProcessed = Object.values(grouped).map(processValues);
   }
+
+  // memoize datos procesados para evitar loops
+  const processedData = useMemo(() => {
+    return processingType === "none" ? boxplotData : boxplotDataProcessed;
+  }, [processingType, boxplotData, boxplotDataProcessed]);
+
+  // notificar al padre cuando cambien selección o datos
+  useEffect(() => {
+    if (onSelect) {
+      onSelect(selected, processedData, processingType);
+    }
+  }, [selected, processedData, processingType, onSelect]);
 
   const chartData = {
     labels,
@@ -183,27 +188,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         display: true,
         text: "Boxplot de valores tiempo",
       },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const v = context.raw;
-            if (v && typeof v === "object" && v.min !== undefined) {
-              return `Min: ${v.min} | Q1: ${v.q1} | Median: ${v.median} | Q3: ${v.q3} | Max: ${v.max}` +
-                (v.outliers?.length ? ` | Outliers: ${v.outliers.length}` : "");
-            }
-            if (Array.isArray(v)) {
-              const sorted = [...v].sort((a, b) => a - b);
-              const min = sorted[0];
-              const max = sorted[sorted.length - 1];
-              const median = sorted[Math.floor(sorted.length / 2)];
-              const q1 = sorted[Math.floor(sorted.length / 4)];
-              const q3 = sorted[Math.floor(3 * sorted.length / 4)];
-              return `Min: ${min} | Q1: ${q1} | Median: ${median} | Q3: ${q3} | Max: ${max} | N: ${v.length}`;
-            }
-            return '';
-          }
-        }
-      }
     },
     scales: {
       x: {
@@ -224,7 +208,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
   const exportToPNG = () => {
     if (chartRef.current) {
-      const url = chartRef.current.toBase64Image();  // válido en v4
+      const url = chartRef.current.toBase64Image();
       const link = document.createElement("a");
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.href = url;
@@ -233,17 +217,9 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleTimeRangeChange = (event) => {
-    setTimeRange(event.target.value);
-  };
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+  const handleTimeRangeChange = (event) => setTimeRange(event.target.value);
 
   return (
     <div
@@ -276,7 +252,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         control={
           <Checkbox
             checked={selected}
-            onChange={e => setSelected(e.target.checked)}
+            onChange={(e) => setSelected(e.target.checked)}
             color="primary"
           />
         }
@@ -292,20 +268,19 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
           <MenuItem value="-90d">Últimos 3 meses</MenuItem>
           <MenuItem value="-365d">Último año</MenuItem>
         </Select>
-      </FormControl> 
+      </FormControl>
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Procesamiento</InputLabel>
         <Select
           value={processingType}
-          onChange={e => setProcessingType(e.target.value)}
+          onChange={(e) => setProcessingType(e.target.value)}
           label="Procesamiento"
           style={{ color: "white" }}
         >
           <MenuItem value="none">Original</MenuItem>
           <MenuItem value="normalize">Normalizado</MenuItem>
           <MenuItem value="log">Logaritmo</MenuItem>
-          {/* Agrega más rutinas aquí */}
         </Select>
       </FormControl>
 
@@ -320,11 +295,23 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       )}
 
       {processingType !== "none" && !showProcessedChart && (
-        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span>Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.</span>
+        <div
+          style={{
+            width: "500px",
+            height: "250px",
+            overflow: "hidden",
+            marginTop: 16,
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <span>
+            Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.
+          </span>
         </div>
       )}
-
 
       <Tooltip title="Eliminar gráfico">
         <IconButton

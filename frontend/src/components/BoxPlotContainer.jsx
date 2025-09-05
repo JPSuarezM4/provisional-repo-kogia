@@ -3,6 +3,7 @@ import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
 const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
+    // ✅ Memoizamos para que NO cambien en cada render
     const handleSelect = useCallback(
         (chartId, selected, processedData, processingType) => {
             onSelectBoxPlot(chartId, selected, processedData, processingType);
@@ -22,7 +23,7 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
             {charts.map((chartConfig) => (
                 <AddBoxPlot
                     key={chartConfig.id}
-                    id={chartConfig.id}   // 🔑 pasamos el id
+                    id={chartConfig.id}
                     nodo_id={chartConfig.nodo_id}
                     dispositivo_id={chartConfig.dispositivo_id}
                     sensor_id={chartConfig.sensor_id}

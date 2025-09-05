@@ -145,8 +145,10 @@ export default function AddBoxPlot({
   }
 
   const processedData = useMemo(() => {
-    return processingType === "none" ? boxplotData : boxplotDataProcessed;
+    if (processingType === "none") return boxplotData;
+    return boxplotDataProcessed;
   }, [processingType, boxplotData, boxplotDataProcessed]);
+
 
   // 🔹 notificar al padre
   useEffect(() => {

@@ -36,15 +36,24 @@ ChartJS.register(
 );
 
 AddBoxPlot.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   nodo_id: PropTypes.string.isRequired,
   dispositivo_id: PropTypes.string.isRequired,
   sensor_id: PropTypes.string.isRequired,
   medida_id: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
-  onSelect: PropTypes.func, // opcional
+  onSelect: PropTypes.func.isRequired,
 };
 
-export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_id, onDelete, onSelect }) {
+export default function AddBoxPlot({
+  id,
+  nodo_id,
+  dispositivo_id,
+  sensor_id,
+  medida_id,
+  onDelete,
+  onSelect,
+}) {
   const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
   const [timeRange, setTimeRange] = useState("-4d");
@@ -58,9 +67,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     if (processingType === "normalize") {
       const min = Math.min(...values);
       const max = Math.max(...values);
-      if (max === min) {
-        return values.map(() => 0.5);
-      }
+      if (max === min) return values.map(() => 0.5);
       return values.map((v) => (v - min) / (max - min));
     }
     if (processingType === "log") {
@@ -73,36 +80,32 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     return arr.every((v) => v === arr[0]);
   }
 
-  // fetch datos
+  // 🔹 fetch de datos
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
-        try {
-          const responseInflux = await axios.get(
-            `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
-          );
+        const responseInflux = await axios.get(
+          `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
+        );
 
-          const influxData = responseInflux.data.map((item) => ({
-            timestamp: item._time || item.time,
-            value: item.valor,
-          }));
+        const influxData = responseInflux.data.map((item) => ({
+          timestamp: item._time || item.time,
+          value: item.valor,
+        }));
 
-          const responseMedida = await axios.get(
-            `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
-          );
-          setUnidad(responseMedida.data.medida.unidad);
+        const responseMedida = await axios.get(
+          `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
+        );
+        setUnidad(responseMedida.data.medida.unidad);
 
-          setData(influxData);
-          console.log("Datos recibidos:", influxData);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
+        setData(influxData);
+        console.log("Datos recibidos:", influxData);
       };
-      fetchData();
+      fetchData().catch((error) => console.error("Error fetching data:", error));
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
-  // agrupar datos
+  // 🔹 agrupar datos
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
@@ -141,17 +144,16 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     boxplotDataProcessed = Object.values(grouped).map(processValues);
   }
 
-  // memoize datos procesados para evitar loops
   const processedData = useMemo(() => {
     return processingType === "none" ? boxplotData : boxplotDataProcessed;
   }, [processingType, boxplotData, boxplotDataProcessed]);
 
-  // notificar al padre cuando cambien selección o datos
+  // 🔹 notificar al padre
   useEffect(() => {
     if (onSelect) {
-      onSelect(selected, processedData, processingType);
+      onSelect(id, selected, processedData, processingType);
     }
-  }, [selected, processedData, processingType, onSelect]);
+  }, [id, selected, processedData, processingType, onSelect]);
 
   const chartData = {
     labels,
@@ -184,25 +186,11 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     maintainAspectRatio: false,
     plugins: {
       legend: { display: true },
-      title: {
-        display: true,
-        text: "Boxplot de valores tiempo",
-      },
+      title: { display: true, text: "Boxplot de valores tiempo" },
     },
     scales: {
-      x: {
-        ticks: {
-          maxRotation: 90,
-          minRotation: 60,
-          autoSkip: false,
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: unidad,
-        },
-      },
+      x: { ticks: { maxRotation: 90, minRotation: 60, autoSkip: false } },
+      y: { title: { display: true, text: unidad } },
     },
   };
 
@@ -217,10 +205,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
     }
   };
 
-  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-  const handleTimeRangeChange = (event) => setTimeRange(event.target.value);
-
   return (
     <div
       className="relative flex flex-col items-center p-4"
@@ -228,21 +212,20 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         backgroundColor: "#1f2937",
         border: "1.5px solid white",
         borderRadius: "8px",
-        padding: "20px",
         width: "500px",
         minHeight: "600px",
       }}
     >
       <IconButton
         aria-label="more"
-        onClick={handleMenuOpen}
+        onClick={(e) => setAnchorEl(e.currentTarget)}
         className="absolute top-2 right-2"
         style={{ color: "white" }}
       >
         <MoreVertIcon />
       </IconButton>
 
-      <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={exportToPNG} style={{ color: "black" }}>
           Exportar como PNG
         </MenuItem>
@@ -261,7 +244,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
       <FormControl variant="outlined" className="mt-2 w-1/2" style={{ color: "white" }}>
         <InputLabel style={{ color: "white" }}>Rango de tiempo</InputLabel>
-        <Select value={timeRange} onChange={handleTimeRangeChange} label="Rango de tiempo" style={{ color: "white" }}>
+        <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} label="Rango de tiempo" style={{ color: "white" }}>
           <MenuItem value="-1d">Último día</MenuItem>
           <MenuItem value="-7d">Última semana</MenuItem>
           <MenuItem value="-30d">Último mes</MenuItem>
@@ -284,12 +267,12 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
         </Select>
       </FormControl>
 
-      <div style={{ width: "500px", height: "250px", overflow: "hidden" }}>
+      <div style={{ width: "500px", height: "250px" }}>
         <Chart ref={chartRef} type="boxplot" data={chartData} options={chartOptions} />
       </div>
 
       {processingType !== "none" && showProcessedChart && (
-        <div style={{ width: "500px", height: "250px", overflow: "hidden", marginTop: 16 }}>
+        <div style={{ width: "500px", height: "250px", marginTop: 16 }}>
           <Chart type="boxplot" data={chartDataProcessed} options={chartOptions} />
         </div>
       )}
@@ -299,7 +282,6 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
           style={{
             width: "500px",
             height: "250px",
-            overflow: "hidden",
             marginTop: 16,
             color: "white",
             display: "flex",
@@ -307,16 +289,14 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
             justifyContent: "center",
           }}
         >
-          <span>
-            Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.
-          </span>
+          <span>Todos los valores normalizados son iguales. No se puede mostrar el boxplot procesado.</span>
         </div>
       )}
 
       <Tooltip title="Eliminar gráfico">
         <IconButton
           aria-label="delete chart"
-          onClick={onDelete}
+          onClick={() => onDelete(id)}   // 🔑 pasamos el id
           className="absolute top-2 right-8"
           style={{ borderRadius: "50%", color: "white" }}
         >

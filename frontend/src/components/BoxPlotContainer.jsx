@@ -3,15 +3,13 @@ import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
 const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
-    // función estable para manejar el select
     const handleSelect = useCallback(
         (chartId, selected, processedData, processingType) => {
             onSelectBoxPlot(chartId, selected, processedData, processingType);
         },
-        [onSelectBoxPlot] // ✅ solo cambia si cambia la prop
+        [onSelectBoxPlot]
     );
 
-    // función estable para manejar el delete
     const handleDelete = useCallback(
         (chartId) => {
             onDeleteChart(chartId);
@@ -24,14 +22,13 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
             {charts.map((chartConfig) => (
                 <AddBoxPlot
                     key={chartConfig.id}
+                    id={chartConfig.id}   // 🔑 pasamos el id
                     nodo_id={chartConfig.nodo_id}
                     dispositivo_id={chartConfig.dispositivo_id}
                     sensor_id={chartConfig.sensor_id}
                     medida_id={chartConfig.medida_id}
-                    onDelete={() => handleDelete(chartConfig.id)}
-                    onSelect={(selected, processedData, processingType) =>
-                        handleSelect(chartConfig.id, selected, processedData, processingType)
-                    }
+                    onDelete={handleDelete}
+                    onSelect={handleSelect}
                 />
             ))}
         </>

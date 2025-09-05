@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Chart as ReactChart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-  import { useMemo } from "react";
 // import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { parseISO, format } from "date-fns";
@@ -50,7 +49,7 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
   const [processingType, setProcessingType] = useState("none"); // none, normalize, log
   const [selected, setSelected] = useState(false);
 
-  function processValues(values) {
+  const processValues = useCallback((values) => {
     if (processingType === "normalize") {
       const min = Math.min(...values);
       const max = Math.max(...values);
@@ -63,7 +62,8 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
       return values.map(v => Math.log(v + 1));
     }
     return values;
-  }
+  }, [processingType]);
+
 
   function allEqual(arr) {
     return arr.every(v => v === arr[0]);

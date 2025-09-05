@@ -71,31 +71,35 @@ export default function AddBoxPlot({ nodo_id, dispositivo_id, sensor_id, medida_
 
   // 🔹 Fetch de datos
   useEffect(() => {
+    let cancelled = false;
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
         try {
           const responseInflux = await axios.get(
             `https://infdb-service-production.up.railway.app/get_data?nodo_id=${nodo_id}&medida_id=${medida_id}&dispositivo_id=${dispositivo_id}&sensor_id=${sensor_id}&rango=${timeRange}`
           );
-
-          const influxData = responseInflux.data.map(item => ({
-            timestamp: item._time || item.time,
-            value: item.valor,
-          }));
-
+          if (!cancelled) {
+            const influxData = responseInflux.data.map(item => ({
+              timestamp: item._time || item.time,
+              value: item.valor,
+            }));
+            setData(influxData);
+          }
           const responseMedida = await axios.get(
             `https://sensor-service-production.up.railway.app/api/nodos/${nodo_id}/dispositivos/${dispositivo_id}/sensor/${sensor_id}/medidas/${medida_id}`
           );
-          setUnidad(responseMedida.data.medida.unidad);
-
-          setData(influxData);
-          console.log("Datos recibidos:", influxData);
+          if (!cancelled) {
+            setUnidad(responseMedida.data.medida.unidad);
+          }
         } catch (error) {
-          console.error("Error fetching data:", error);
+          if (!cancelled) {
+            console.error("Error fetching data:", error);
+          }
         }
       };
       fetchData();
     }
+    return () => { cancelled = true; };
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
   // 🔹 Construcción de labels y datasets

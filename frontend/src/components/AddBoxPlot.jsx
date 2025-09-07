@@ -311,7 +311,7 @@ export default function AddBoxPlot({
       <Tooltip title="Eliminar gráfico">
         <IconButton
           aria-label="delete chart"
-          onClick={() => onDelete(id)}   // 🔑 pasamos el id
+          onClick={() => onDelete(id)}   // 🔑 pasamos el id git test
           className="absolute top-2 right-8"
           style={{ borderRadius: "50%", color: "white" }}
         >
@@ -321,3 +321,5 @@ export default function AddBoxPlot({
     </div>
   );
 }
+
+

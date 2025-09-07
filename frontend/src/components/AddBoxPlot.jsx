@@ -61,7 +61,6 @@ export default function AddBoxPlot({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [processingType, setProcessingType] = useState("none");
-  const [selected, setSelected] = useState(false);
 
   function processValues(values) {
     if (processingType === "normalize") {
@@ -201,11 +200,11 @@ export default function AddBoxPlot({
     // Handler para selección
   const handleSelectChange = (e) => {
     const checked = e.target.checked;
-    setSelected(checked);
     if (onSelect) {
-      onSelect(id, checked, processedData, processingType);
+      onSelect(checked, processedData, processingType);
     }
   };
+
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {

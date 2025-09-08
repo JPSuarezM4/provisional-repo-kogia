@@ -1,5 +1,6 @@
 import time
 import random
+import math
 from influxdb_client import InfluxDBClient, Point
 
 # Configuración de InfluxDB Cloud
@@ -8,7 +9,14 @@ ORG = "3dcfd1ba132d8ffe"
 BUCKET = "KOGIA_TEST4"
 URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 
-# Conectar a InfluxDB Cloud
+# Estado inicial de las variables
+base_ph = 7.2
+base_temp = 28.0
+base_ntu = 5.0
+base_mv = 2.0
+tick = 0 
+
+# Conectar
 with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
     write_api = client.write_api()
 
@@ -16,24 +24,31 @@ with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
         while True:
             dispositivo_id = 1
             sensor_id = 1
-            medida_id = 1
 
-            # Nodo 3: pH (rango entre 5.5 y 8.5)
-            nodo_ph = 3
-            ph_value = round(random.uniform(1, 5), 2)
-            ph_point = Point("mediciones") \
-                .tag("nodo_id", str(nodo_ph)) \
+            tick += 1
+           # ph_value = round(base_ph + 0.2 * math.sin(tick / 20) + random.uniform(-0.05, 0.05), 2)
+           # temp_value = round(base_temp + 1.5 * math.sin(tick / 30) + random.uniform(-0.3, 0.3), 2)
+            ntu_value = round(base_ntu + 2.0 * math.sin(tick / 25) + random.uniform(-0.5, 0.5), 2)
+           # mv_value = round(base_mv + 0.5 * math.sin(tick / 15) + random.uniform(-0.1, 0.1), 2)
+            
+            
+            ntu_point = Point("mediciones") \
+                .tag("nodo_id", "1") \
                 .tag("dispositivo_id", str(dispositivo_id)) \
                 .tag("sensor_id", str(sensor_id)) \
-                .tag("medida_id", str(medida_id)) \
-                .field("valor", ph_value)
+                .tag("medida_id", "1") \
+                .field("valor", max(0, ntu_value))  # evita valores negativos
+            ntu_point = ntu_point.time(time.time_ns())
+                
 
-            # Enviar punto a InfluxDB
-            write_api.write(bucket=BUCKET, org=ORG, record=ph_point)
 
-            print(f"[Nodo 3 - pH] valor={ph_value}")
+            # Enviar a InfluxDB
+            write_api.write(bucket=BUCKET, org=ORG, record=[ntu_point])
 
-            time.sleep(1)  
+
+            print(f"[Nodo 1 - NTU] valor={ntu_value}")
+
+            time.sleep(1)
 
     except KeyboardInterrupt:
         print("Proceso detenido por el usuario.")

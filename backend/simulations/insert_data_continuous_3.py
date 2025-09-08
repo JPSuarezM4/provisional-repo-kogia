@@ -4,9 +4,9 @@ import math
 from influxdb_client import InfluxDBClient, Point
 
 # Configuración de InfluxDB Cloud
-TOKEN = "pUIq7NPMznh5n7mCo_ibwG6Ad3lFLGXvRC1NXN_kJZaBH3gQRFL89MjWKN-TtTAEhBTce1iGO6-i2D6VEVLP3A=="
+TOKEN = "YY2G3o8Du9uFpXeIn1SX4wSIYO32R3UArJbEgzCpyrbyE3zGGEiIdFzcVv1EvLa33TbFdsu_XENNtOhTy7W-Aw=="
 ORG = "3dcfd1ba132d8ffe"
-BUCKET = "KOGIA_TEST4"
+BUCKET = "KOGIA_TEST5"
 URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 
 tick = 0
@@ -18,42 +18,42 @@ with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
         while True:
             tick += 1
 
-            # Turbidez (NTU) - Nodo 1, Dispositivo 1, Sensor 1, Medida 1
+            # NTU - sensor_id = 1
             ntu_value = round(5.0 + 2.0 * math.sin(tick / 25) + random.uniform(-0.5, 0.5), 2)
-            ntu_point = Point("mediciones") \
-                .tag("nodo_id", "1") \
-                .tag("dispositivo_id", "1") \
-                .tag("sensor_id", "1") \
-                .tag("medida_id", "1") \
-                .field("valor", max(0, ntu_value)) \
-                .time(time.time_ns())
-
-            # Humedad - Nodo 2, Dispositivo 1, Sensor 1, Medida 2
-            humedad_value = round(60.0 + 10.0 * math.sin(tick / 30) + random.uniform(-2, 2), 2)
-            humedad_point = Point("mediciones") \
-                .tag("nodo_id", "2") \
-                .tag("dispositivo_id", "1") \
-                .tag("sensor_id", "1") \
-                .tag("medida_id", "2") \
-                .field("valor", max(0, humedad_value)) \
-                .time(time.time_ns())
-
-            # Temperatura ambiente - Nodo 3, Dispositivo 1, Sensor 1, Medida 3
-            temp_value = round(25.0 + 3.0 * math.sin(tick / 20) + random.uniform(-0.5, 0.5), 2)
-            temp_point = Point("mediciones") \
+            ntu_point = Point("mediciones_dht11_v2") \
                 .tag("nodo_id", "3") \
                 .tag("dispositivo_id", "1") \
                 .tag("sensor_id", "1") \
+                .tag("medida_id", "2") \
+                .field("valor", max(0, ntu_value)) \
+                .time(time.time_ns())
+
+            # Humedad - sensor_id = 4
+            humedad_value = round(60.0 + 10.0 * math.sin(tick / 30) + random.uniform(-2, 2), 2)
+            humedad_point = Point("mediciones_dht11_v2") \
+                .tag("nodo_id", "3") \
+                .tag("dispositivo_id", "1") \
+                .tag("sensor_id", "4") \
+                .tag("medida_id", "1") \
+                .field("valor", max(0, humedad_value)) \
+                .time(time.time_ns())
+
+            # Temperatura ambiente - sensor_id = 2
+            temp_value = round(25.0 + 3.0 * math.sin(tick / 20) + random.uniform(-0.5, 0.5), 2)
+            temp_point = Point("mediciones_dht11_v2") \
+                .tag("nodo_id", "3") \
+                .tag("dispositivo_id", "1") \
+                .tag("sensor_id", "2") \
                 .tag("medida_id", "3") \
                 .field("valor", temp_value) \
                 .time(time.time_ns())
 
-            # TDS - Nodo 4, Dispositivo 1, Sensor 1, Medida 4
+            # TDS - sensor_id = 3
             tds_value = round(300.0 + 50.0 * math.sin(tick / 15) + random.uniform(-10, 10), 2)
-            tds_point = Point("mediciones") \
-                .tag("nodo_id", "4") \
+            tds_point = Point("mediciones_dht11_v2") \
+                .tag("nodo_id", "3") \
                 .tag("dispositivo_id", "1") \
-                .tag("sensor_id", "1") \
+                .tag("sensor_id", "3") \
                 .tag("medida_id", "4") \
                 .field("valor", max(0, tds_value)) \
                 .time(time.time_ns())
@@ -61,10 +61,10 @@ with InfluxDBClient(url=URL, token=TOKEN, org=ORG) as client:
             # Enviar a InfluxDB
             write_api.write(bucket=BUCKET, org=ORG, record=[ntu_point, humedad_point, temp_point, tds_point])
 
-            print(f"[Nodo 1 - NTU] valor={ntu_value}")
-            print(f"[Nodo 2 - Humedad] valor={humedad_value}")
-            print(f"[Nodo 3 - Temp] valor={temp_value}")
-            print(f"[Nodo 4 - TDS] valor={tds_value}")
+            print(f"[Sensor 1 - NTU] valor={ntu_value}")
+            print(f"[Sensor 4 - Humedad] valor={humedad_value}")
+            print(f"[Sensor 2 - Temperatura] valor={temp_value}")
+            print(f"[Sensor 3 - TDS] valor={tds_value}")
             print("-" * 40)
 
             time.sleep(1)

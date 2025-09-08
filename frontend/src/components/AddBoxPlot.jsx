@@ -44,6 +44,8 @@ AddBoxPlot.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   selected: PropTypes.bool.isRequired,
+  processingType: PropTypes.string.isRequired,
+  onProcessingTypeChange: PropTypes.func.isRequired,
 };
 
 export default function AddBoxPlot({
@@ -55,6 +57,8 @@ export default function AddBoxPlot({
   onDelete,
   onSelect,
   selected,
+  processingType,
+  onProcessingTypeChange,
 }) {
   const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
@@ -62,7 +66,7 @@ export default function AddBoxPlot({
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const [processingType, setProcessingType] = useState("none");
+
 
 
   function processValues(values) {
@@ -209,11 +213,13 @@ export default function AddBoxPlot({
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {
-    setProcessingType(e.target.value);
-    if (onSelect) {
-      onSelect(id, selected, processedData, e.target.value);
-    }
-  };
+      if (onProcessingTypeChange) {
+        onProcessingTypeChange(e.target.value);
+      }
+      if (onSelect) {
+        onSelect(id, selected, processedData, e.target.value);
+      }
+    };
 
   // Handler para rango de tiempo
   const handleTimeRangeChange = (e) => {

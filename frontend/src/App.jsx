@@ -59,6 +59,7 @@ function App() {
   const [isGestionOpen, setIsGestionOpen] = useState(false); // Cambia a un booleano
   const userRole = localStorage.getItem('role');
   const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
+  const [processingTypes, setProcessingTypes] = useState({});
 
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -77,6 +78,10 @@ function App() {
       { ...chartConfig, id: Date.now() + Math.random() } // id único
     ]);
   };
+
+  const handleProcessingTypeChange = (id, type) => {
+  setProcessingTypes(prev => ({ ...prev, [id]: type }));
+};
 
   const handleDeleteChart = (id) => {
   setCharts(prev => prev.filter(chart => chart.id !== id));
@@ -340,6 +345,9 @@ const handleAddRealTimeChart = (chartConfig) => {
                         }
                       });
                     }}
+                    selectedCharts={selectedBoxPlots.reduce((acc, item) => ({ ...acc, [item.id]: true }), {})}
+                    processingTypes={processingTypes}
+                    onProcessingTypeChange={handleProcessingTypeChange}
                   />
                 </Box>
               </Fade>

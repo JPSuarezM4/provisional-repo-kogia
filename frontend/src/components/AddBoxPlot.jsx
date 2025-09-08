@@ -216,9 +216,6 @@ export default function AddBoxPlot({
       if (onProcessingTypeChange) {
         onProcessingTypeChange(e.target.value);
       }
-      if (onSelect) {
-        onSelect(id, selected, processedData, e.target.value);
-      }
     };
 
   // Handler para rango de tiempo

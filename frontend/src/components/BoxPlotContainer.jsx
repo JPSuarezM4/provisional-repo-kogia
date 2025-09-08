@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
-const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
+const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedCharts}) => {
     const handleDelete = useCallback(
         (chartId) => {
             onDeleteChart(chartId);
@@ -27,6 +27,7 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot }) => {
                     dispositivo_id={chartConfig.dispositivo_id}
                     sensor_id={chartConfig.sensor_id}
                     medida_id={chartConfig.medida_id}
+                    selected={!!selectedCharts[chartConfig.id]}
                     onDelete={() => handleDelete(chartConfig.id)}
                     onSelect={(selected, processedData, processingType) =>
                         handleSelect(chartConfig.id, selected, processedData, processingType)

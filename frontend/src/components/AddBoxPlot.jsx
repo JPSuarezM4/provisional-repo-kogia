@@ -61,7 +61,6 @@ export default function AddBoxPlot({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [processingType, setProcessingType] = useState("none");
-  const [selected, setSelected] = useState(false);
 
   function processValues(values) {
     if (processingType === "normalize") {
@@ -200,11 +199,12 @@ export default function AddBoxPlot({
 
     // Handler para selección
   const handleSelectChange = (e) => {
-    setSelected(e.target.checked);
+    const checked = e.target.checked;
     if (onSelect) {
-      onSelect(id, e.target.checked, processedData, processingType);
+      onSelect(checked, processedData, processingType);
     }
   };
+
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {
@@ -311,7 +311,7 @@ export default function AddBoxPlot({
       <Tooltip title="Eliminar gráfico">
         <IconButton
           aria-label="delete chart"
-          onClick={() => onDelete(id)}   // 🔑 pasamos el id
+          onClick={() => onDelete(id)}   // 🔑 pasamos el id git test
           className="absolute top-2 right-8"
           style={{ borderRadius: "50%", color: "white" }}
         >
@@ -321,3 +321,5 @@ export default function AddBoxPlot({
     </div>
   );
 }
+
+

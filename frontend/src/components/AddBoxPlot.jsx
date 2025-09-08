@@ -43,6 +43,7 @@ AddBoxPlot.propTypes = {
   medida_id: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
+  selected: PropTypes.bool.isRequired,
 };
 
 export default function AddBoxPlot({
@@ -53,6 +54,7 @@ export default function AddBoxPlot({
   medida_id,
   onDelete,
   onSelect,
+  selected,
 }) {
   const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
@@ -61,7 +63,7 @@ export default function AddBoxPlot({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [processingType, setProcessingType] = useState("none");
-  const [selected, setSelected] = useState(false);
+
 
   function processValues(values) {
     if (processingType === "normalize") {
@@ -199,10 +201,8 @@ export default function AddBoxPlot({
   }, [processingType, boxplotData, boxplotDataProcessed]);
 
   const handleSelectChange = (e) => {
-    const checked = e.target.checked;
-    setSelected(checked);
     if (onSelect) {
-      onSelect(id, checked, processedData, processingType);
+      onSelect(id, e.target.checked, processedData, processingType);
     }
   };
 

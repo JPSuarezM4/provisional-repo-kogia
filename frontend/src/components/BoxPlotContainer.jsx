@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
-const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedCharts}) => {
+const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedCharts, processingTypes, onProcessingTypeChange }) => {
     const handleDelete = useCallback(
         (chartId) => {
             onDeleteChart(chartId);
@@ -52,6 +52,8 @@ BoxPlotContainer.propTypes = {
     ).isRequired,
     onDeleteChart: PropTypes.func.isRequired,
     onSelectBoxPlot: PropTypes.func.isRequired,
+    processingTypes: PropTypes.object.isRequired,
+    onProcessingTypeChange: PropTypes.func.isRequired,
 };
 
 export default BoxPlotContainer;

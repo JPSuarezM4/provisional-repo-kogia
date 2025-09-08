@@ -335,11 +335,11 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <BoxPlotContainer
                     charts={charts}
                     onDeleteChart={handleDeleteChart}
-                    onSelectBoxPlot={(id, selected, processedData, processingType) => {
+                    onSelectBoxPlot={(id, selected, processedData, processingTypes) => {
                       setSelectedBoxPlots(prev => {
                         if (selected) {
                           const filtered = prev.filter(item => item.id !== id);
-                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
+                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingTypes }];
                         } else {
                           return prev.filter(item => item.id !== id);
                         }

@@ -27,7 +27,7 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedChar
                     dispositivo_id={chartConfig.dispositivo_id}
                     sensor_id={chartConfig.sensor_id}
                     medida_id={chartConfig.medida_id}
-                    selected={!!selectedCharts[chartConfig.id]}
+                    selected={!!selectedCharts?.[chartConfig.id]}
                     onDelete={() => handleDelete(chartConfig.id)}
                     onSelect={(selected, processedData, processingType) =>
                         handleSelect(chartConfig.id, selected, processedData, processingType)

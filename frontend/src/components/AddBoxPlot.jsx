@@ -202,7 +202,7 @@ export default function AddBoxPlot({
     const checked = e.target.checked;
     setSelected(checked);
     if (onSelect) {
-      onSelect(checked, processedData, processingType);
+      onSelect(id, checked, processedData, processingType);
     }
   };
 

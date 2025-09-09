@@ -46,6 +46,8 @@ AddBoxPlot.propTypes = {
   selected: PropTypes.bool.isRequired,
   processingType: PropTypes.string.isRequired,
   onProcessingTypeChange: PropTypes.func.isRequired,
+  timeRange: PropTypes.string.isRequired,
+  onTimeRangeChange: PropTypes.func.isRequired,
 };
 
 export default function AddBoxPlot({
@@ -57,12 +59,13 @@ export default function AddBoxPlot({
   onDelete,
   onSelect,
   selected,
+  timeRange,
   processingType,
   onProcessingTypeChange,
+  onTimeRangeChange,
 }) {
   const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
-  const [timeRange, setTimeRange] = useState("-4d");
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -120,8 +123,8 @@ export default function AddBoxPlot({
   }
 
   // Para procesamiento y exportación (usa todos los datos)
- // const originalAll = data.map((item) => item.value);
- // const processedAll = processValues(originalAll);
+  // const originalAll = data.map((item) => item.value);
+  // const processedAll = processValues(originalAll);
 
   // 🔹 agrupar datos
   let labels = [];
@@ -235,8 +238,9 @@ export default function AddBoxPlot({
 
   // Handler para rango de tiempo
   const handleTimeRangeChange = (e) => {
-    setTimeRange(e.target.value);
-    // No notifica selección aquí, solo cambia el rango
+    if (onTimeRangeChange) {
+      onTimeRangeChange(e.target.value);
+    }
   };
 
   return (

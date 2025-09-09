@@ -60,6 +60,7 @@ function App() {
   const userRole = localStorage.getItem('role');
   const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
   const [processingTypes, setProcessingTypes] = useState({});
+  const [timeRanges, setTimeRanges] = useState({});
 
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -79,9 +80,13 @@ function App() {
     ]);
   };
 
+  const handleTimeRangeChange = (id, range) => {
+    setTimeRanges(prev => ({ ...prev, [id]: range }));
+  };
+
   const handleProcessingTypeChange = (id, type) => {
-  setProcessingTypes(prev => ({ ...prev, [id]: type }));
-};
+    setProcessingTypes(prev => ({ ...prev, [id]: type }));
+  };
 
   const handleDeleteChart = (id) => {
   setCharts(prev => prev.filter(chart => chart.id !== id));
@@ -348,6 +353,8 @@ const handleAddRealTimeChart = (chartConfig) => {
                     selectedCharts={selectedBoxPlots.reduce((acc, item) => ({ ...acc, [item.id]: true }), {})}
                     processingTypes={processingTypes}
                     onProcessingTypeChange={handleProcessingTypeChange}
+                    timeRanges={timeRanges}
+                    onTimeRangeChange={handleTimeRangeChange}
                   />
                 </Box>
               </Fade>

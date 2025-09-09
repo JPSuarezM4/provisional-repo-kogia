@@ -206,7 +206,7 @@ export default function AddBoxPlot({
 
   const handleSelectChange = (e) => {
     if (onSelect) {
-      onSelect(id, e.target.checked, processedData, processingType);
+      onSelect(e.target.checked, processedData, processingType);
     }
   };
 

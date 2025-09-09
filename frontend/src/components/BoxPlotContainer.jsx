@@ -54,6 +54,7 @@ BoxPlotContainer.propTypes = {
     onSelectBoxPlot: PropTypes.func.isRequired,
     processingTypes: PropTypes.object.isRequired,
     onProcessingTypeChange: PropTypes.func.isRequired,
+    selectedCharts: PropTypes.object.isRequired,
 };
 
 export default BoxPlotContainer;

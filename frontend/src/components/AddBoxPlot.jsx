@@ -111,6 +111,18 @@ export default function AddBoxPlot({
     }
   }, [nodo_id, dispositivo_id, sensor_id, medida_id, timeRange]);
 
+  const MAX_POINTS = 1000;
+
+  // Para visualización (solo el gráfico)
+  let limitedData = data;
+  if (data.length > MAX_POINTS) {
+    limitedData = data.slice(-MAX_POINTS);
+  }
+
+  // Para procesamiento y exportación (usa todos los datos)
+ // const originalAll = data.map((item) => item.value);
+ // const processedAll = processValues(originalAll);
+
   // 🔹 agrupar datos
   let labels = [];
   let boxplotData = [];
@@ -127,19 +139,22 @@ export default function AddBoxPlot({
   }
 
   if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-    if (data.length > 0) {
-      const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
-      const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
+    if (limitedData.length > 0) {
+      const originalLimited = limitedData.map((item) => item.value);
+      const firstDate = format(parseISO(limitedData[0].timestamp), "yyyy-MM-dd");
+      const lastDate = format(parseISO(limitedData[limitedData.length - 1].timestamp), "yyyy-MM-dd");
       labels = [`${firstDate} a ${lastDate}`];
+      boxplotData = [originalLimited];
+      boxplotDataProcessed = [processValues(originalLimited)];
     } else {
       labels = ["Sin datos"];
+      boxplotData = [[]];
+      boxplotDataProcessed = [[]];
     }
-    const original = data.map((item) => item.value);
-    boxplotData = [original];
-    boxplotDataProcessed = [processValues(original)];
   } else {
+    // ...agrupamiento por día, igual que antes pero usando limitedData...
     const grouped = {};
-    data.forEach((item) => {
+    limitedData.forEach((item) => {
       if (!item.timestamp) return;
       const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
       if (!grouped[day]) grouped[day] = [];

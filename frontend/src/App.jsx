@@ -51,6 +51,8 @@ import ExportButton from './components/ExportButton';
 
 const drawerWidth = 240;
 
+
+
 function App() {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [charts, setCharts] = useState([]);
@@ -61,6 +63,31 @@ function App() {
   const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
   const [processingTypes, setProcessingTypes] = useState({});
   const [timeRanges, setTimeRanges] = useState({});
+
+  function exportSelectedBoxPlotsToCSV() {
+    if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    selectedBoxPlots.forEach((plot) => {
+      // Encabezado para cada gráfico
+      csvContent += `Gráfico ${plot.id} (${plot.tipoProcesamiento})\n`;
+      // Si los datos son arrays de arrays (por agrupamiento), aplanar
+      const flatData = Array.isArray(plot.data[0]) ? plot.data.flat() : plot.data;
+      flatData.forEach((value, i) => {
+        csvContent += `${i + 1},${value}\n`;
+      });
+      csvContent += "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "boxplots_procesados.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
@@ -133,6 +160,7 @@ const handleAddRealTimeChart = (chartConfig) => {
   
   const MainApp = () => {
     return (
+
 <NodosProvider>
       <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#121212' }}>
         {/* AppBar */}
@@ -322,11 +350,7 @@ const handleAddRealTimeChart = (chartConfig) => {
                 <AddBoxPlotButton onAddChart={handleAddBoxPlot} />
                 <ExportButton
                   disabled={selectedBoxPlots.length === 0}
-                  onExport={() => {
-                    // Aquí exportas todos los datos seleccionados
-                    console.log("Exportando datos seleccionados:", selectedBoxPlots);
-                    // Puedes descargar como CSV, enviar a backend, etc.
-                  }}
+                  onExport={exportSelectedBoxPlotsToCSV}
                 />
               </Box>
               <Fade in timeout={500}>

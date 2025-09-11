@@ -65,6 +65,7 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   function exportSelectedBoxPlotsToCSV() {
+    console.log("Exportando:", selectedBoxPlots);
     if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
 
     let csvContent = "data:text/csv;charset=utf-8,";

@@ -130,6 +130,7 @@ export default function AddBoxPlot({
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
+  let grouped = [];
 
   let showProcessedChart = true;
   if (
@@ -156,17 +157,19 @@ export default function AddBoxPlot({
     }
   } else {
     // ...agrupamiento por día, igual que antes pero usando limitedData...
-    const grouped = {};
-    limitedData.forEach((item) => {
-      if (!item.timestamp) return;
-      const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-      if (!grouped[day]) grouped[day] = [];
-      grouped[day].push(item.value);
-    });
-    labels = Object.keys(grouped);
-    boxplotData = Object.values(grouped);
-    boxplotDataProcessed = Object.values(grouped).map(processValues);
+  const grouped = {};
+  limitedData.forEach((item) => {
+    if (!item.timestamp) return;
+    const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push({ timestamp: item.timestamp, value: item.value });
+  });
+  labels = Object.keys(grouped);
+  boxplotData = Object.values(grouped).map(arr => arr.map(obj => obj.value));
+  boxplotDataProcessed = Object.values(grouped).map(arr => processValues(arr.map(obj => obj.value)));
   }
+
+  const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
 
   const chartData = {
     labels,
@@ -219,25 +222,32 @@ export default function AddBoxPlot({
   };
 
 
-  const handleSelectChange = (e) => {
-    if (onSelect) {
-      let processedWithDate = [];
-      if (processingType === "none") {
-        labels.forEach((label, i) => {
-          (boxplotData[i] || []).forEach((value) => {
-            processedWithDate.push({ date: label, value });
+const handleSelectChange = (e) => {
+  if (onSelect) {
+    let processedWithDate = [];
+    if (processingType === "none") {
+      labels.forEach((label, i) => {
+        (boxplotData[i] || []).forEach((value, j) => {
+          // Si tienes groupedTimestamps, úsalo
+          processedWithDate.push({
+            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : label,
+            value
           });
         });
-      } else {
-        labels.forEach((label, i) => {
-          (boxplotDataProcessed[i] || []).forEach((value) => {
-            processedWithDate.push({ date: label, value });
+      });
+    } else {
+      labels.forEach((label, i) => {
+        (boxplotDataProcessed[i] || []).forEach((value, j) => {
+          processedWithDate.push({
+            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : label,
+            value
           });
         });
-      }
-      onSelect(e.target.checked, processedWithDate, processingType);
+      });
     }
-  };
+    onSelect(e.target.checked, processedWithDate, processingType);
+  }
+};
 
 
   // Handler para procesamiento

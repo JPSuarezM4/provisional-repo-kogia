@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Chart } from "react-chartjs-2";
@@ -218,13 +218,24 @@ export default function AddBoxPlot({
     }
   };
 
-  const processedData = useMemo(() => {
-    return processingType === "none" ? boxplotData : boxplotDataProcessed;
-  }, [processingType, boxplotData, boxplotDataProcessed]);
 
   const handleSelectChange = (e) => {
     if (onSelect) {
-      onSelect(e.target.checked, processedData, processingType);
+      let processedWithDate = [];
+      if (processingType === "none") {
+        labels.forEach((label, i) => {
+          (boxplotData[i] || []).forEach((value) => {
+            processedWithDate.push({ date: label, value });
+          });
+        });
+      } else {
+        labels.forEach((label, i) => {
+          (boxplotDataProcessed[i] || []).forEach((value) => {
+            processedWithDate.push({ date: label, value });
+          });
+        });
+      }
+      onSelect(e.target.checked, processedWithDate, processingType);
     }
   };
 

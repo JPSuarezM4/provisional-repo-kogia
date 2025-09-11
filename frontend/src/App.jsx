@@ -70,12 +70,10 @@ function App() {
     let csvContent = "data:text/csv;charset=utf-8,";
 
     selectedBoxPlots.forEach((plot) => {
-      // Encabezado para cada gráfico
       csvContent += `Gráfico ${plot.id} (${plot.tipoProcesamiento})\n`;
-      // Si los datos son arrays de arrays (por agrupamiento), aplanar
-      const flatData = Array.isArray(plot.data[0]) ? plot.data.flat() : plot.data;
-      flatData.forEach((value, i) => {
-        csvContent += `${i + 1},${value}\n`;
+      csvContent += "Fecha,Valor\n";
+      plot.data.forEach((item) => {
+        csvContent += `${item.date},${item.value}\n`;
       });
       csvContent += "\n";
     });

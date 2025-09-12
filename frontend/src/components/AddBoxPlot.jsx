@@ -228,9 +228,8 @@ const handleSelectChange = (e) => {
     if (processingType === "none") {
       labels.forEach((label, i) => {
         (boxplotData[i] || []).forEach((value, j) => {
-          // Si tienes groupedTimestamps, úsalo
           processedWithDate.push({
-            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : label,
+            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",
             value
           });
         });
@@ -239,7 +238,7 @@ const handleSelectChange = (e) => {
       labels.forEach((label, i) => {
         (boxplotDataProcessed[i] || []).forEach((value, j) => {
           processedWithDate.push({
-            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : label,
+            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",
             value
           });
         });

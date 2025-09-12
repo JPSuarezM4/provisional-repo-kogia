@@ -220,30 +220,30 @@ const handleSelectChange = (e) => {
   if (onSelect) {
     let processedWithDate = [];
 
-    // usamos TODOS los datos originales
-    const originalValues = data.map((d) => d.value);
-    const timestamps = data.map((d) => d.timestamp);
+    if (data.length > 0) {
+      // siempre tomamos los datos originales del backend
+      const values = data.map((d) => d.value);
+      const timestamps = data.map((d) => d.timestamp);
 
-    // procesamos según el tipo
-    const valuesToExport =
-      processingType === "none"
-        ? originalValues
-        : processValues(originalValues);
+      // procesamos si corresponde
+      const valuesToExport =
+        processingType === "none" ? values : processValues(values);
 
-    // emparejamos cada valor con su timestamp
-    valuesToExport.forEach((value, i) => {
-      processedWithDate.push({
+      processedWithDate = valuesToExport.map((value, i) => ({
         date: timestamps[i]
           ? format(parseISO(timestamps[i]), "dd/MM/yyyy HH:mm:ss")
           : "",
         value,
-      });
-    });
+      }));
+    }
 
-    // devolvemos el array listo
+    console.log("Exportando:", processedWithDate);
+
+    // enviamos los datos listos para CSV
     onSelect(e.target.checked, processedWithDate, processingType);
   }
 };
+
 
 
 

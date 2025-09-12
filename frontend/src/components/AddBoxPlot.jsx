@@ -218,7 +218,6 @@ export default function AddBoxPlot({
     }
   };
 
-
 const handleSelectChange = (e) => {
   if (onSelect) {
     let processedWithDate = [];
@@ -232,10 +231,13 @@ const handleSelectChange = (e) => {
         });
       });
     } else {
+      // Para cada grupo, toma los timestamps y los valores procesados juntos
       labels.forEach((_, i) => {
-        (boxplotDataProcessed[i] || []).forEach((value, j) => {
+        const timestamps = groupedTimestamps[i] || [];
+        const values = boxplotDataProcessed[i] || [];
+        values.forEach((value, j) => {
           processedWithDate.push({
-            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",
+            date: timestamps[j] || "",
             value
           });
         });

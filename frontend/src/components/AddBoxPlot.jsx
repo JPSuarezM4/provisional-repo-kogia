@@ -223,7 +223,6 @@ export default function AddBoxPlot({
     if (onSelect) {
       let processedWithDate = [];
       if (processingType === "none") {
-        // Exporta los valores originales agrupados con sus fechas agrupadas
         labels.forEach((_, i) => {
           const values = boxplotData[i] || [];
           const timestamps = groupedTimestamps[i] || [];
@@ -237,22 +236,25 @@ export default function AddBoxPlot({
           });
         });
       } else {
-        // Exporta los valores procesados agrupados con sus fechas agrupadas
         labels.forEach((_, i) => {
           const originalValues = boxplotData[i] || [];
-          const processedValues = processValues(originalValues);
           const timestamps = groupedTimestamps[i] || [];
-          processedValues.forEach((value, j) => {
-            processedWithDate.push({
-              date: timestamps[j]
-                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-                : "",
-              value
+          // Procesa los valores originales del grupo
+          const processedValues = processValues(originalValues);
+          // Solo si hay la misma cantidad de valores y timestamps
+          if (processedValues.length === timestamps.length) {
+            processedValues.forEach((procValue, j) => {
+              processedWithDate.push({
+                date: timestamps[j]
+                  ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                  : "",
+                value: procValue
+              });
             });
-          });
+          }
         });
       }
-      console.log("Exportando:", processedWithDate);
+      console.log("Exportando:", processedWithDate); // Verifica que tenga datos
       onSelect(e.target.checked, processedWithDate, processingType);
     }
   };

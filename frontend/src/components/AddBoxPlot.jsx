@@ -231,11 +231,12 @@ const handleSelectChange = (e) => {
         });
       });
     } else {
-      // Para cada grupo, toma los timestamps y los valores procesados juntos
+      // Alinear valores procesados con sus timestamps originales
       labels.forEach((_, i) => {
         const timestamps = groupedTimestamps[i] || [];
-        const values = boxplotDataProcessed[i] || [];
-        values.forEach((value, j) => {
+        const processedValues = boxplotDataProcessed[i] || [];
+        // processedValues y timestamps deben tener el mismo orden y longitud
+        processedValues.forEach((value, j) => {
           processedWithDate.push({
             date: timestamps[j] || "",
             value

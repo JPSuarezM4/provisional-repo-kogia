@@ -225,21 +225,20 @@ const handleSelectChange = (e) => {
       labels.forEach((_, i) => {
         (boxplotData[i] || []).forEach((value, j) => {
           processedWithDate.push({
-            date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",
+            date: groupedTimestamps[i] ? format(parseISO(groupedTimestamps[i][j]), "dd/MM/yyyy HH:mm:ss") : "",
             value
           });
         });
       });
     } else {
-      // Alinear valores procesados con sus timestamps originales
       labels.forEach((_, i) => {
         const timestamps = groupedTimestamps[i] || [];
         const originalValues = boxplotData[i] || [];
-        // Procesa los valores originales del grupo
         const processedValues = processValues(originalValues);
+        // Alinea cada valor procesado con su timestamp
         processedValues.forEach((value, j) => {
           processedWithDate.push({
-            date: timestamps[j] || "",
+            date: timestamps[j] ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss") : "",
             value
           });
         });

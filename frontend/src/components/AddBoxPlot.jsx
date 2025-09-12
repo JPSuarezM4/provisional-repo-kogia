@@ -161,8 +161,6 @@ export default function AddBoxPlot({
     boxplotDataProcessed = Object.values(grouped).map(arr => processValues(arr.map(obj => obj.value)));
   }
 
-  // SIEMPRE obtiene los timestamps
-  const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
 
   const showProcessedChart =
     processingType !== "none" &&
@@ -222,31 +220,31 @@ const handleSelectChange = (e) => {
   if (onSelect) {
     let processedWithDate = [];
 
-    labels.forEach((_, i) => {
-      const originalValues = boxplotData[i] || [];
-      const timestamps = groupedTimestamps[i] || [];
+    // usamos TODOS los datos originales
+    const originalValues = data.map((d) => d.value);
+    const timestamps = data.map((d) => d.timestamp);
 
-      // 🔹 procesamos según el tipo
-      const valuesToExport =
-        processingType === "none"
-          ? originalValues
-          : processValues(originalValues);
+    // procesamos según el tipo
+    const valuesToExport =
+      processingType === "none"
+        ? originalValues
+        : processValues(originalValues);
 
-      // 🔹 emparejamos cada valor con su fecha
-      valuesToExport.forEach((value, j) => {
-        processedWithDate.push({
-          date: timestamps[j]
-            ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-            : "",
-          value,
-        });
+    // emparejamos cada valor con su timestamp
+    valuesToExport.forEach((value, i) => {
+      processedWithDate.push({
+        date: timestamps[i]
+          ? format(parseISO(timestamps[i]), "dd/MM/yyyy HH:mm:ss")
+          : "",
+        value,
       });
     });
 
-    // 🔹 devolvemos el array listo para exportar
+    // devolvemos el array listo
     onSelect(e.target.checked, processedWithDate, processingType);
   }
 };
+
 
 
   // Handler para procesamiento

@@ -225,21 +225,25 @@ const handleSelectChange = (e) => {
       labels.forEach((_, i) => {
         (boxplotData[i] || []).forEach((value, j) => {
           processedWithDate.push({
-            date: groupedTimestamps[i] ? format(parseISO(groupedTimestamps[i][j]), "dd/MM/yyyy HH:mm:ss") : "",
+            date: groupedTimestamps[i] && groupedTimestamps[i][j]
+              ? format(parseISO(groupedTimestamps[i][j]), "dd/MM/yyyy HH:mm:ss")
+              : "",
             value
           });
         });
       });
     } else {
       labels.forEach((_, i) => {
-        const timestamps = groupedTimestamps[i] || [];
         const originalValues = boxplotData[i] || [];
+        const timestamps = groupedTimestamps[i] || [];
         const processedValues = processValues(originalValues);
-        // Alinea cada valor procesado con su timestamp
-        processedValues.forEach((value, j) => {
+        // Empareja cada valor procesado con su timestamp por índice
+        processedValues.forEach((procValue, j) => {
           processedWithDate.push({
-            date: timestamps[j] ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss") : "",
-            value
+            date: timestamps[j]
+              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+              : "",
+            value: procValue
           });
         });
       });

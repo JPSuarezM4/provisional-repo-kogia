@@ -234,8 +234,9 @@ const handleSelectChange = (e) => {
       // Alinear valores procesados con sus timestamps originales
       labels.forEach((_, i) => {
         const timestamps = groupedTimestamps[i] || [];
-        const processedValues = boxplotDataProcessed[i] || [];
-        // processedValues y timestamps deben tener el mismo orden y longitud
+        const originalValues = boxplotData[i] || [];
+        // Procesa los valores originales del grupo
+        const processedValues = processValues(originalValues);
         processedValues.forEach((value, j) => {
           processedWithDate.push({
             date: timestamps[j] || "",

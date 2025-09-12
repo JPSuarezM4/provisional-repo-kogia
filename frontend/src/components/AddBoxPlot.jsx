@@ -205,6 +205,9 @@ export default function AddBoxPlot({
     },
   };
 
+    // Obtén los timestamps agrupados en el mismo orden que boxplotData/boxplotDataProcessed
+  const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
+
   const exportToPNG = () => {
     if (chartRef.current) {
       const url = chartRef.current.toBase64Image();
@@ -216,36 +219,43 @@ export default function AddBoxPlot({
     }
   };
 
-const handleSelectChange = (e) => {
-  if (onSelect) {
-    let processedWithDate = [];
-
-    if (data.length > 0) {
-      // siempre tomamos los datos originales del backend
-      const values = data.map((d) => d.value);
-      const timestamps = data.map((d) => d.timestamp);
-
-      // procesamos si corresponde
-      const valuesToExport =
-        processingType === "none" ? values : processValues(values);
-
-      processedWithDate = valuesToExport.map((value, i) => ({
-        date: timestamps[i]
-          ? format(parseISO(timestamps[i]), "dd/MM/yyyy HH:mm:ss")
-          : "",
-        value,
-      }));
+  const handleSelectChange = (e) => {
+    if (onSelect) {
+      let processedWithDate = [];
+      if (processingType === "none") {
+        // Exporta los valores originales agrupados con sus fechas agrupadas
+        labels.forEach((_, i) => {
+          const values = boxplotData[i] || [];
+          const timestamps = groupedTimestamps[i] || [];
+          values.forEach((value, j) => {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value
+            });
+          });
+        });
+      } else {
+        // Exporta los valores procesados agrupados con sus fechas agrupadas
+        labels.forEach((_, i) => {
+          const originalValues = boxplotData[i] || [];
+          const processedValues = processValues(originalValues);
+          const timestamps = groupedTimestamps[i] || [];
+          processedValues.forEach((value, j) => {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value
+            });
+          });
+        });
+      }
+      console.log("Exportando:", processedWithDate);
+      onSelect(e.target.checked, processedWithDate, processingType);
     }
-
-    console.log("Exportando:", processedWithDate);
-
-    // enviamos los datos listos para CSV
-    onSelect(e.target.checked, processedWithDate, processingType);
-  }
-};
-
-
-
+  };
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {

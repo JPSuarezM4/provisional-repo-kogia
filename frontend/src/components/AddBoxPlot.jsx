@@ -130,17 +130,7 @@ export default function AddBoxPlot({
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
-  let grouped = [];
-
-  let showProcessedChart = true;
-  if (
-    processingType === "normalize" &&
-    boxplotDataProcessed.length > 0 &&
-    boxplotDataProcessed[0].length > 0 &&
-    allEqual(boxplotDataProcessed[0])
-  ) {
-    showProcessedChart = false;
-  }
+  let grouped = {}; // SIEMPRE objeto
 
   if (["-30d", "-90d", "-365d"].includes(timeRange)) {
     if (limitedData.length > 0) {
@@ -150,26 +140,33 @@ export default function AddBoxPlot({
       labels = [`${firstDate} a ${lastDate}`];
       boxplotData = [originalLimited];
       boxplotDataProcessed = [processValues(originalLimited)];
+      // Agrupa todos los datos bajo un solo label
+      grouped["rango"] = limitedData.map(item => ({ timestamp: item.timestamp, value: item.value }));
     } else {
       labels = ["Sin datos"];
       boxplotData = [[]];
       boxplotDataProcessed = [[]];
+      grouped["rango"] = [];
     }
   } else {
-    // ...agrupamiento por día, igual que antes pero usando limitedData...
-  const grouped = {};
-  limitedData.forEach((item) => {
-    if (!item.timestamp) return;
-    const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
-    if (!grouped[day]) grouped[day] = [];
-    grouped[day].push({ timestamp: item.timestamp, value: item.value });
-  });
-  labels = Object.keys(grouped);
-  boxplotData = Object.values(grouped).map(arr => arr.map(obj => obj.value));
-  boxplotDataProcessed = Object.values(grouped).map(arr => processValues(arr.map(obj => obj.value)));
+    // agrupamiento por día
+    limitedData.forEach((item) => {
+      if (!item.timestamp) return;
+      const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push({ timestamp: item.timestamp, value: item.value });
+    });
+    labels = Object.keys(grouped);
+    boxplotData = Object.values(grouped).map(arr => arr.map(obj => obj.value));
+    boxplotDataProcessed = Object.values(grouped).map(arr => processValues(arr.map(obj => obj.value)));
   }
 
+  // SIEMPRE obtiene los timestamps
   const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
+
+  const showProcessedChart =
+    processingType !== "none" &&
+    boxplotDataProcessed.some(arr => !allEqual(arr));
 
   const chartData = {
     labels,
@@ -226,7 +223,7 @@ const handleSelectChange = (e) => {
   if (onSelect) {
     let processedWithDate = [];
     if (processingType === "none") {
-      labels.forEach((label, i) => {
+      labels.forEach((_, i) => {
         (boxplotData[i] || []).forEach((value, j) => {
           processedWithDate.push({
             date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",
@@ -235,7 +232,7 @@ const handleSelectChange = (e) => {
         });
       });
     } else {
-      labels.forEach((label, i) => {
+      labels.forEach((_, i) => {
         (boxplotDataProcessed[i] || []).forEach((value, j) => {
           processedWithDate.push({
             date: groupedTimestamps[i] ? groupedTimestamps[i][j] : "",

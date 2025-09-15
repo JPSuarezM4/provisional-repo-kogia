@@ -236,21 +236,24 @@ const handleSelectChange = (e) => {
         });
       });
     } else {
-      labels.forEach((_, i) => {
-        const originalValues = boxplotData[i] || [];
-        const timestamps = groupedTimestamps[i] || [];
-        const processedValues = processValues(originalValues);
-        // Recorre hasta el mínimo de ambos arrays
-        const len = Math.min(processedValues.length, timestamps.length);
-        for (let j = 0; j < len; j++) {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value: processedValues[j]
+        labels.forEach((_, i) => {
+          const originalValues = boxplotData[i] || [];
+          const timestamps = groupedTimestamps[i] || [];
+          const processedValues = processValues(originalValues);
+
+          // Si no hay datos, no exportes nada
+          if (!processedValues.length || !timestamps.length) return;
+
+          // Recorre ambos arrays alineados
+          processedValues.forEach((value, j) => {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value: value !== undefined ? value : ""
+            });
           });
-        }
-      });
+        });
     }
     console.log("Exportando:", processedWithDate); // Verifica que tenga datos
     onSelect(e.target.checked, processedWithDate, processingType);

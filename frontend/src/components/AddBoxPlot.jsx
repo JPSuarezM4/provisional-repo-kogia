@@ -226,8 +226,6 @@ const handleSelectChange = (e) => {
       labels.forEach((_, i) => {
         const values = boxplotData[i] || [];
         const timestamps = groupedTimestamps[i] || [];
-        // LOG para datos originales
-        console.log("Grupo", i, "values:", values, "timestamps:", timestamps);
         values.forEach((value, j) => {
           processedWithDate.push({
             date: timestamps[j]
@@ -238,24 +236,26 @@ const handleSelectChange = (e) => {
         });
       });
     } else {
-      labels.forEach((_, i) => {
-        const originalValues = boxplotData[i] || [];
-        const timestamps = groupedTimestamps[i] || [];
-        const processedValues = processValues(originalValues);
-        // LOG para datos procesados
-        console.log("Grupo", i, "originalValues:", originalValues, "processedValues:", processedValues, "timestamps:", timestamps);
-        processedValues.forEach((value, j) => {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value: value !== undefined ? value : ""
+        labels.forEach((_, i) => {
+          const originalValues = boxplotData[i] || [];
+          const timestamps = groupedTimestamps[i] || [];
+          const processedValues = processValues(originalValues);
+
+          // Si no hay datos, no exportes nada
+          if (!processedValues.length || !timestamps.length) return;
+
+          // Recorre ambos arrays alineados
+          processedValues.forEach((value, j) => {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value: value !== undefined ? value : ""
+            });
           });
         });
-      });
     }
-    // LOG final del array a exportar
-    console.log("Exportando:", processedWithDate);
+    console.log("Exportando:", processedWithDate); // Verifica que tenga datos
     onSelect(e.target.checked, processedWithDate, processingType);
   }
 };

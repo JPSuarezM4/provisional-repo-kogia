@@ -61,7 +61,7 @@ function App() {
   const [isGestionOpen, setIsGestionOpen] = useState(false); // Cambia a un booleano
   const userRole = localStorage.getItem('role');
   const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
-  const [processingTypes, setProcessingTypes] = useState({});
+  const [processingType, setProcessingType] = useState({});
   const [timeRanges, setTimeRanges] = useState({});
 
   function exportSelectedBoxPlotsToCSV() {
@@ -111,7 +111,7 @@ function App() {
   };
 
   const handleProcessingTypeChange = (id, type) => {
-    setProcessingTypes(prev => ({ ...prev, [id]: type }));
+    setProcessingType(prev => ({ ...prev, [id]: type }));
   };
 
   const handleDeleteChart = (id) => {
@@ -363,18 +363,18 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <BoxPlotContainer
                     charts={charts}
                     onDeleteChart={handleDeleteChart}
-                    onSelectBoxPlot={(id, selected, processedData, processingTypes) => {
+                    onSelectBoxPlot={(id, selected, processedData, processingType) => {
                       setSelectedBoxPlots(prev => {
                         if (selected) {
                           const filtered = prev.filter(item => item.id !== id);
-                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingTypes }];
+                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
                         } else {
                           return prev.filter(item => item.id !== id);
                         }
                       });
                     }}
                     selectedCharts={selectedBoxPlots.reduce((acc, item) => ({ ...acc, [item.id]: true }), {})}
-                    processingTypes={processingTypes}
+                    processingType={processingType}
                     onProcessingTypeChange={handleProcessingTypeChange}
                     timeRanges={timeRanges}
                     onTimeRangeChange={handleTimeRangeChange}

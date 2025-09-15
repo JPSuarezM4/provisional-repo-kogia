@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import AddBoxPlot from "./AddBoxPlot";
 import PropTypes from "prop-types";
 
-const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedCharts, processingTypes, onProcessingTypeChange, timeRanges, onTimeRangeChange }) => {
+const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedCharts, processingType, onProcessingTypeChange, timeRanges, onTimeRangeChange }) => {
     const handleDelete = useCallback(
         (chartId) => {
             onDeleteChart(chartId);
@@ -28,7 +28,7 @@ const BoxPlotContainer = ({ charts, onDeleteChart, onSelectBoxPlot, selectedChar
                     sensor_id={chartConfig.sensor_id}
                     medida_id={chartConfig.medida_id}
                     selected={!!selectedCharts?.[chartConfig.id]}
-                    processingType={processingTypes?.[chartConfig.id] || "none"}
+                    processingType={processingType?.[chartConfig.id] || "none"}
                     timeRange={timeRanges?.[chartConfig.id] || "-4d"}
                     onDelete={() => handleDelete(chartConfig.id)}
                     onSelect={(selected, processedData, processingType) =>
@@ -54,7 +54,7 @@ BoxPlotContainer.propTypes = {
     ).isRequired,
     onDeleteChart: PropTypes.func.isRequired,
     onSelectBoxPlot: PropTypes.func.isRequired,
-    processingTypes: PropTypes.object.isRequired,
+    processingType: PropTypes.object.isRequired,
     onProcessingTypeChange: PropTypes.func.isRequired,
     selectedCharts: PropTypes.object.isRequired,
     timeRanges: PropTypes.object.isRequired,

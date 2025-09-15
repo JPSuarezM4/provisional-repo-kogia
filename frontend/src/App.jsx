@@ -70,14 +70,14 @@ function App() {
 
     let csvContent = "data:text/csv;charset=utf-8,";
 
-    selectedBoxPlots.forEach((plot) => {
-      csvContent += `Gráfico ${plot.id} (${plot.tipoProcesamiento})\n`;
-      csvContent += "Fecha,Valor\n";
-      plot.data.forEach((item) => {
-        csvContent += `${item.date},${item.value}\n`;
-      });
-      csvContent += "\n";
+  selectedBoxPlots.forEach(item => {
+    csvContent += `Gráfico ${item.id} (${item.tipoProcesamiento})\n`;
+    csvContent += "Fecha,Valor\n";
+    item.data.forEach(row => {
+      csvContent += `${row.date},${row.value}\n`;
     });
+    csvContent += "\n";
+  });
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

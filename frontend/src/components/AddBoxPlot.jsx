@@ -238,21 +238,20 @@ const handleSelectChange = (e) => {
     } else {
       labels.forEach((_, i) => {
         const originalValues = boxplotData[i] || [];
+        const processedValues = processValues(originalValues);
         const timestamps = groupedTimestamps[i] || [];
-
-        if (!originalValues.length || !timestamps.length) return;
-
-        originalValues.forEach((value, j) => {
+        // Recorre hasta el mínimo de ambos arrays
+        const len = Math.min(processedValues.length, timestamps.length);
+        for (let j = 0; j < len; j++) {
           processedWithDate.push({
             date: timestamps[j]
               ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
               : "",
-            value: value !== undefined ? value : ""
+            value: processedValues[j]
           });
-        });
+        }
       });
     }
-    
     console.log("Exportando:", processedWithDate);
     onSelect(e.target.checked, processedWithDate, processingType);
   }

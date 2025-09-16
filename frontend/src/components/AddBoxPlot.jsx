@@ -122,26 +122,21 @@ export default function AddBoxPlot({
     limitedData = data.slice(-MAX_POINTS);
   }
 
-  // Para procesamiento y exportación (usa todos los datos)
-  // const originalAll = data.map((item) => item.value);
-  // const processedAll = processValues(originalAll);
-
-  // 🔹 agrupar datos
+  // 🔹 agrupar datos para procesamiento/exportación (usa TODOS los datos)
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
-  let grouped = {}; // SIEMPRE objeto
+  let grouped = {};
 
   if (["-30d", "-90d", "-365d"].includes(timeRange)) {
-    if (limitedData.length > 0) {
-      const originalLimited = limitedData.map((item) => item.value);
-      const firstDate = format(parseISO(limitedData[0].timestamp), "yyyy-MM-dd");
-      const lastDate = format(parseISO(limitedData[limitedData.length - 1].timestamp), "yyyy-MM-dd");
+    if (data.length > 0) {
+      const originalAll = data.map((item) => item.value);
+      const firstDate = format(parseISO(data[0].timestamp), "yyyy-MM-dd");
+      const lastDate = format(parseISO(data[data.length - 1].timestamp), "yyyy-MM-dd");
       labels = [`${firstDate} a ${lastDate}`];
-      boxplotData = [originalLimited];
-      boxplotDataProcessed = [processValues(originalLimited)];
-      // Agrupa todos los datos bajo un solo label
-      grouped["rango"] = limitedData.map(item => ({ timestamp: item.timestamp, value: item.value }));
+      boxplotData = [originalAll];
+      boxplotDataProcessed = [processValues(originalAll)];
+      grouped["rango"] = data.map(item => ({ timestamp: item.timestamp, value: item.value }));
     } else {
       labels = ["Sin datos"];
       boxplotData = [[]];
@@ -150,7 +145,7 @@ export default function AddBoxPlot({
     }
   } else {
     // agrupamiento por día
-    limitedData.forEach((item) => {
+    data.forEach((item) => {
       if (!item.timestamp) return;
       const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
       if (!grouped[day]) grouped[day] = [];
@@ -171,7 +166,9 @@ export default function AddBoxPlot({
     datasets: [
       {
         label: `Original ${medida_id} (${unidad})`,
-        data: boxplotData,
+        data: [ // usa limitedData aquí
+          limitedData.map(item => item.value)
+        ],
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
         outlierColor: "#ff7300",

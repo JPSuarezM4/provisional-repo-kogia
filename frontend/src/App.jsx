@@ -65,19 +65,30 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   function exportSelectedBoxPlotsToCSV() {
-    console.log("Exportando:", selectedBoxPlots);
     if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-  selectedBoxPlots.forEach(item => {
-    csvContent += `Gráfico ${item.id} (${item.tipoProcesamiento})\n`;
-    csvContent += "Fecha,Valor\n";
-    item.data.forEach(row => {
-      csvContent += `${row.date},${row.value}\n`;
+    // Construye encabezado: Fecha y Valor para cada gráfico
+    let header = [];
+    selectedBoxPlots.forEach((item) => {
+      header.push(`Fecha_${item.id} (${item.tipoProcesamiento})`, `Valor_${item.id} (${item.tipoProcesamiento})`);
     });
-    csvContent += "\n";
-  });
+
+    // Encuentra el máximo de filas entre todos los gráficos
+    const maxRows = Math.max(...selectedBoxPlots.map(item => item.data.length));
+
+    // Construye las filas alineando por índice
+    let rows = [];
+    for (let i = 0; i < maxRows; i++) {
+      let row = [];
+      selectedBoxPlots.forEach(item => {
+        const d = item.data[i];
+        row.push(d ? d.date : "", d ? d.value : "");
+      });
+      rows.push(row.join(","));
+    }
+
+    // Une todo
+    let csvContent = "data:text/csv;charset=utf-8," + header.join(",") + "\n" + rows.join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

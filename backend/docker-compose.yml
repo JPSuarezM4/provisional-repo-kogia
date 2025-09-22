@@ -65,6 +65,18 @@ services:
     networks:
       - backend_network
 
+  modeling_service:
+    build: 
+      context: .
+      dockerfile: modeling_service/Dockerfile
+    ports:
+      - "5005:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - backend_network
+
+
 networks:
   backend_network:
     driver: bridge

@@ -26,10 +26,17 @@ function ModelingTable() {
               </tr>
             </thead>
             <tbody>
-              {ds.datos[0]?.data.slice(0, 5).map((row, idx) => (
+              {(Array.isArray(ds.datos)
+                ? ds.datos.flatMap(d =>
+                    Array.isArray(d.data)
+                      ? d.data.slice(0, 5)
+                      : []
+                  )
+                : []
+              ).map((row, idx) => (
                 <tr key={idx}>
-                  <td>{row.date}</td>
-                  <td>{row.value}</td>
+                  <td>{row?.date ?? ""}</td>
+                  <td>{row?.value ?? ""}</td>
                 </tr>
               ))}
             </tbody>

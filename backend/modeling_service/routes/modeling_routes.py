@@ -6,7 +6,7 @@ modeling_bp = Blueprint('modeling', __name__)
 modeling_schema = ModelingDatasetSchema()
 modelings_schema = ModelingDatasetSchema(many=True)
 
-@modeling_bp.route("/modeling-datasets/", methods=["POST"])
+@modeling_bp.route("/modeling-datasets", methods=["POST"])
 def add_modeling_dataset():
     data = request.get_json()
     errors = modeling_schema.validate(data)
@@ -21,12 +21,12 @@ def add_modeling_dataset():
     db.session.commit()
     return jsonify(modeling_schema.dump(new_dataset)), 201
 
-@modeling_bp.route("/modeling-datasets/", methods=["GET"])
+@modeling_bp.route("/modeling-datasets", methods=["GET", "OPTIONS"])
 def get_modeling_datasets():
     datasets = db.session.query(ModelingDataset).all()
     return jsonify(modelings_schema.dump(datasets))
 
-@modeling_bp.route("/modeling-datasets/<int:dataset_id>", methods=["GET"])
+@modeling_bp.route("/modeling-datasets/<int:dataset_id>", methods=["GET", "OPTIONS"])
 def get_modeling_dataset(dataset_id):
     dataset = db.session.query(ModelingDataset).filter(ModelingDataset.id == dataset_id).first()
     if dataset:

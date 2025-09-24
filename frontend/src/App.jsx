@@ -13,6 +13,7 @@ import {
   Typography,
   IconButton,
   Collapse,
+  Button
 
 } from '@mui/material';
 import {
@@ -47,6 +48,7 @@ import Login from './components/Login';
 import UserManagement from './components/UsersManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import ExportButton from './components/ExportButton';
+import ModelingTable from './components/ModelingTable';
 
 
 const drawerWidth = 240;
@@ -63,6 +65,32 @@ function App() {
   const [selectedBoxPlots, setSelectedBoxPlots] = useState([]); // [{id, data, tipoProcesamiento}]
   const [processingType, setProcessingType] = useState({});
   const [timeRanges, setTimeRanges] = useState({});
+
+  async function sendSelectedBoxPlotsToModeling() {
+    if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
+
+    // Puedes pedir nombre y descripción al usuario, aquí ejemplo fijo:
+    const nombre = "Dataset generado";
+    const descripcion = "Exportado desde procesamiento";
+
+    // Los datos normalizados
+    const datos = selectedBoxPlots.map(item => ({
+      id: item.id,
+      tipoProcesamiento: item.tipoProcesamiento,
+      data: item.data
+    }));
+
+    try {
+      await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, descripcion, datos }),
+      });
+      alert("Datos enviados a modelado");
+    } catch {
+      alert("Error al enviar los datos");
+    }
+  }
 
   function exportSelectedBoxPlotsToCSV() {
     if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
@@ -362,6 +390,12 @@ const handleAddRealTimeChart = (chartConfig) => {
                   disabled={selectedBoxPlots.length === 0}
                   onExport={exportSelectedBoxPlotsToCSV}
                 />
+                <Button
+                  disabled={selectedBoxPlots.length === 0}
+                  onClick={sendSelectedBoxPlotsToModeling}
+                >
+                  Enviar a modelado
+                </Button>
               </Box>
               <Fade in timeout={500}>
                 <Box sx={{
@@ -395,7 +429,14 @@ const handleAddRealTimeChart = (chartConfig) => {
             </>
           )}
 
-
+          {/* Opción: Modelado */}
+          {selectedMenu === 'Modelado' && (
+            <Fade in timeout={500}>
+              <Box sx={{ mt: 3 }}>
+                <ModelingTable />
+              </Box>
+            </Fade>
+          )}
 
 
           {/* ANÁLISIS DE DATOS EN TIEMPO REAL */}

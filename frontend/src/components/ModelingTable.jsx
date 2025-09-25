@@ -20,25 +20,20 @@ function ModelingTable() {
     `${ds.nombre} - Valor`
   ]);
 
-  // Encontrar el máximo de filas entre todos los datasets
-  const maxRows = Math.max(
-    ...datasets.map(ds =>
-      Array.isArray(ds.datos)
-        ? ds.datos.flatMap(d => Array.isArray(d.data) ? d.data.length : 0)
-        : 0
-    )
-  );
-
-  // Construir filas
+  // Construir filas (solo los primeros 5)
   const rows = [];
-  for (let i = 0; i < maxRows; i++) {
+  for (let i = 0; i < 5; i++) {
     let row = [];
     datasets.forEach(ds => {
-      // Tomar los primeros 5 datos de cada dataset (puedes cambiar a más si quieres)
-      const flatData = Array.isArray(ds.datos)
-        ? ds.datos.flatMap(d => Array.isArray(d.data) ? d.data : [])
-        : [];
-      const item = flatData[i];
+      let item = null;
+      if (Array.isArray(ds.datos)) {
+        for (const d of ds.datos) {
+          if (Array.isArray(d.data) && d.data[i]) {
+            item = d.data[i];
+            break;
+          }
+        }
+      }
       row.push(item ? item.date : "", item ? item.value : "");
     });
     rows.push(row);
@@ -57,7 +52,7 @@ function ModelingTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.slice(0, 5).map((row, idx) => (
+            {rows.map((row, idx) => (
               <TableRow key={idx}>
                 {row.map((cell, i) => (
                   <TableCell key={i}>{cell}</TableCell>

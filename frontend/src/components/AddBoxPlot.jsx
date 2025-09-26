@@ -248,17 +248,23 @@ export default function AddBoxPlot({
     }
   };
 
-  // Handler para procesamiento
   const handleProcessingChange = (e) => {
-      if (onProcessingTypeChange) {
-        onProcessingTypeChange(e.target.value);
-      }
-    };
+    if (onProcessingTypeChange) {
+      onProcessingTypeChange(e.target.value);
+    }
+    // Si está seleccionado, vuelve a enviar los datos actualizados
+    if (selected) {
+      handleSelectChange({ target: { checked: true } });
+    }
+  };
 
-  // Handler para rango de tiempo
   const handleTimeRangeChange = (e) => {
     if (onTimeRangeChange) {
       onTimeRangeChange(e.target.value);
+    }
+    // Si está seleccionado, vuelve a enviar los datos actualizados
+    if (selected) {
+      handleSelectChange({ target: { checked: true } });
     }
   };
 

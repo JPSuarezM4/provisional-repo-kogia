@@ -117,12 +117,6 @@ export default function AddBoxPlot({
 
   const MAX_POINTS = 1000;
 
-  // Para visualización (solo el gráfico)
-  let limitedData = data;
-  if (data.length > MAX_POINTS) {
-    limitedData = data.slice(-MAX_POINTS);
-  }
-
   // 🔹 agrupar datos para procesamiento/exportación (usa TODOS los datos)
   let labels = [];
   let boxplotData = [];
@@ -171,14 +165,22 @@ export default function AddBoxPlot({
     processingType !== "none" &&
     boxplotDataProcessed.some(arr => !allEqual(arr));
 
+  // 🔹 Limitar los datos agrupados después de armar boxplotData
+  const limitedBoxplotData = boxplotData.map(values =>
+    values.length > MAX_POINTS ? values.slice(-MAX_POINTS) : values
+  );
+
+  const limitedBoxplotDataProcessed = boxplotDataProcessed.map(values =>
+    values.length > MAX_POINTS ? values.slice(-MAX_POINTS) : values
+  );
+
+  // 🔹 Dataset original
   const chartData = {
     labels,
     datasets: [
       {
         label: `Original ${medida_id} (${unidad})`,
-        data: [ // usa limitedData aquí
-          limitedData.map(item => item.value)
-        ],
+        data: limitedBoxplotData, // ✅ ahora son varios boxplots (uno por label)
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
         outlierColor: "#ff7300",
@@ -186,18 +188,20 @@ export default function AddBoxPlot({
     ],
   };
 
+  // 🔹 Dataset procesado
   const chartDataProcessed = {
     labels,
     datasets: [
       {
         label: `Procesado (${processingType})`,
-        data: boxplotDataProcessed,
+        data: limitedBoxplotDataProcessed,
         backgroundColor: "#4caf50",
         borderColor: "#4caf50",
         outlierColor: "#ff7300",
       },
     ],
   };
+
 
   const chartOptions = {
     responsive: true,

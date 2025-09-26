@@ -5,7 +5,8 @@ import { Chart } from "react-chartjs-2";
 import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, Checkbox, FormControlLabel } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { parseISO, format } from "date-fns";
+import { parseISO, format, subDays } from "date-fns";
+
 
 import {
   Chart as ChartJS,
@@ -151,9 +152,18 @@ export default function AddBoxPlot({
       if (!grouped[day]) grouped[day] = [];
       grouped[day].push({ timestamp: item.timestamp, value: item.value });
     });
-    labels = Object.keys(grouped);
-    boxplotData = Object.values(grouped).map(arr => arr.map(obj => obj.value));
-    boxplotDataProcessed = Object.values(grouped).map(arr => processValues(arr.map(obj => obj.value)));
+
+    // Genera los últimos 7 días
+    const today = new Date();
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      days.push(format(subDays(today, i), "yyyy-MM-dd"));
+    }
+    labels = days;
+    boxplotData = days.map(day => (grouped[day] ? grouped[day].map(obj => obj.value) : []));
+    boxplotDataProcessed = days.map(day =>
+      grouped[day] ? processValues(grouped[day].map(obj => obj.value)) : []
+    );
   }
 
 

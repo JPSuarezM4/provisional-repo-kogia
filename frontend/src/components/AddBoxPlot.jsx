@@ -216,43 +216,37 @@ export default function AddBoxPlot({
     }
   };
 
-const handleSelectChange = (e) => {
-  if (onSelect) {
-    let processedWithDate = [];
-    if (processingType === "none") {
-      labels.forEach((_, i) => {
-        const values = boxplotData[i] || [];
-        const timestamps = groupedTimestamps[i] || [];
-        values.forEach((value, j) => {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value
-          });
+  const handleSelectChange = (e) => {
+    if (onSelect) {
+      let processedWithDate = [];
+      if (processingType === "none") {
+        // Usa los datos originales completos
+        processedWithDate = data.map(item => ({
+          date: item.timestamp
+            ? format(parseISO(item.timestamp), "dd/MM/yyyy HH:mm:ss")
+            : "",
+          value: item.value
+        }));
+      } else {
+        labels.forEach((_, i) => {
+          const originalValues = boxplotData[i] || [];
+          const processedValues = processValues(originalValues);
+          const timestamps = groupedTimestamps[i] || [];
+          const len = Math.min(processedValues.length, timestamps.length);
+          for (let j = 0; j < len; j++) {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value: processedValues[j]
+            });
+          }
         });
-      });
-    } else {
-      labels.forEach((_, i) => {
-        const originalValues = boxplotData[i] || [];
-        const processedValues = processValues(originalValues);
-        const timestamps = groupedTimestamps[i] || [];
-        // Recorre hasta el mínimo de ambos arrays
-        const len = Math.min(processedValues.length, timestamps.length);
-        for (let j = 0; j < len; j++) {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value: processedValues[j]
-          });
-        }
-      });
+      }
+      console.log("Exportando:", processedWithDate);
+      onSelect(e.target.checked, processedWithDate, processingType);
     }
-    console.log("Exportando:", processedWithDate);
-    onSelect(e.target.checked, processedWithDate, processingType);
-  }
-};
+  };
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {

@@ -270,15 +270,20 @@ const handleSelectChange = (e) => {
 
   // Handler para procesamiento
   const handleProcessingChange = (e) => {
-      if (onProcessingTypeChange) {
-        onProcessingTypeChange(e.target.value);
-      }
-    };
+    if (onProcessingTypeChange) {
+      onProcessingTypeChange(e.target.value);
+    }
+    if (selected) {
+      handleSelectChange({ target: { checked: true } });
+    }
+  };
 
-  // Handler para rango de tiempo
   const handleTimeRangeChange = (e) => {
     if (onTimeRangeChange) {
       onTimeRangeChange(e.target.value);
+    }
+    if (selected) {
+      handleSelectChange({ target: { checked: true } });
     }
   };
 

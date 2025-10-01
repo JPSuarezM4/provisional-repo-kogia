@@ -4,13 +4,14 @@ import PropTypes from "prop-types";
 
 const BoxPlotContainer = ({
   charts,
+  boxPlotRefs, // <-- recibe el array de refs como prop
   onDeleteChart,
   onSelectBoxPlot,
   selectedCharts,
   processingType,
   onProcessingTypeChange,
   timeRanges,
-  onTimeRangeChange
+  onTimeRangeChange,
 }) => {
   const handleDelete = useCallback(
     (chartId) => {
@@ -28,8 +29,9 @@ const BoxPlotContainer = ({
 
   return (
     <>
-      {charts.map((chartConfig) => (
+      {charts.map((chartConfig, idx) => (
         <AddBoxPlot
+          ref={el => boxPlotRefs.current[idx] = el} // <-- asigna el ref por índice
           key={chartConfig.id}
           id={chartConfig.id}
           nodo_id={chartConfig.nodo_id}
@@ -61,6 +63,7 @@ BoxPlotContainer.propTypes = {
       medida_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     })
   ).isRequired,
+  boxPlotRefs: PropTypes.object.isRequired, // <-- agrega la prop aquí
   onDeleteChart: PropTypes.func.isRequired,
   onSelectBoxPlot: PropTypes.func.isRequired,
   processingType: PropTypes.object.isRequired,

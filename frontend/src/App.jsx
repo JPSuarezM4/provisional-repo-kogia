@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { NodosProvider } from './context/NodosContext';
 import {
   AppBar,
@@ -67,30 +67,35 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   async function sendSelectedBoxPlotsToModeling() {
-    if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
-
-    // Puedes pedir nombre y descripción al usuario, aquí ejemplo fijo:
-    const nombre = "Dataset generado";
-    const descripcion = "Exportado desde procesamiento";
-
-    // Los datos normalizados
-    const datos = selectedBoxPlots.map(item => ({
-      id: item.id,
-      tipoProcesamiento: item.tipoProcesamiento,
-      data: item.data
-    }));
-
-    try {
-      await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, descripcion, datos }),
+      // Fuerza actualización de todos los boxplots seleccionados
+      boxPlotRefs.current.forEach(ref => {
+        if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
       });
-      alert("Datos enviados a modelado");
-    } catch {
-      alert("Error al enviar los datos");
+
+      // Espera un tick para que el estado se actualice
+      setTimeout(async () => {
+        if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
+
+        const nombre = "Dataset generado";
+        const descripcion = "Exportado desde procesamiento";
+        const datos = selectedBoxPlots.map(item => ({
+          id: item.id,
+          tipoProcesamiento: item.tipoProcesamiento,
+          data: item.data
+        }));
+
+        try {
+          await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, descripcion, datos }),
+          });
+          alert("Datos enviados a modelado");
+        } catch {
+          alert("Error al enviar los datos");
+        }
+      }, 100);
     }
-  }
 
   function exportSelectedBoxPlotsToCSV() {
     if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
@@ -130,6 +135,8 @@ function App() {
  {/* const handleMenuItemClick = (menu) => {
     setSelectedMenu(menu);
   }; */}
+
+  const boxPlotRefs = useRef([]);
 
   const handleSelectBoxPlot = (id, selected, processedData, processingType) => {
     setSelectedBoxPlots(prev => {
@@ -418,6 +425,7 @@ const handleAddRealTimeChart = (chartConfig) => {
                 }}>
                   <BoxPlotContainer
                     charts={charts}
+                    boxPlotRefs={boxPlotRefs}
                     onDeleteChart={handleDeleteChart}
                     onSelectBoxPlot={handleSelectBoxPlot} // <-- usa la función aquí
                     selectedCharts={selectedBoxPlots.reduce((acc, item) => ({ ...acc, [item.id]: true }), {})}
@@ -426,6 +434,7 @@ const handleAddRealTimeChart = (chartConfig) => {
                     timeRanges={timeRanges}
                     onTimeRangeChange={handleTimeRangeChange}
                   />
+                  
                 </Box>
               </Fade>
             </>

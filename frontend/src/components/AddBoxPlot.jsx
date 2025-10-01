@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Chart } from "react-chartjs-2";
@@ -6,7 +6,6 @@ import { IconButton, Menu, MenuItem, Select, FormControl, InputLabel, Tooltip, C
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { parseISO, format, subDays } from "date-fns";
-
 
 import {
   Chart as ChartJS,
@@ -36,22 +35,7 @@ ChartJS.register(
   Violin
 );
 
-AddBoxPlot.propTypes = {
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  nodo_id: PropTypes.string.isRequired,
-  dispositivo_id: PropTypes.string.isRequired,
-  sensor_id: PropTypes.string.isRequired,
-  medida_id: PropTypes.string.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  selected: PropTypes.bool.isRequired,
-  processingType: PropTypes.string.isRequired,
-  onProcessingTypeChange: PropTypes.func.isRequired,
-  timeRange: PropTypes.string.isRequired,
-  onTimeRangeChange: PropTypes.func.isRequired,
-};
-
-export default function AddBoxPlot({
+const AddBoxPlot = forwardRef(function AddBoxPlot({
   id,
   nodo_id,
   dispositivo_id,
@@ -64,14 +48,12 @@ export default function AddBoxPlot({
   processingType,
   onProcessingTypeChange,
   onTimeRangeChange,
-}) {
+}, ref) {
   const [data, setData] = useState([]);
   const [unidad, setUnidad] = useState("");
   const chartRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
-
 
   function processValues(values) {
     if (processingType === "normalize") {
@@ -90,7 +72,6 @@ export default function AddBoxPlot({
     return arr.every((v) => v === arr[0]);
   }
 
-  // 🔹 fetch de datos
   useEffect(() => {
     if (nodo_id && dispositivo_id && sensor_id && medida_id) {
       const fetchData = async () => {
@@ -117,7 +98,6 @@ export default function AddBoxPlot({
 
   const MAX_POINTS = 1000;
 
-  // 🔹 agrupar datos para procesamiento/exportación (usa TODOS los datos)
   let labels = [];
   let boxplotData = [];
   let boxplotDataProcessed = [];
@@ -139,7 +119,6 @@ export default function AddBoxPlot({
       grouped["rango"] = [];
     }
   } else {
-    // agrupamiento por día
     data.forEach((item) => {
       if (!item.timestamp) return;
       const day = format(parseISO(item.timestamp), "yyyy-MM-dd");
@@ -147,7 +126,6 @@ export default function AddBoxPlot({
       grouped[day].push({ timestamp: item.timestamp, value: item.value });
     });
 
-    // Genera los últimos 7 días
     const today = new Date();
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -160,12 +138,10 @@ export default function AddBoxPlot({
     );
   }
 
-
   const showProcessedChart =
     processingType !== "none" &&
     boxplotDataProcessed.some(arr => !allEqual(arr));
 
-  // 🔹 Limitar los datos agrupados después de armar boxplotData
   const limitedBoxplotData = boxplotData.map(values =>
     values.length > MAX_POINTS ? values.slice(-MAX_POINTS) : values
   );
@@ -174,13 +150,12 @@ export default function AddBoxPlot({
     values.length > MAX_POINTS ? values.slice(-MAX_POINTS) : values
   );
 
-  // 🔹 Dataset original
   const chartData = {
     labels,
     datasets: [
       {
         label: `Original ${medida_id} (${unidad})`,
-        data: limitedBoxplotData, // ✅ ahora son varios boxplots (uno por label)
+        data: limitedBoxplotData,
         backgroundColor: "#8884d8",
         borderColor: "#8884d8",
         outlierColor: "#ff7300",
@@ -188,7 +163,6 @@ export default function AddBoxPlot({
     ],
   };
 
-  // 🔹 Dataset procesado
   const chartDataProcessed = {
     labels,
     datasets: [
@@ -201,7 +175,6 @@ export default function AddBoxPlot({
       },
     ],
   };
-
 
   const chartOptions = {
     responsive: true,
@@ -216,7 +189,6 @@ export default function AddBoxPlot({
     },
   };
 
-    // Obtén los timestamps agrupados en el mismo orden que boxplotData/boxplotDataProcessed
   const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
 
   const exportToPNG = () => {
@@ -230,45 +202,43 @@ export default function AddBoxPlot({
     }
   };
 
-const handleSelectChange = (e) => {
-  if (onSelect) {
-    let processedWithDate = [];
-    if (processingType === "none") {
-      labels.forEach((_, i) => {
-        const values = boxplotData[i] || [];
-        const timestamps = groupedTimestamps[i] || [];
-        values.forEach((value, j) => {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value
+  const handleSelectChange = (e) => {
+    if (onSelect) {
+      let processedWithDate = [];
+      if (processingType === "none") {
+        labels.forEach((_, i) => {
+          const values = boxplotData[i] || [];
+          const timestamps = groupedTimestamps[i] || [];
+          values.forEach((value, j) => {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value
+            });
           });
         });
-      });
-    } else {
-      labels.forEach((_, i) => {
-        const originalValues = boxplotData[i] || [];
-        const processedValues = processValues(originalValues);
-        const timestamps = groupedTimestamps[i] || [];
-        // Recorre hasta el mínimo de ambos arrays
-        const len = Math.min(processedValues.length, timestamps.length);
-        for (let j = 0; j < len; j++) {
-          processedWithDate.push({
-            date: timestamps[j]
-              ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
-              : "",
-            value: processedValues[j]
-          });
-        }
-      });
+      } else {
+        labels.forEach((_, i) => {
+          const originalValues = boxplotData[i] || [];
+          const processedValues = processValues(originalValues);
+          const timestamps = groupedTimestamps[i] || [];
+          const len = Math.min(processedValues.length, timestamps.length);
+          for (let j = 0; j < len; j++) {
+            processedWithDate.push({
+              date: timestamps[j]
+                ? format(parseISO(timestamps[j]), "dd/MM/yyyy HH:mm:ss")
+                : "",
+              value: processedValues[j]
+            });
+          }
+        });
+      }
+      console.log("Exportando:", processedWithDate);
+      onSelect(e.target.checked, processedWithDate, processingType);
     }
-    console.log("Exportando:", processedWithDate);
-    onSelect(e.target.checked, processedWithDate, processingType);
-  }
-};
+  };
 
-  // Handler para procesamiento
   const handleProcessingChange = (e) => {
     if (onProcessingTypeChange) {
       onProcessingTypeChange(e.target.value);
@@ -286,6 +256,15 @@ const handleSelectChange = (e) => {
       handleSelectChange({ target: { checked: true } });
     }
   };
+
+  // 🔹 Exponer función pública para forzar actualización
+  useImperativeHandle(ref, () => ({
+    forceSelectUpdate: () => {
+      if (selected) {
+        handleSelectChange({ target: { checked: true } });
+      }
+    }
+  }));
 
   return (
     <div
@@ -378,7 +357,7 @@ const handleSelectChange = (e) => {
       <Tooltip title="Eliminar gráfico">
         <IconButton
           aria-label="delete chart"
-          onClick={() => onDelete(id)}   // 🔑 pasamos el id git test
+          onClick={() => onDelete(id)}
           className="absolute top-2 right-8"
           style={{ borderRadius: "50%", color: "white" }}
         >
@@ -387,6 +366,21 @@ const handleSelectChange = (e) => {
       </Tooltip>
     </div>
   );
-}
+});
 
+AddBoxPlot.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  nodo_id: PropTypes.string.isRequired,
+  dispositivo_id: PropTypes.string.isRequired,
+  sensor_id: PropTypes.string.isRequired,
+  medida_id: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  selected: PropTypes.bool.isRequired,
+  processingType: PropTypes.string.isRequired,
+  onProcessingTypeChange: PropTypes.func.isRequired,
+  timeRange: PropTypes.string.isRequired,
+  onTimeRangeChange: PropTypes.func.isRequired,
+};
 
+export default AddBoxPlot;

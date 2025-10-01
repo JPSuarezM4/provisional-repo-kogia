@@ -131,6 +131,17 @@ function App() {
     setSelectedMenu(menu);
   }; */}
 
+  const handleSelectBoxPlot = (id, selected, processedData, processingType) => {
+    setSelectedBoxPlots(prev => {
+      if (selected) {
+        const filtered = prev.filter(item => item.id !== id);
+        return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
+      } else {
+        return prev.filter(item => item.id !== id);
+      }
+    });
+  };
+
   const handleAddChart = (chartConfig) => {
     setCharts((prevCharts) => [
       ...prevCharts,
@@ -408,16 +419,7 @@ const handleAddRealTimeChart = (chartConfig) => {
                   <BoxPlotContainer
                     charts={charts}
                     onDeleteChart={handleDeleteChart}
-                    onSelectBoxPlot={(id, selected, processedData, processingType) => {
-                      setSelectedBoxPlots(prev => {
-                        if (selected) {
-                          const filtered = prev.filter(item => item.id !== id);
-                          return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
-                        } else {
-                          return prev.filter(item => item.id !== id);
-                        }
-                      });
-                    }}
+                    onSelectBoxPlot={handleSelectBoxPlot} // <-- usa la función aquí
                     selectedCharts={selectedBoxPlots.reduce((acc, item) => ({ ...acc, [item.id]: true }), {})}
                     processingType={processingType}
                     onProcessingTypeChange={handleProcessingTypeChange}

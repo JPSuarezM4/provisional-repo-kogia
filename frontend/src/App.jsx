@@ -67,35 +67,37 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   async function sendSelectedBoxPlotsToModeling() {
-      // Fuerza actualización de todos los boxplots seleccionados
-      boxPlotRefs.current.forEach(ref => {
-        if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
-      });
+    // Solo fuerza actualización en los boxplots seleccionados
+    selectedBoxPlots.forEach(selected => {
+      const idx = charts.findIndex(chart => chart.id === selected.id);
+      const ref = boxPlotRefs.current[idx];
+      if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
+    });
 
-      // Espera un tick para que el estado se actualice
-      setTimeout(async () => {
-        if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
+    // Espera un tick para que el estado se actualice
+    setTimeout(async () => {
+      if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
 
-        const nombre = "Dataset generado";
-        const descripcion = "Exportado desde procesamiento";
-        const datos = selectedBoxPlots.map(item => ({
-          id: item.id,
-          tipoProcesamiento: item.tipoProcesamiento,
-          data: item.data
-        }));
+      const nombre = "Dataset generado";
+      const descripcion = "Exportado desde procesamiento";
+      const datos = selectedBoxPlots.map(item => ({
+        id: item.id,
+        tipoProcesamiento: item.tipoProcesamiento,
+        data: item.data
+      }));
 
-        try {
-          await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, descripcion, datos }),
-          });
-          alert("Datos enviados a modelado");
-        } catch {
-          alert("Error al enviar los datos");
-        }
-      }, 100);
-    }
+      try {
+        await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre, descripcion, datos }),
+        });
+        alert("Datos enviados a modelado");
+      } catch {
+        alert("Error al enviar los datos");
+      }
+    }, 100);
+  }
 
   function exportSelectedBoxPlotsToCSV() {
     if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;

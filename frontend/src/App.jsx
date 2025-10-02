@@ -101,6 +101,7 @@ function App() {
         alert("Error al enviar los datos");
       }
     }, 100);
+    console.log("selectedBoxPlots antes de enviar:", selectedBoxPlots);
   }
 
   function exportSelectedBoxPlotsToCSV() {
@@ -162,6 +163,7 @@ function App() {
         return prev.filter(item => item.id !== id);
       }
     });
+    console.log("handleSelectBoxPlot:", id, selected, processedData, processingType);
   };
 
 

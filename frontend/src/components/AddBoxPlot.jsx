@@ -235,7 +235,7 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
       }
 
       console.log("Exportando:", processedWithDate);
-
+      console.log("handleSelectChange:", processedWithDate);
       onSelect(e.target.checked, processedWithDate, processingType);
     }
   };

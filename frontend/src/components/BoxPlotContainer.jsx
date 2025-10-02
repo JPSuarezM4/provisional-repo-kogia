@@ -29,9 +29,11 @@ const BoxPlotContainer = ({
 
   return (
     <>
-      {charts.map((chartConfig, idx) => (
+      {charts.map((chartConfig) => (
         <AddBoxPlot
-          ref={el => boxPlotRefs.current[idx] = el} // <-- asigna el ref por índice
+          ref={el => {
+            if (el) boxPlotRefs.current[chartConfig.id] = el;
+          }}
           key={chartConfig.id}
           id={chartConfig.id}
           nodo_id={chartConfig.nodo_id}

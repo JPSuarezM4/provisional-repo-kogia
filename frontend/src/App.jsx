@@ -67,14 +67,12 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   async function sendSelectedBoxPlotsToModeling() {
-    // Solo fuerza actualización en los boxplots seleccionados
+    // Fuerza actualización solo en los boxplots seleccionados
     selectedBoxPlots.forEach(selected => {
-      const idx = charts.findIndex(chart => chart.id === selected.id);
-      const ref = boxPlotRefs.current[idx];
+      const ref = boxPlotRefs.current[selected.id];
       if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
     });
 
-    // Espera un tick para que el estado se actualice
     setTimeout(async () => {
       if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
 

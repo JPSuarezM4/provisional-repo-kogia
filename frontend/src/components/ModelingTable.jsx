@@ -29,33 +29,30 @@ function ModelingTable() {
 
   if (!datasets.length) return <Typography>No hay datasets exportados.</Typography>;
 
-  // Encabezado: dos columnas por dataset, cada una con botón de borrar
-  const header = datasets.flatMap(ds => [
-    {
-      label: `${ds.nombre} - Fecha`,
-      id: ds.id
-    },
-    {
-      label: `${ds.nombre} - Valor`,
-      id: ds.id
+  // Construir encabezado: dos columnas por cada gráfico en cada dataset
+  const header = [];
+  datasets.forEach(ds => {
+    if (Array.isArray(ds.datos)) {
+      ds.datos.forEach((grafico, idx) => {
+        header.push(
+          { label: `${ds.nombre} (${grafico.tipoProcesamiento}) - Fecha`, id: `${ds.id}-${idx}-fecha` },
+          { label: `${ds.nombre} (${grafico.tipoProcesamiento}) - Valor`, id: `${ds.id}-${idx}-valor` }
+        );
+      });
     }
-  ]);
+  });
 
   // Construir filas (solo los primeros 5)
   const rows = [];
   for (let i = 0; i < 5; i++) {
     let row = [];
     datasets.forEach(ds => {
-      let item = null;
       if (Array.isArray(ds.datos)) {
-        for (const d of ds.datos) {
-          if (Array.isArray(d.data) && d.data[i]) {
-            item = d.data[i];
-            break;
-          }
-        }
+        ds.datos.forEach(grafico => {
+          const item = grafico.data[i];
+          row.push(item ? item.date : "", item ? item.value : "");
+        });
       }
-      row.push(item ? item.date : "", item ? item.value : "");
     });
     rows.push(row);
   }

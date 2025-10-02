@@ -68,13 +68,13 @@ function ModelingTable() {
                 <TableCell key={idx} align="center">
                   <Box display="flex" alignItems="center" justifyContent="center">
                     <span>{h.label}</span>
-                    {/* Solo muestra el botón en la columna "Valor" para evitar duplicados */}
-                    {idx % 2 === 1 && (
+                    {/* Solo muestra el botón en la primera columna de cada dataset */}
+                    {idx % (header.length / datasets.length) === 0 && (
                       <Tooltip title="Eliminar dataset">
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => handleDelete(h.id)}
+                          onClick={() => handleDelete(datasets[Math.floor(idx / (header.length / datasets.length))].id)}
                           sx={{ ml: 1 }}
                         >
                           <DeleteIcon fontSize="small" />

@@ -140,14 +140,24 @@ function App() {
 
   const handleSelectBoxPlot = (id, selected, processedData, processingType) => {
     setSelectedBoxPlots(prev => {
+      const exists = prev.find(item => item.id === id);
+
       if (selected) {
-        const filtered = prev.filter(item => item.id !== id);
-        return [...filtered, { id, data: processedData, tipoProcesamiento: processingType }];
+        // Si ya estaba, lo actualiza
+        if (exists) {
+          return prev.map(item =>
+            item.id === id ? { ...item, data: processedData, tipoProcesamiento: processingType } : item
+          );
+        }
+        // Si no estaba, lo agrega
+        return [...prev, { id, data: processedData, tipoProcesamiento: processingType }];
       } else {
+        // Si se deselecciona, lo elimina
         return prev.filter(item => item.id !== id);
       }
     });
   };
+
 
   const handleAddChart = (chartConfig) => {
     setCharts((prevCharts) => [

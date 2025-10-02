@@ -189,7 +189,6 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
     },
   };
 
-  const groupedTimestamps = Object.values(grouped).map(arr => arr.map(obj => obj.timestamp));
 
   const exportToPNG = () => {
     if (chartRef.current) {
@@ -206,9 +205,9 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
     if (onSelect) {
       let processedWithDate = [];
       if (processingType === "none") {
-        labels.forEach((_, i) => {
+        labels.forEach((day, i) => {
           const values = boxplotData[i] || [];
-          const timestamps = groupedTimestamps[i] || [];
+          const timestamps = grouped[day] ? grouped[day].map(obj => obj.timestamp) : [];
           values.forEach((value, j) => {
             processedWithDate.push({
               date: timestamps[j]
@@ -219,10 +218,10 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
           });
         });
       } else {
-        labels.forEach((_, i) => {
+        labels.forEach((day, i) => {
           const originalValues = boxplotData[i] || [];
           const processedValues = processValues(originalValues);
-          const timestamps = groupedTimestamps[i] || [];
+          const timestamps = grouped[day] ? grouped[day].map(obj => obj.timestamp) : [];
           const len = Math.min(processedValues.length, timestamps.length);
           for (let j = 0; j < len; j++) {
             processedWithDate.push({
@@ -263,9 +262,7 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
   // 🔹 Exponer función pública para forzar actualización
   useImperativeHandle(ref, () => ({
     forceSelectUpdate: () => {
-      if (selected) {
-        handleSelectChange({ target: { checked: true } });
-      }
+      handleSelectChange({ target: { checked: true } });
     }
   }));
 

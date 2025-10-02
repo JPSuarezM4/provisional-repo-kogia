@@ -72,6 +72,12 @@ function App() {
       const ref = boxPlotRefs.current[selected.id];
       if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
     });
+    setTimeout(() => {
+      selectedBoxPlots.forEach(selected => {
+        const ref = boxPlotRefs.current[selected.id];
+        if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
+      });
+    }, 50);
 
     setTimeout(async () => {
       if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;

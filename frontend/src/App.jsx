@@ -67,38 +67,27 @@ function App() {
   const [timeRanges, setTimeRanges] = useState({});
 
   async function sendSelectedBoxPlotsToModeling() {
-    // Espera a que React sincronice los props
-    setTimeout(() => {
-      selectedBoxPlots.forEach(selected => {
-        const ref = boxPlotRefs.current[selected.id];
-        if (ref && ref.forceSelectUpdate) ref.forceSelectUpdate();
+    if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
+
+    const nombre = "Dataset generado";
+    const descripcion = "Exportado desde procesamiento";
+    const datos = selectedBoxPlots.map(item => ({
+      id: item.id,
+      tipoProcesamiento: item.tipoProcesamiento,
+      data: item.data
+    }));
+
+    try {
+      await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, descripcion, datos }),
       });
-
-      // Espera otro tick para que el estado se actualice
-      setTimeout(async () => {
-        if (!selectedBoxPlots || selectedBoxPlots.length === 0) return;
-
-        const nombre = "Dataset generado";
-        const descripcion = "Exportado desde procesamiento";
-        const datos = selectedBoxPlots.map(item => ({
-          id: item.id,
-          tipoProcesamiento: item.tipoProcesamiento,
-          data: item.data
-        }));
-
-        try {
-          await fetch("https://modelingservice-production.up.railway.app/api/modeling-datasets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, descripcion, datos }),
-          });
-          alert("Datos enviados a modelado");
-        } catch {
-          alert("Error al enviar los datos");
-        }
-      }, 100);
-      console.log("selectedBoxPlots antes de enviar:", selectedBoxPlots);
-    }, 100);
+      alert("Datos enviados a modelado");
+    } catch {
+      alert("Error al enviar los datos");
+    }
+    console.log("selectedBoxPlots antes de enviar:", selectedBoxPlots);
   }
 
   function exportSelectedBoxPlotsToCSV() {

@@ -234,10 +234,14 @@ const AddBoxPlot = forwardRef(function AddBoxPlot({
           }
         });
       }
+
       console.log("Exportando:", processedWithDate);
-      onSelect(e.target.checked, processedWithDate, processingType);
+
+      // ✅ Ahora pasamos el id como primer argumento
+      onSelect(id, e.target.checked, processedWithDate, processingType);
     }
   };
+
 
   const handleProcessingChange = (e) => {
     if (onProcessingTypeChange) {

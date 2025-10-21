@@ -1,8 +1,8 @@
 services:
   infdb_service:
     build: 
-      context: .
-      dockerfile: infdb_service/Dockerfile
+      context: ./infdb_service
+      dockerfile: Dockerfile
     ports:
       - "5003:5000"
     environment:
@@ -12,8 +12,8 @@ services:
 
   measures_service:
     build: 
-      context: .
-      dockerfile: measures_service/Dockerfile
+      context: ./measures_service
+      dockerfile: Dockerfile
     ports:
       - "5001:5000"
     environment:
@@ -23,8 +23,8 @@ services:
 
   sensor_service:
     build: 
-      context: .
-      dockerfile: sensor_service/Dockerfile
+      context: ./sensor_service
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -34,8 +34,8 @@ services:
 
   auth_service:
     build: 
-      context: .
-      dockerfile: auth_service/Dockerfile
+      context: ./auth_service
+      dockerfile: Dockerfile
     ports:
       - "5002:5000"
     environment:
@@ -43,11 +43,10 @@ services:
     networks:
       - backend_network
 
-
   alert_service:
     build: 
-      context: .
-      dockerfile: alert_service/Dockerfile
+      context: ./alert_service
+      dockerfile: Dockerfile
     ports:
       - "5004:5000"
     environment:
@@ -67,15 +66,14 @@ services:
 
   modeling_service:
     build: 
-      context: .
-      dockerfile: modeling_service/Dockerfile
+      context: ./modeling_service
+      dockerfile: Dockerfile
     ports:
       - "5005:5000"
     environment:
       - FLASK_ENV=production
     networks:
       - backend_network
-
 
 networks:
   backend_network:

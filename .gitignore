@@ -1,0 +1,22 @@
+# Python / Poetry
+__pycache__/
+*.pyc
+.env
+env/
+.venv/
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

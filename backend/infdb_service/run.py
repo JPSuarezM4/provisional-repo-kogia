@@ -4,6 +4,7 @@ from flask_socketio import SocketIO
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.exceptions import InfluxDBError
 from influxdb_client.client.write_api import SYNCHRONOUS
+import os
 import requests
 import time
 import json
@@ -24,7 +25,7 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 # URL del microservicio sensor_service
-SENSOR_SERVICE_URL = "http://localhost:5000/api/nodos"
+SENSOR_SERVICE_URL = os.getenv("SENSOR_SERVICE_URL", "http://sensor_service:5000/api/nodos")
 
 
 # Función para enviar datos en tiempo real desde el microservicio
@@ -339,4 +340,4 @@ def insert_data():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=False)

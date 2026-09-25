@@ -32,7 +32,7 @@ export default function DevicesTable() {
 
   const fetchDevices = () => {
     axios
-      .get("http://127.0.0.1:5000/api/nodos")
+      .get("/api/nodos")
       .then((response) => {
         const dispositivos = response.data.map((nodo) => {
           return {
@@ -80,7 +80,7 @@ export default function DevicesTable() {
 
   const handleDelete = (device) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar el dispositivo ${device.nombre_nodo}?`)) {
-      axios.delete(`http://127.0.0.1:5000/api/nodos/${device.nodo_id}`)
+      axios.delete(`/api/nodos/${device.nodo_id}`)
         .then(() => {
           fetchDevices(); // Vuelve a cargar los dispositivos después de eliminar
         })
@@ -93,7 +93,7 @@ export default function DevicesTable() {
   const handleEdit = (device) => {
     // Supongamos que editas el dispositivo aquí
     // Después de la operación, vuelve a cargar los dispositivos
-    axios.put(`http://127.0.0.1:5000/api/nodos/${device.nodo_id}`)
+    axios.put(`/api/nodos/${device.nodo_id}`)
       .then(() => {
         fetchDevices(); // Refresca los datos
       })

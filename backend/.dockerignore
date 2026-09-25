@@ -1,0 +1,9 @@
+env/
+__pycache__/
+*.pyc
+auth_service/
+sensor_service/
+measures_service/
+infdb_service/
+db_init/
+.git/

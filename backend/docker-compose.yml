@@ -1,48 +1,110 @@
 services:
-  infdb_service:
-    build: 
+  base:
+    image: kogia-backend-base:latest
+    build:
       context: .
-      dockerfile: infdb_service/Dockerfile
-    ports:
-      - "5050:5000"
-    environment:
-      - FLASK_ENV=production
-    networks:
-      - backend_network
+      dockerfile: Dockerfile.base
+    command: ["sh", "-c", "echo 'base image ready'"]
 
-  measures_service:
-    build: 
-      context: .
-      dockerfile: measures_service/Dockerfile
-    ports:
-      - "5001:5000"
+  db:
+    image: postgres:16
+    container_name: pg_db
     environment:
-      - FLASK_ENV=production
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: kogiausers
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db_init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
     networks:
       - backend_network
 
   sensor_service:
-    build: 
-      context: .
-      dockerfile: sensor_service/Dockerfile
-    ports:
-      - "5000:5000"
+    image: kogia-backend-sensor:latest
+    build:
+      context: ./sensor_service
     environment:
-      - FLASK_ENV=production
+      DATABASE_URL: postgresql+psycopg2://postgres:admin@db:5432/kogiadevices
+      SECRET_KEY: secretkeytest
+    depends_on:
+      base:
+        condition: service_started
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend_network
+
+  measures_service:
+    image: kogia-backend-measures:latest
+    build:
+      context: ./measures_service
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:admin@db:5432/kogiadevices
+      SECRET_KEY: secretkeytest
+    depends_on:
+      base:
+        condition: service_started
+      db:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - backend_network
 
   auth_service:
-    build: 
-      context: .
-      dockerfile: auth_service/Dockerfile
-    ports:
-      - "5002:5000"
+    image: kogia-backend-auth:latest
+    build:
+      context: ./auth_service
     environment:
-      - FLASK_ENV=production
+      DATABASE_URL: postgresql+psycopg2://postgres:admin@db:5432/kogiausers
+      SECRET_KEY: secretkeytest
+    depends_on:
+      base:
+        condition: service_started
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend_network
+
+  infdb_service:
+    image: kogia-backend-infdb:latest
+    build:
+      context: ./infdb_service
+    environment:
+      SENSOR_SERVICE_URL: http://sensor_service:5000/api/nodos
+    depends_on:
+      base:
+        condition: service_started
+      sensor_service:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - backend_network
+
+  frontend:
+    build:
+      context: ../frontend
+    image: kogia-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - sensor_service
+      - measures_service
+      - auth_service
+      - infdb_service
+    restart: unless-stopped
     networks:
       - backend_network
 
 networks:
   backend_network:
-    driver: bridge
+
+volumes:
+  db_data:

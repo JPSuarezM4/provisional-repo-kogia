@@ -43,8 +43,21 @@ echo "==> Construyendo imagen base (deps compartidas)..."
 cd "$(dirname "$0")/backend" || exit 1
 docker build -f Dockerfile.base -t kogia-backend-base:latest .
 
-echo "==> Construyendo y levantando contenedores..."
-$COMPOSE up --build -d
+echo "==> Creando swap de 2G (evita OOM durante los builds)..."
+if [ ! -f /swapfile ]; then
+  fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null 2>&1
+  swapon /swapfile
+  grep -q '/swapfile' /etc/fstab 2>/dev/null || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
+echo "==> Construyendo y levantando contenedores (secuencial, 1 a la vez)..."
+export COMPOSE_PARALLEL_LIMIT=1
+for svc in sensor_service measures_service auth_service infdb_service frontend; do
+  $COMPOSE build "$svc"
+done
+$COMPOSE up -d
 
 echo "==> ¡Despliegue completado!"
 docker compose ps

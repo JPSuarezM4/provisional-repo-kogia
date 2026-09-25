@@ -54,8 +54,6 @@ services:
       DATABASE_URL: postgresql+psycopg2://postgres:admin@db:5432/kogiausers
       SECRET_KEY: secretkeytest
     depends_on:
-      base:
-        condition: service_started
       db:
         condition: service_healthy
     restart: unless-stopped

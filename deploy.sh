@@ -39,8 +39,11 @@ fi
 COMPOSE="docker compose"
 command -v docker-compose >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1 && COMPOSE="docker-compose"
 
-echo "==> Construyendo y levantando contenedores..."
+echo "==> Construyendo imagen base (deps compartidas)..."
 cd "$(dirname "$0")/backend" || exit 1
+docker build -f Dockerfile.base -t kogia-backend-base:latest .
+
+echo "==> Construyendo y levantando contenedores..."
 $COMPOSE up --build -d
 
 echo "==> ¡Despliegue completado!"

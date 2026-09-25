@@ -17,12 +17,31 @@ if ! command -v docker &>/dev/null; then
 fi
 
 echo "==> Iniciando servicio Docker..."
-systemctl enable --now docker
-systemctl start docker
+if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
+  systemctl enable --now docker
+  systemctl start docker
+elif command -v service >/dev/null 2>&1; then
+  service docker start
+else
+  echo "    (sin systemd) iniciando dockerd en segundo plano..."
+  nohup dockerd > /tmp/dockerd.log 2>&1 &
+fi
+
+for i in $(seq 1 30); do
+  if docker info >/dev/null 2>&1; then break; fi
+  sleep 1
+done
+docker info >/dev/null 2>&1 || { echo "==> ERROR: no se pudo iniciar Docker (revisa /tmp/dockerd.log)"; exit 1; }
+
+if ! docker compose version >/dev/null 2>&1; then
+  apt-get install -y docker-compose-v2 || apt-get install -y docker-compose
+fi
+COMPOSE="docker compose"
+command -v docker-compose >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1 && COMPOSE="docker-compose"
 
 echo "==> Construyendo y levantando contenedores..."
 cd "$(dirname "$0")/backend" || exit 1
-docker compose up --build -d
+$COMPOSE up --build -d
 
 echo "==> ¡Despliegue completado!"
 docker compose ps
